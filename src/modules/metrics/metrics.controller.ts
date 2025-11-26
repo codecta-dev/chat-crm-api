@@ -1,6 +1,8 @@
-import { Controller, Get, HttpCode, HttpStatus, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import type { Request } from 'express';
 import { MetricsService } from './metrics.service';
+import { JwtPayload } from '../../auth/auth.types';
 
 @Controller('metrics')
 @UseGuards(AuthGuard('jwt'))
@@ -40,7 +42,8 @@ export class MetricsController {
 
   @Get("best-clients")
   @HttpCode(HttpStatus.OK)
-  async getBestClients() {
-    return this.metricsService.getBestClients();
+  async getBestClients(@Req() req: Request) {
+    const user = req.user as JwtPayload;
+    return this.metricsService.getBestClients(user.sub);
   }
 }

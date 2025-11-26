@@ -506,13 +506,14 @@ export class MetricsService {
       .getRawMany();
   }
 
-  async getBestClients(): Promise<
+  async getBestClients(userId: string): Promise<
     { clientId: string; clientName: string; totalMessages: number; avgSentiment: number; score: number }[]
   > {
     return this.messageRepo
       .createQueryBuilder('m')
       .innerJoin('contacts', 'c', 'm.contactId = c.id')
-      .leftJoin('sentiment_analysis', 'sa', 'sa.messageId = m.id')
+      .leftJoin('sentiment_analysis', 'sa', 'sa.messageId = m.id AND sa.label = :label', { label: 'POS' })
+      .where('m.agentId = :agentId', { agentId: userId })
       .select('c.id', 'contactId')
       .addSelect('c.username', 'username')
       .addSelect('COUNT(m.id)', 'totalMessages')
