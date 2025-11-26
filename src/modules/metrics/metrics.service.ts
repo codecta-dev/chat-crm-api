@@ -506,4 +506,21 @@ export class MetricsService {
       .getRawMany();
   }
 
+  async getBestClients(): Promise<
+    { clientId: string; clientName: string; totalMessages: number; avgSentiment: number; score: number }[]
+  > {
+    return this.messageRepo
+      .createQueryBuilder('m')
+      .innerJoin('contacts', 'c', 'm.contactId = c.id')
+      .leftJoin('sentiment_analysis', 'sa', 'sa.messageId = m.id')
+      .select('c.id', 'contactId')
+      .addSelect('c.username', 'username')
+      .addSelect('COUNT(m.id)', 'totalMessages')
+      .addSelect('AVG(sa.pos)', 'avgSentiment')
+      .addSelect('COUNT(m.id) * AVG(sa.pos)', 'score')
+      .groupBy('c.id')
+      .orderBy('score', 'DESC')
+      .limit(5)
+      .getRawMany();
+  }
 }
