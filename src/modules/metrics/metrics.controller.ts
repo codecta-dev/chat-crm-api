@@ -24,8 +24,8 @@ export class MetricsController {
 
   @Get("sentiment/trend")
   @HttpCode(HttpStatus.OK)
-  async getSentimentTrend(@Query("range") range: 'day' | 'week' | 'month' | 'year') {
-    return this.metricsService.getSentimentTrendByRange(range);
+  async getSentimentTrend(@Query("range") range: 'day' | 'week' | 'month' | 'year', @Query("userId") userId: string) {
+    return this.metricsService.getSentimentTrendByRange(range, userId);
   }
 
   @Get("top-contacts")

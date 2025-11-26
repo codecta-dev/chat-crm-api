@@ -188,7 +188,8 @@ export class MetricsService {
   }
 
   async getSentimentTrendByRange(
-    range: SentimentTrendRange = 'week'
+    range: SentimentTrendRange = 'week',
+    userId?: string,
   ): Promise<{
     date: string;
     pos: number;
@@ -234,15 +235,23 @@ export class MetricsService {
         stepFn = (d) => addDays(d, 1);
     }
 
-    const raw = await this.sentimentRepo
+    const qb = this.sentimentRepo
       .createQueryBuilder('sentiment')
+      .innerJoin('sentiment.message', 'm')
       .select([
         `DATE_FORMAT(sentiment.createdAt, '${groupFormat}') AS date`,
         "AVG(sentiment.pos) AS pos",
         "AVG(sentiment.neg) AS neg",
         "AVG(sentiment.neu) AS neu",
       ])
-      .where('sentiment.createdAt BETWEEN :start AND :end', { start, end })
+      .where('sentiment.createdAt BETWEEN :start AND :end', { start, end });
+
+    if (userId) {
+      qb.leftJoin('m.agent', 'u')
+        .andWhere('u.id = :userId', { userId });
+    }
+
+    const raw = await qb
       .groupBy(`DATE_FORMAT(sentiment.createdAt, '${groupFormat}')`)
       .orderBy('date', 'ASC')
       .getRawMany<{
