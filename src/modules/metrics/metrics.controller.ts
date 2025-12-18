@@ -40,6 +40,12 @@ export class MetricsController {
     return this.metricsService.getBestAgentsFast();
   }
 
+  @Get("bad-agents")
+  @HttpCode(HttpStatus.OK)
+  async getBadAgents() {
+    return this.metricsService.getAgentsFast("NEG");
+  }
+
   @Get("best-clients")
   @HttpCode(HttpStatus.OK)
   async getBestClients(@Req() req: Request) {

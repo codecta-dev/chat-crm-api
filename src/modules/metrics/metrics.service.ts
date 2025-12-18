@@ -29,6 +29,8 @@ export interface TopAgentMetrics {
 }
 type SentimentTrendRange = 'day' | 'week' | 'month' | 'year';
 
+type SentimentType = 'POS' | 'NEU' | 'NEG';
+
 @Injectable()
 export class MetricsService {
   constructor(
@@ -512,6 +514,29 @@ export class MetricsService {
       .addGroupBy('u.username')
       .orderBy('score', 'DESC')
       .limit(5)
+      .getRawMany();
+  }
+
+  async getAgentsFast(label: SentimentType, limit: number = 5): Promise<
+    { agentId: string; agentName: string; total: number; avg: number; score: number }[]
+  > {
+    return this.messageRepo
+      .createQueryBuilder('m')
+      .innerJoin('users', 'u', 'm.agentId = u.id')
+      .leftJoin('sentiment_analysis', 'sa', 'sa.messageId = m.id AND sa.label = :label', { label })
+      .select('u.id', 'agentId')
+      .addSelect('u.firstNames', 'firstNames')
+      .addSelect('u.lastNames', 'lastNames')
+      .addSelect('u.username', 'username')
+      .addSelect('u.avatar', 'profile')
+      .addSelect('u.phoneNumber', 'phoneNumber')
+      .addSelect('COUNT(sa.id)', 'total')
+      .addSelect('AVG(sa.pos)', 'avg')
+      .addSelect('COUNT(sa.id) * AVG(sa.pos)', 'score')
+      .groupBy('u.id')
+      .addGroupBy('u.username')
+      .orderBy('score', 'DESC')
+      .limit(limit)
       .getRawMany();
   }
 
