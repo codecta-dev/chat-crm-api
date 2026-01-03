@@ -1,48 +1,40 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import { UsersService } from 'src/modules/users/users.service';
 
-import { LoginDto } from './dto/login.dto';
+import { Repository } from 'typeorm';
 import { JwtPayload } from './auth.types';
 import { User } from '../modules/users/entities/user.entity';
-import { WhatsAppConfigService } from '../modules/whatsapp/services/whatsapp-config.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
-    private jwtService: JwtService,
-    private whatsappConfigService: WhatsAppConfigService
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
   ) { }
 
-  async valid(username: string, pass: string): Promise<User> {
-    const user = await this.usersService.findByUsername(username);
-    const isValid = user && bcrypt.compareSync(pass, user.password);
-    if (user && isValid) {
-      return user;
-    }
-    throw new UnauthorizedException('Invalid credentials');
+  async valid(pass: string, hash: string): Promise<boolean> {
+    return await bcrypt.compare(pass, hash)
   }
 
-  async sign(dto: LoginDto) {
-    const user: User = await this.valid(dto.username, dto.password);
-    console.log(user);
-    const config = await this.whatsappConfigService.getActiveByCompany(user.company.id);
+  async sign(credentials: { username: string, password: string }): Promise<Partial<JwtPayload>> {
+    const user = await this.userRepo.findOne({
+      where: { username: credentials.username },
+    });
 
-    const payload: JwtPayload = {
+    if (!user || !(await this.valid(credentials.password, user.password))) throw new UnauthorizedException();
+
+    const payload = {
       sub: user.id,
-      username: user.username,
-      role: user.role,
-      avatar: user?.avatar,
-      email: user?.email,
-      companyId: user.company?.id || '',
-      businessId: config?.businessId || '',
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        avatar: user.avatar,
+      },
     };
 
-    const access_token = await this.jwtService.signAsync(payload);
-
-    return { payload, access_token };
+    return payload;
   }
 
   refresh() {
