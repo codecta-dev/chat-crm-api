@@ -1,8 +1,8 @@
 import * as bcrypt from 'bcrypt';
 import { BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Chat } from '../../chats/entities/chat.entity.js';
-import { Company } from '../../companies/entities/company.entity.js';
-import { Notification } from '../../notifications/entities/notification.entity.js';
+import { Chat } from '../../chats/entities/chat.entity';
+import { Company } from '../../companies/entities/company.entity';
+import { Notification } from '../../notifications/entities/notification.entity';
 
 export type UserRole = 'admin' | 'supervisor' | 'support' | 'agent' | 'system';
 export type UserStatue = 'online' | 'offline' | 'busy';

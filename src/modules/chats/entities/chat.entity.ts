@@ -1,5 +1,3 @@
-import { Message } from "src/modules/chats/entities/message.entity";
-import { User } from "src/modules/users/entities/user.entity";
 import {
   Column,
   CreateDateColumn,
@@ -12,6 +10,8 @@ import {
   UpdateDateColumn
 } from "typeorm";
 import { Contact } from "../../contacts/entities/contact.entity";
+import { Message } from "./message.entity";
+import { User } from "../../users/entities/user.entity";
 
 export type ChatStatus = 'open' | 'pending' | 'closed' | 'archived';
 export type ChatPriority = 'low' | 'medium' | 'high' | 'urgent';
