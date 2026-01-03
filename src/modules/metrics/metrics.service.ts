@@ -29,6 +29,8 @@ export interface TopAgentMetrics {
 }
 type SentimentTrendRange = 'day' | 'week' | 'month' | 'year';
 
+type SentimentType = 'POS' | 'NEU' | 'NEG';
+
 @Injectable()
 export class MetricsService {
   constructor(
@@ -188,7 +190,8 @@ export class MetricsService {
   }
 
   async getSentimentTrendByRange(
-    range: SentimentTrendRange = 'week'
+    range: SentimentTrendRange = 'week',
+    userId?: string,
   ): Promise<{
     date: string;
     pos: number;
@@ -234,15 +237,23 @@ export class MetricsService {
         stepFn = (d) => addDays(d, 1);
     }
 
-    const raw = await this.sentimentRepo
+    const qb = this.sentimentRepo
       .createQueryBuilder('sentiment')
+      .innerJoin('sentiment.message', 'm')
       .select([
         `DATE_FORMAT(sentiment.createdAt, '${groupFormat}') AS date`,
         "AVG(sentiment.pos) AS pos",
         "AVG(sentiment.neg) AS neg",
         "AVG(sentiment.neu) AS neu",
       ])
-      .where('sentiment.createdAt BETWEEN :start AND :end', { start, end })
+      .where('sentiment.createdAt BETWEEN :start AND :end', { start, end });
+
+    if (userId) {
+      qb.leftJoin('m.agent', 'u')
+        .andWhere('u.id = :userId', { userId });
+    }
+
+    const raw = await qb
       .groupBy(`DATE_FORMAT(sentiment.createdAt, '${groupFormat}')`)
       .orderBy('date', 'ASC')
       .getRawMany<{
@@ -506,4 +517,46 @@ export class MetricsService {
       .getRawMany();
   }
 
+  async getAgentsFast(label: SentimentType, limit: number = 5): Promise<
+    { agentId: string; agentName: string; total: number; avg: number; score: number }[]
+  > {
+    return this.messageRepo
+      .createQueryBuilder('m')
+      .innerJoin('users', 'u', 'm.agentId = u.id')
+      .leftJoin('sentiment_analysis', 'sa', 'sa.messageId = m.id AND sa.label = :label', { label })
+      .select('u.id', 'agentId')
+      .addSelect('u.firstNames', 'firstNames')
+      .addSelect('u.lastNames', 'lastNames')
+      .addSelect('u.username', 'username')
+      .addSelect('u.avatar', 'profile')
+      .addSelect('u.phoneNumber', 'phoneNumber')
+      .addSelect('COUNT(sa.id)', 'total')
+      .addSelect('AVG(sa.pos)', 'avg')
+      .addSelect('COUNT(sa.id) * AVG(sa.pos)', 'score')
+      .groupBy('u.id')
+      .addGroupBy('u.username')
+      .orderBy('score', 'DESC')
+      .limit(limit)
+      .getRawMany();
+  }
+
+  async getBestClients(userId: string): Promise<
+    { clientId: string; clientName: string; totalMessages: number; avgSentiment: number; score: number }[]
+  > {
+    return this.messageRepo
+      .createQueryBuilder('m')
+      .innerJoin('contacts', 'c', 'm.contactId = c.id')
+      .leftJoin('sentiment_analysis', 'sa', 'sa.messageId = m.id AND sa.label = :label', { label: 'POS' })
+      .where('m.agentId = :agentId', { agentId: userId })
+      .select('c.id', 'contactId')
+      .addSelect('c.username', 'username')
+      .addSelect('COUNT(m.id)', 'totalMessages')
+      .addSelect('AVG(sa.pos)', 'avgPos')
+      .addSelect('COUNT(sa.id)', 'totalPositive')
+      .addSelect('COUNT(m.id) * AVG(sa.pos)', 'score')
+      .groupBy('c.id')
+      .orderBy('score', 'DESC')
+      .limit(5)
+      .getRawMany();
+  }
 }
