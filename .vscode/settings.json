@@ -23,5 +23,9 @@
     "<C-d>": false
   },
   "typescript.suggest.autoImports": true,
+  "conventionalCommits.scopes": [
+    "auth",
+    "config"
+  ],
   // "editor.inlineSuggest.enabled": false // IA complementations
 }
