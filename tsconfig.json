@@ -23,7 +23,13 @@
     "noFallthroughCasesInSwitch": false,
     "paths": {
       "@utils/*": [
-        "src/utils/*"
+        "./src/utils/*"
+      ],
+      "@auth": [
+        "src/auth/index.ts"
+      ],
+      "@auth/*": [
+        "src/auth/*"
       ],
     }
   }

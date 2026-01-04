@@ -1,12 +1,27 @@
 {
-  "typescript.preferences.importModuleSpecifier": "relative",
+  // Import settings
+  "typescript.preferences.importModuleSpecifier": "shortest",
+  "javascript.preferences.importModuleSpecifier": "shortest",
+  "typescript.preferences.importModuleSpecifierEnding": "minimal",
+  "javascript.preferences.importModuleSpecifierEnding": "minimal",
+  "typescript.suggest.autoImports": true,
+  // Format
   "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always",
+    "source.organizeImports": "never"
+  },
+  // Terminal
   "terminal.integrated.defaultProfile.linux": "bash",
   "terminal.integrated.profiles.linux": {
     "bash": {
       "path": "/bin/bash"
     }
   },
+  // Files
   "files.exclude": {
     "**/node_modules": true,
     "**/dist": true,
@@ -16,16 +31,13 @@
     "**/node_modules": true,
     "**/dist": true
   },
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "always"
-  },
+  // Vim
   "vim.handleKeys": {
     "<C-d>": false
   },
-  "typescript.suggest.autoImports": true,
+  // Conventional Commits
   "conventionalCommits.scopes": [
     "auth",
     "config"
-  ],
-  // "editor.inlineSuggest.enabled": false // IA complementations
+  ]
 }
