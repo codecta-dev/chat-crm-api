@@ -1,11 +1,13 @@
+export type AuthUser = {
+  id: string;
+  username: string;
+  role: string;
+  avatar?: string;
+};
+
 export type JwtPayload = {
   sub?: string;
-  user: Partial<{
-    id: string | number
-    username: string;
-    role: string;
-    avatar: string | undefined;
-  }>
+  user: AuthUser;
 };
 
 export type AuthResponse = {
