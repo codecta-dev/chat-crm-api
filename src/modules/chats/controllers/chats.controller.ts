@@ -1,9 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import type { Request } from 'express';
-import { JwtPayload } from '../../../auth/auth.types';
 import { ChatsService } from '../chats.service';
 import { CreateChatDto, UpdateChatDto } from '../dto/chat.dto';
+import { type AuthUser, User } from '@auth';
 
 @Controller('chats')
 @UseGuards(AuthGuard('jwt'))
@@ -16,9 +15,8 @@ export class ChatsController {
   }
 
   @Get('/list')
-  findAll(@Req() req: Request) {
-    const auth = req.user as JwtPayload;
-    return this.service.getChats(auth.sub, auth.role);
+  findAll(@User() user: AuthUser) {
+    return this.service.getChats(user.id, user.role);
   }
 
   @Get(':id/messages')
