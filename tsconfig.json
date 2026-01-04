@@ -26,10 +26,10 @@
         "./src/utils/*"
       ],
       "@auth": [
-        "src/auth/index.ts"
+        "./src/auth/index"
       ],
       "@auth/*": [
-        "src/auth/*"
+        "./src/auth/*"
       ],
     }
   }
