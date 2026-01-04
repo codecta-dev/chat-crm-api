@@ -5,19 +5,24 @@ import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 import { JwtPayload } from './auth.types';
 import { User } from '../modules/users/entities/user.entity';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    private readonly jwtService: JwtService,
   ) { }
 
   async valid(pass: string, hash: string): Promise<boolean> {
     return await bcrypt.compare(pass, hash)
   }
 
-  async sign(credentials: { username: string, password: string }): Promise<Partial<JwtPayload>> {
+  async sign(credentials: { username: string, password: string }): Promise<Partial<{
+    payload: JwtPayload,
+    token: string
+  }>> {
     const user = await this.userRepo.findOne({
       where: { username: credentials.username },
     });
@@ -34,7 +39,10 @@ export class AuthService {
       },
     };
 
-    return payload;
+    return {
+      payload,
+      token: await this.jwtService.signAsync(payload)
+    };
   }
 
   refresh() {

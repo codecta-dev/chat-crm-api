@@ -5,15 +5,23 @@ import { Repository } from 'typeorm';
 import { User } from '../modules/users/entities/user.entity';
 import { UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 describe('AuthService', () => {
     let authService: AuthService;
+    let jwtService: JwtService;
     let userRepo: jest.Mocked<Repository<User>>;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 AuthService,
+                {
+                    provide: JwtService,
+                    useValue: {
+                        signAsync: jest.fn().mockResolvedValue('fake-token')
+                    }
+                },
                 {
                     provide: getRepositoryToken(User),
                     useValue: {
@@ -25,6 +33,7 @@ describe('AuthService', () => {
 
         authService = module.get<AuthService>(AuthService);
         userRepo = module.get(getRepositoryToken(User));
+        jwtService = module.get<JwtService>(JwtService);
     });
 
     describe('sign', () => {
@@ -40,13 +49,17 @@ describe('AuthService', () => {
 
             userRepo.findOne.mockResolvedValue(mockUser);
 
+            const spy = jest.spyOn(jwtService, 'signAsync')
+
             // Act
-            const result = await authService.sign({ username: 'jeremi', password: '1234' });
+            const { payload, token } = await authService.sign({ username: 'jeremi', password: '1234' });
 
             // Assert
-            expect(result.sub).toBe('uuid');
-            expect(result.user?.username).toBe(mockUser.username);
-            expect(result.user?.role).toBe(mockUser.role);
+            expect(spy).toHaveBeenCalled();
+            expect(token).toBeDefined();
+            expect(payload?.sub).toBe('uuid');
+            expect(payload?.user?.username).toBe(mockUser.username);
+            expect(payload?.user?.role).toBe(mockUser.role);
         });
 
         it('should throw UnauthorizedException when credentials are invalid', async () => {
