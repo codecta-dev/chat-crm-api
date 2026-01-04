@@ -31,6 +31,9 @@
       "@auth/*": [
         "./src/auth/*"
       ],
+      "@modules": [
+        "./src/modules/index"
+      ]
     }
   }
 }
