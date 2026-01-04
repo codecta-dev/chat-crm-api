@@ -13,8 +13,8 @@ export class WhatsappService {
     private readonly logger: PinoLogger,
   ) { this.logger.setContext(WhatsappService.name) }
 
-  async sendTemplateMessage(to: string, templateName: string, languageCode: string, companyId: string) {
-    const { apiBaseUrl, apiVersion, phoneNumberId, accessToken } = await this.config.getActiveByCompany(companyId);
+  async sendTemplateMessage(to: string, templateName: string, languageCode: string, companyId?: string) {
+    const { apiBaseUrl, apiVersion, phoneNumberId, accessToken } = await this.config.getActiveByCompany(companyId ?? '');
     const url = `${apiBaseUrl}/${apiVersion}/${phoneNumberId}/messages`;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const payload: any = this.factory.template(to, templateName, languageCode);
@@ -27,7 +27,7 @@ export class WhatsappService {
     });
   }
 
-  async sendTextMessage(to: string, message: string, companyId: string) {
+  async sendTextMessage(to: string, message: string, companyId?: string) {
     const { apiBaseUrl, apiVersion, phoneNumberId, accessToken } = await this.config.getActiveByCompany(companyId);
     const url = `${apiBaseUrl}/${apiVersion}/${phoneNumberId}/messages`;
     const payload = this.factory.text(to, message);

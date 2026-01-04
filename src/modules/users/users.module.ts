@@ -14,6 +14,6 @@ import { Chat } from '../chats/entities';
   ],
   controllers: [UsersController],
   providers: [UsersService, IsInDatabaseConstraint],
-  exports: [UsersService]
+  exports: [UsersService, TypeOrmModule]
 })
 export class UsersModule { }

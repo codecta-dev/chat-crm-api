@@ -22,7 +22,7 @@ export class WhatsAppConfigService {
     this.logger.setContext(WhatsAppConfigService.name)
   }
 
-  async getActiveByCompany(companyId: string): Promise<WhatsAppConfig> {
+  async getActiveByCompany(companyId?: string): Promise<WhatsAppConfig> {
     return await this.configRepository.findOneOrFail({
       where: { company: { id: companyId }, isActive: true },
     });

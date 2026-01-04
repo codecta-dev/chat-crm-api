@@ -27,7 +27,7 @@ export class UsersService {
     private readonly csv: CsvParser,
   ) { }
 
-  async importCsv(file: Express.Multer.File, companyId: string): Promise<{ count: number }> {
+  async importCsv(file: Express.Multer.File, companyId?: string): Promise<{ count: number }> {
     const stream = Readable.from(file.buffer);
     const parsed = await this.csv.parse(stream, CreateUserDto, undefined, undefined, {
       strict: true,
