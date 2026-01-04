@@ -8,6 +8,10 @@ export type AuthUser = {
 export type JwtPayload = {
   sub?: string;
   user: AuthUser;
+  /** 
+   * @deprecated Use user.company instead 
+   */
+  companyId?: string;
 };
 
 export type AuthResponse = {
