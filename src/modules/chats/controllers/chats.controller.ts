@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@n
 import { AuthGuard } from '@nestjs/passport';
 import { ChatsService } from '../chats.service';
 import { CreateChatDto, UpdateChatDto } from '../dto/chat.dto';
-import { type AuthUser, User } from '@auth';
+import { type AuthUser, CurrentUser } from '@auth';
 
 @Controller('chats')
 @UseGuards(AuthGuard('jwt'))
@@ -15,7 +15,7 @@ export class ChatsController {
   }
 
   @Get('/list')
-  findAll(@User() user: AuthUser) {
+  findAll(@CurrentUser() user: AuthUser) {
     return this.service.getChats(user.id, user.role);
   }
 

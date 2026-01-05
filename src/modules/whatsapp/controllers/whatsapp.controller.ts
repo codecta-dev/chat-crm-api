@@ -1,10 +1,9 @@
-import { Body, Controller, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Post, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
-import type { Request } from "express";
-import { JwtPayload } from "../../../auth/auth.types";
 import { SentimentClient } from "../clients/sentiment.client";
 import { SendMessageDto } from "../dto/send-message.dto";
 import { WhatsappService } from "../whatsapp.service";
+import { CurrentUser, type AuthUser } from "@auth";
 
 @Controller('whatsapp')
 @UseGuards(AuthGuard('jwt'))
@@ -30,8 +29,7 @@ export class WhatsappController {
   }
 
   @Post('send/template')
-  async sendTemplateMessage(@Req() req: Request, @Body() body: { to: string }) {
-    const user = req.user as JwtPayload;
+  async sendTemplateMessage(@CurrentUser() user: AuthUser, @Body() body: { to: string }) {
     const success = await this.service.sendTemplateMessage(body.to, 'hello_world', 'en_US', user.companyId);
     return { success, message: 'Template message sent' };
   }

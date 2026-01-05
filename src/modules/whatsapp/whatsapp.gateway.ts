@@ -30,9 +30,9 @@ export class WhatsappGateway implements OnGatewayConnection, OnGatewayDisconnect
     const { user } = client.handshake.auth as { user: JwtPayload };
     void this.userService.online(user.user.id);
 
-    if (user.companyId) {
-      void client.join(`company_${user.companyId}`);
-      this.logger.debug(`Client ${client.id} joined company room: company_${user.companyId}`);
+    if (user.user.companyId) {
+      void client.join(`company_${user.user.companyId}`);
+      this.logger.debug(`Client ${client.id} joined company room: company_${user.user.companyId}`);
     } else {
       this.logger.debug(`Cliente conectado: ${client.id}`);
     }
@@ -55,7 +55,7 @@ export class WhatsappGateway implements OnGatewayConnection, OnGatewayDisconnect
   async handleSendMessage(@ConnectedSocket() client: Socket, @MessageBody() data: { chat: string; to: string, body: string }) {
     this.logger.debug(`Mensaje recibido desde React: ${JSON.stringify(client.handshake.auth)}`);
     const auth = client.handshake.auth as JwtPayload;
-    const isSent = await this.whatsappService.sendTextMessage(data.to, data.body, auth.companyId).catch((err: WhatsAppHttpException) => {
+    const isSent = await this.whatsappService.sendTextMessage(data.to, data.body, auth.user.companyId).catch((err: WhatsAppHttpException) => {
       client.emit('error-event', { type: err.type, message: err.message });
       return false;
     });
