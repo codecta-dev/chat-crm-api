@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { Payload } from '@auth';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -39,7 +40,7 @@ describe('AuthController', () => {
   describe('login', () => {
     it('should call AuthService.sign and set cookie', async () => {
       const dto: LoginDto = { username: 'jeremi', password: '1234' };
-      const mockPayload = { sub: 'uuid', user: { username: 'jeremi' } };
+      const mockPayload = { sub: 'uuid', user: { username: 'jeremi' } } as unknown as Payload;
 
       const signSpy = jest.spyOn(authService, 'sign').mockResolvedValue({
         payload: mockPayload,
