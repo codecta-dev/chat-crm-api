@@ -1,2 +1,2 @@
-export { User } from './decorators/user.decorator';
+export { CurrentUser } from './decorators/current-user.decorator';
 export type { AuthUser, JwtPayload as Payload } from './auth.types';
