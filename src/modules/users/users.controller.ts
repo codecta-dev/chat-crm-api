@@ -20,7 +20,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { type UserSearchDto, userSearchSchema } from './dto/user-search.dto';
+import { type UserSearchDto } from './dto/user-search.dto';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { userTableQuerySchema, type UserTableQueryDto } from '../../common/schemas/user-table-query.schema';
 import { type AuthUser, CurrentUser } from '@auth';
@@ -49,7 +49,6 @@ export class UsersController {
   }
 
   @Get("search")
-  @UsePipes(new ZodValidationPipe(userSearchSchema))
   search(@Query() query: UserSearchDto) {
     return this.service.searchUser(query);
   }
