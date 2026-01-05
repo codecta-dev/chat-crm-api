@@ -3,15 +3,15 @@ export type AuthUser = {
   username: string;
   role: string;
   avatar?: string;
+  /** 
+   * @deprecated Use user.company instead 
+   */
+  companyId?: string;
 };
 
 export type JwtPayload = {
   sub?: string;
   user: AuthUser;
-  /** 
-   * @deprecated Use user.company instead 
-   */
-  companyId?: string;
 };
 
 export type AuthResponse = {
