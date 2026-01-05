@@ -38,6 +38,7 @@
   // Conventional Commits
   "conventionalCommits.scopes": [
     "auth",
+    "user",
     "config"
   ]
 }

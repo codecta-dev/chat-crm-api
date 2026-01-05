@@ -5,7 +5,6 @@ import * as bcrypt from 'bcrypt';
 import { CsvParser } from 'nest-csv-parser';
 import { PinoLogger } from 'nestjs-pino';
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
-import { User } from 'src/modules/users/entities/user.entity';
 import { FindManyOptions, In, IsNull, Like, Not, Repository } from 'typeorm';
 import { UpdateResult } from 'typeorm/browser';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -15,17 +14,19 @@ import { UserTableQueryDto } from '../../common/schemas/user-table-query.schema'
 import { buildQueryOptions } from '../../lib/helpers/build-query-options.helper';
 import { Chat } from '../chats/entities';
 import { Company } from '../companies/entities/company.entity';
+import { CoreRepository } from 'src/core/repositories/core.repository';
+import { User } from './entities/user.entity';
 
 @Injectable()
-export class UsersService {
+export class UsersService extends CoreRepository<User> {
   constructor(
     @InjectRepository(User)
-    private readonly repo: Repository<User>,
+    protected override repo: Repository<User>,
     @InjectRepository(Chat)
     private readonly chatRepo: Repository<Chat>,
     private readonly logger: PinoLogger,
     private readonly csv: CsvParser,
-  ) { }
+  ) { super(repo) }
 
   async importCsv(file: Express.Multer.File, companyId?: string): Promise<{ count: number }> {
     const stream = Readable.from(file.buffer);
@@ -105,10 +106,6 @@ export class UsersService {
     };
 
     return this.repo.find(findOptions);
-  }
-
-  findAll(): Promise<User[]> {
-    return this.repo.find();
   }
 
   findOne(id: string): Promise<User | null> {
