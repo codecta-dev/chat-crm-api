@@ -14,14 +14,14 @@ import { UserTableQueryDto } from '../../common/schemas/user-table-query.schema'
 import { buildQueryOptions } from '../../lib/helpers/build-query-options.helper';
 import { Chat } from '../chats/entities';
 import { Company } from '../companies/entities/company.entity';
-import { CoreRepository } from 'src/core/repositories/core.repository';
 import { User } from './entities/user.entity';
+import { CoreService } from '@core/core.service';
 
 @Injectable()
-export class UsersService extends CoreRepository<User> {
+export class UsersService extends CoreService<User> {
   constructor(
     @InjectRepository(User)
-    protected override repo: Repository<User>,
+    private readonly repo: Repository<User>,
     @InjectRepository(Chat)
     private readonly chatRepo: Repository<Chat>,
     private readonly logger: PinoLogger,
@@ -85,7 +85,8 @@ export class UsersService extends CoreRepository<User> {
     );
   }
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  // TODO: Using CoreService in this
+  override async create(createUserDto: CreateUserDto): Promise<User> {
     const user = this.repo.create({
       ...createUserDto,
       company: { id: createUserDto.companyId } as Company
@@ -169,14 +170,8 @@ export class UsersService extends CoreRepository<User> {
     if (agent) return agent;
   }
 
-  findByUsername(username: string): Promise<User | null> {
-    return this.repo.findOne({
-      where: { username },
-      relations: ['company']
-    });
-  }
-
-  update(id: string, dto: UpdateUserDto): Promise<UpdateResult> {
+  // TODO: Using CoreService in this
+  override update(id: string, dto: UpdateUserDto): Promise<UpdateResult> {
     return this.repo.update(id,
       {
         ...dto,

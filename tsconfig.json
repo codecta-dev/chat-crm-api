@@ -37,6 +37,9 @@
       ],
       "@modules/*": [
         "./src/modules/*"
+      ],
+      "@core/*": [
+        "./src/core/*"
       ]
     }
   }
