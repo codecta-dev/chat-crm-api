@@ -4,6 +4,7 @@ import { i18nValidationMessage as t } from "nestjs-i18n";
 import { Company } from '../../companies/entities/company.entity';
 import { IsInDatabase } from '@utils/validators/IsInDatabase';
 import type { UserRole } from '../entities/user.entity';
+import { Exclude } from 'class-transformer';
 
 export class CreateUserDto {
   @IsString()
@@ -40,6 +41,7 @@ export class CreateUserDto {
 
   @IsString()
   @MinLength(8)
+  @Exclude()
   password: string;
 
   @IsString()
