@@ -1,20 +1,16 @@
 import { ExecutionContext } from '@nestjs/common';
 import { factory } from './current-user.decorator';
-import { AuthUser, JwtPayload } from '../auth.types';
+import { AuthUser } from '../auth.types';
 
 describe('extractUser', () => {
   const authUser: AuthUser = {
     id: '123',
     username: 'jeremi',
-    role: 'admin',
-    avatar: 'avatar.png',
   };
-
-  const jwtPayload: JwtPayload = { sub: 'sub-123', user: authUser };
 
   const mockContext = {
     switchToHttp: jest.fn().mockReturnValue({
-      getRequest: jest.fn().mockReturnValue({ user: jwtPayload }),
+      getRequest: jest.fn().mockReturnValue({ user: authUser }),
       getResponse: jest.fn(),
       getNext: jest.fn(),
     }),
@@ -28,14 +24,14 @@ describe('extractUser', () => {
     expect(factory('id', mockContext)).toBe(authUser.id);
   });
 
-  it('returns user role when data is "role"', () => {
-    expect(factory('role', mockContext)).toBe(authUser.role);
+  it('returns user username when data is "username"', () => {
+    expect(factory('username', mockContext)).toBe(authUser.username);
   });
 
   it('returns undefined if user is missing', () => {
     const badContext = {
       switchToHttp: jest.fn().mockReturnValue({
-        getRequest: jest.fn().mockReturnValue({ user: { sub: 'sub-123', user: undefined } }),
+        getRequest: jest.fn().mockReturnValue({ user: undefined }),
         getResponse: jest.fn(),
         getNext: jest.fn(),
       }),

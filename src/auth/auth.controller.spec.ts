@@ -1,19 +1,24 @@
-import { Request, Response } from 'express';
-
+import { Response } from 'express';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { Payload } from '@auth';
+import { AuthGuard } from './auth.guard';
 
 describe('AuthController', () => {
   let controller: AuthController;
-  let authService: jest.Mocked<AuthService>;
   let res: jest.Mocked<Response>;
+  let mockCookie: jest.Mock;
+  let mockClearCookie: jest.Mock;
 
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
+  const mockAuthService = {
+    sign: jest.fn(),
+  };
+
+  const mockAuthGuard = {
+    canActivate: jest.fn(() => true),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -21,65 +26,77 @@ describe('AuthController', () => {
       providers: [
         {
           provide: AuthService,
-          useValue: {
-            sign: jest.fn(),
-          },
+          useValue: mockAuthService,
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(AuthGuard)
+      .useValue(mockAuthGuard)
+      .compile();
 
     controller = module.get<AuthController>(AuthController);
-    authService = module.get(AuthService);
+
+    mockCookie = jest.fn().mockReturnThis();
+    mockClearCookie = jest.fn().mockReturnThis();
 
     res = {
-      cookie: jest.fn().mockReturnThis(),
-      clearCookie: jest.fn().mockReturnThis(),
+      cookie: mockCookie,
+      clearCookie: mockClearCookie,
     } as unknown as jest.Mocked<Response>;
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe('login', () => {
     it('should call AuthService.sign and set cookie', async () => {
       const dto: LoginDto = { username: 'jeremi', password: '1234' };
-      const mockPayload = { sub: 'uuid', user: { username: 'jeremi' } } as unknown as Payload;
+      const mockPayload = {
+        sub: 'uuid',
+        user: { username: 'jeremi' }
+      } as unknown as Payload;
 
-      const signSpy = jest.spyOn(authService, 'sign').mockResolvedValue({
+      mockAuthService.sign.mockResolvedValue({
         payload: mockPayload,
-        token: 'fake-token'
+        token: 'fake-token',
       });
-      const cookieSpy = jest.spyOn(res, 'cookie');
 
       const result = await controller.login(dto, res);
 
-      expect(signSpy).toHaveBeenCalledWith(dto);
-      expect(cookieSpy).toHaveBeenCalledWith(
+      expect(mockAuthService.sign).toHaveBeenCalledWith(dto);
+      expect(mockCookie).toHaveBeenCalledWith(
         'access_token',
         'fake-token',
         expect.objectContaining({ httpOnly: true }),
       );
-      expect(result).toEqual({ message: 'Login Success', payload: mockPayload });
+      expect(result).toEqual({
+        message: 'Login Success',
+        payload: mockPayload
+      });
     });
   });
 
   describe('logout', () => {
     it('should clear cookie and return message', () => {
-      const clearCookieSpy = jest.spyOn(res, 'clearCookie');
-
       const result = controller.logout(res);
 
-      expect(clearCookieSpy).toHaveBeenCalledWith('access_token');
+      expect(mockClearCookie).toHaveBeenCalledWith('access_token');
       expect(result).toEqual({ message: 'Logout success' });
     });
   });
 
   describe('getProfile', () => {
-    it('should return req.user', () => {
-      const req = {
-        user: { id: 'uuid', username: 'jeremi' }
-      } as unknown as Request;
+    it('should return user from decorator', () => {
+      const mockUser = {
+        id: 'uuid',
+        username: 'jeremi',
+        avatar: 'avatar.png'
+      };
 
-      const result = controller.getProfile(req);
+      const result = controller.getProfile(mockUser);
 
-      expect(result).toEqual(req.user);
+      expect(result).toEqual(mockUser);
     });
   });
 });

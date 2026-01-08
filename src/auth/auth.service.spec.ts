@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-
 import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '@modules/users/users.service';
@@ -14,8 +13,14 @@ jest.mock('bcrypt', () => ({
 
 describe('AuthService', () => {
   let service: AuthService;
-  let usersService: jest.Mocked<UsersService>;
-  let jwtService: jest.Mocked<JwtService>;
+
+  const mockUsersService = {
+    find: jest.fn(),
+  };
+
+  const mockJwtService = {
+    signAsync: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -23,22 +28,16 @@ describe('AuthService', () => {
         AuthService,
         {
           provide: UsersService,
-          useValue: {
-            find: jest.fn(),
-          },
+          useValue: mockUsersService,
         },
         {
           provide: JwtService,
-          useValue: {
-            signAsync: jest.fn(),
-          },
+          useValue: mockJwtService,
         },
       ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
-    usersService = module.get(UsersService);
-    jwtService = module.get(JwtService);
   });
 
   afterEach(() => {
@@ -47,7 +46,6 @@ describe('AuthService', () => {
 
   describe('valid()', () => {
     it('should return true if password matches hash', async () => {
-      // jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
       const result = await service.valid('123456', 'hashed');
@@ -57,7 +55,6 @@ describe('AuthService', () => {
     });
 
     it('should return false if password does not match', async () => {
-      // jest.spyOn(bcrypt, 'compare').mockResolvedValue(false);
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       const result = await service.valid('123456', 'hashed');
@@ -81,31 +78,25 @@ describe('AuthService', () => {
     } as unknown as User;
 
     it('should return payload and token if credentials are valid', async () => {
-      const serviceSpy = jest.spyOn(usersService, 'find').mockResolvedValue(userMock)
-      jest.spyOn(service, 'valid').mockResolvedValue(true);
-      const jwtSpy = jest.spyOn(jwtService, 'signAsync').mockResolvedValue('jwt-token');
+      mockUsersService.find.mockResolvedValue(userMock);
+      mockJwtService.signAsync.mockResolvedValue('jwt-token');
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
       const result = await service.sign(credentials);
 
       expect(result).toEqual({
         payload: {
           sub: 1,
-          user: {
-            id: 1,
-            username: 'jeremi',
-            role: 'admin',
-            avatar: 'avatar.png',
-          },
+          company: 'no implemented yet',
         },
         token: 'jwt-token',
       });
-
-      expect(serviceSpy).toHaveBeenCalledWith({ username: 'jeremi' });
-      expect(jwtSpy).toHaveBeenCalled();
+      expect(mockUsersService.find).toHaveBeenCalledWith({ username: 'jeremi' });
+      expect(mockJwtService.signAsync).toHaveBeenCalled();
     });
 
     it('should throw UnauthorizedException if user does not exist', async () => {
-      usersService.find.mockResolvedValue(null);
+      mockUsersService.find.mockResolvedValue(null);
 
       await expect(service.sign(credentials)).rejects.toThrow(
         UnauthorizedException,
@@ -113,7 +104,7 @@ describe('AuthService', () => {
     });
 
     it('should throw UnauthorizedException if password is invalid', async () => {
-      usersService.find.mockResolvedValue(userMock);
+      mockUsersService.find.mockResolvedValue(userMock);
       jest.spyOn(service, 'valid').mockResolvedValue(false);
 
       await expect(service.sign(credentials)).rejects.toThrow(
