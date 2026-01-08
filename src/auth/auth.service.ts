@@ -1,9 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
-import { JwtPayload } from './auth.types';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '@modules/users/users.service';
+import { Payload } from '@auth';
 
 @Injectable()
 export class AuthService {
@@ -17,7 +17,7 @@ export class AuthService {
   }
 
   async sign(credentials: { username: string, password: string }): Promise<Partial<{
-    payload: JwtPayload,
+    payload: Payload,
     token: string
   }>> {
     const user = await this.userService.find({ username: credentials.username });
@@ -26,12 +26,7 @@ export class AuthService {
 
     const payload = {
       sub: user.id,
-      user: {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-        avatar: user.avatar,
-      },
+      company: 'no implemented yet'
     };
 
     return {

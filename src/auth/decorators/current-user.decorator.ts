@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { AuthUser, JwtPayload } from '../auth.types';
+import { AuthUser } from '../auth.types';
 import { Request } from 'express';
 
 export const factory = (
@@ -8,8 +8,7 @@ export const factory = (
 ): AuthUser | AuthUser[keyof AuthUser] | undefined => {
   const request = ctx.switchToHttp().getRequest<Request>();
 
-  // Yep, it's request.user.user — like a user inside a user.
-  const { user } = request.user as JwtPayload;
+  const user = request.user as AuthUser;
 
   return data ? user[data] : user;
 }

@@ -5,7 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { CsvParser } from 'nest-csv-parser';
 import { PinoLogger } from 'nestjs-pino';
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
-import { FindManyOptions, In, IsNull, Like, Not, Repository } from 'typeorm';
+import { FindManyOptions, IsNull, Like, Repository } from 'typeorm';
 import { UpdateResult } from 'typeorm/browser';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -13,9 +13,9 @@ import { UserSearchDto } from './dto/user-search.dto';
 import { UserTableQueryDto } from '../../common/schemas/user-table-query.schema';
 import { buildQueryOptions } from '../../lib/helpers/build-query-options.helper';
 import { Chat } from '../chats/entities';
-import { Company } from '../companies/entities/company.entity';
 import { User } from './entities/user.entity';
 import { CoreService } from '@core/core.service';
+import { AuthUser } from '@auth';
 
 @Injectable()
 export class UsersService extends CoreService<User> {
@@ -28,6 +28,23 @@ export class UsersService extends CoreService<User> {
     private readonly csv: CsvParser,
   ) { super(repo) }
 
+  async identify(sub: string): Promise<AuthUser | null> {
+    return this.repo.findOne({
+      where: { id: sub },
+      select: {
+        id: true,
+        username: true,
+        firstName: true,
+        lastName: true,
+        address: true,
+        avatar: true,
+        email: true,
+        phoneNumber: true,
+        status: true,
+      }
+    });
+  }
+
   async importCsv(file: Express.Multer.File, companyId?: string): Promise<{ count: number }> {
     const stream = Readable.from(file.buffer);
     const parsed = await this.csv.parse(stream, CreateUserDto, undefined, undefined, {
@@ -38,12 +55,11 @@ export class UsersService extends CoreService<User> {
     const users = await Promise.all(
       parsed.list.map(async (row: Partial<User>) => ({
         username: row.username,
-        firstNames: row.firstNames,
-        lastNames: row.lastNames,
+        firstNames: row.firstName,
+        lastNames: row.lastName,
         phoneNumber: row.phoneNumber,
         email: row.email,
         password: await bcrypt.hash(row.password ?? 'password', 10),
-        role: row.role ?? 'agent',
         company: { id: companyId },
       }))
     );
@@ -86,11 +102,9 @@ export class UsersService extends CoreService<User> {
   }
 
   // TODO: Using CoreService in this
-  override async create(createUserDto: CreateUserDto): Promise<User> {
-    const user = this.repo.create({
-      ...createUserDto,
-      company: { id: createUserDto.companyId } as Company
-    })
+  override async create(dto: CreateUserDto): Promise<User> {
+    const user = this.repo.create(dto);
+
     return this.repo.save(user);
   }
 
@@ -99,8 +113,8 @@ export class UsersService extends CoreService<User> {
     const findOptions: FindManyOptions<User> = {
       where: q ? [
         { username: Like(`%${q}%`) },
-        { firstNames: Like(`%${q}%`) },
-        { lastNames: Like(`%${q}%`) },
+        { firstName: Like(`%${q}%`) },
+        { lastName: Like(`%${q}%`) },
       ] : {},
       take: limit,
       order: { username: 'ASC' }
@@ -113,29 +127,21 @@ export class UsersService extends CoreService<User> {
     return this.repo.findOne({ where: { id } });
   }
 
-  async findOrCreateSystemUser(companyId: string): Promise<User> {
-    const existing = await this.repo.findOne({ where: { role: 'system', company: { id: companyId } } });
-
-    if (existing) return existing;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async findOrCreateSystemUser(companyId?: string): Promise<User> {
 
     const created = this.repo.create({
-      role: 'system',
       username: 'System',
       password: "password", // Will be hashed before insert
       status: 'online',
-      company: { id: companyId },
     });
 
     return this.repo.save(created);
   }
 
   async findAvailableAgent(companyId: string): Promise<User> {
-    const roles = ['system', 'admin'];
-
     const agents = await this.repo.find({
       where: {
-        company: { id: companyId },
-        role: Not(In(roles)),
         status: 'online',
       },
       order: {

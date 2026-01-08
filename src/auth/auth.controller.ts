@@ -1,9 +1,12 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Res, UseGuards } from '@nestjs/common';
 
-import type { Response, Request } from 'express';
+import type { Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import { CurrentUser } from './decorators/current-user.decorator';
+import type { AuthUser } from './auth.types';
+import { AuthGuard } from '@nestjs/passport';
+import { AuthGuard as AuthUserGuard } from './auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -33,8 +36,6 @@ export class AuthController {
   }
 
   @Get('me')
-  @UseGuards(AuthGuard('jwt'))
-  getProfile(@Req() req: Request) {
-    return req.user;
-  }
+  @UseGuards(AuthGuard('jwt'), AuthUserGuard)
+  getProfile(@CurrentUser() user: AuthUser) { return user }
 }
