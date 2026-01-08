@@ -28,11 +28,11 @@ export class WhatsappGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   handleConnection(client: Socket) {
     const { user } = client.handshake.auth as { user: JwtPayload };
-    void this.userService.online(user.user.id);
+    void this.userService.online(user.sub);
 
-    if (user.user.companyId) {
-      void client.join(`company_${user.user.companyId}`);
-      this.logger.debug(`Client ${client.id} joined company room: company_${user.user.companyId}`);
+    if (user.company) {
+      void client.join(`company_${user.company}`);
+      this.logger.debug(`Client ${client.id} joined company room: company_${user.company}`);
     } else {
       this.logger.debug(`Cliente conectado: ${client.id}`);
     }
@@ -40,7 +40,7 @@ export class WhatsappGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   handleDisconnect(client: Socket) {
     const { user } = client.handshake.auth as { user: JwtPayload };
-    void this.userService.offline(user.user.id);
+    void this.userService.offline(user.sub);
 
     this.logger.debug(`Cliente desconectado: ${client.id}`);
   }
@@ -55,7 +55,7 @@ export class WhatsappGateway implements OnGatewayConnection, OnGatewayDisconnect
   async handleSendMessage(@ConnectedSocket() client: Socket, @MessageBody() data: { chat: string; to: string, body: string }) {
     this.logger.debug(`Mensaje recibido desde React: ${JSON.stringify(client.handshake.auth)}`);
     const auth = client.handshake.auth as JwtPayload;
-    const isSent = await this.whatsappService.sendTextMessage(data.to, data.body, auth.user.companyId).catch((err: WhatsAppHttpException) => {
+    const isSent = await this.whatsappService.sendTextMessage(data.to, data.body, auth.company).catch((err: WhatsAppHttpException) => {
       client.emit('error-event', { type: err.type, message: err.message });
       return false;
     });

@@ -23,7 +23,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { type UserSearchDto } from './dto/user-search.dto';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { userTableQuerySchema, type UserTableQueryDto } from '../../common/schemas/user-table-query.schema';
-import { type AuthUser, CurrentUser } from '@auth';
 import { User } from './entities/user.entity';
 
 @Controller('users')
@@ -33,8 +32,8 @@ export class UsersController {
 
   @Post('import')
   @UseInterceptors(FileInterceptor('file'))
-  uploadFile(@UploadedFile() file: Express.Multer.File, @CurrentUser() user: AuthUser) {
-    return this.service.importCsv(file, user.companyId);
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
+    return this.service.importCsv(file);
   }
 
   @Post()

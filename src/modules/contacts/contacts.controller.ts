@@ -3,10 +3,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ContactsService } from './contacts.service';
 import { CreateContactDto, UpdateContactDto } from './dto/contact.dto';
-import { type AuthUser } from '../../auth/auth.types';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { type ContactTableQueryDto, contactTableQuerySchema } from '../../common/schemas/contact-table-query.schema';
-import { CurrentUser } from '@auth';
 
 @Controller('contacts')
 @UseGuards(AuthGuard('jwt'))
@@ -20,8 +18,8 @@ export class ContactsController {
 
   @Post('import')
   @UseInterceptors(FileInterceptor('file'))
-  uploadFile(@UploadedFile() file: Express.Multer.File, @CurrentUser() user: AuthUser) {
-    return this.contactService.importCsv(file, user.companyId);
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
+    return this.contactService.importCsv(file);
   }
 
   @Post('table')

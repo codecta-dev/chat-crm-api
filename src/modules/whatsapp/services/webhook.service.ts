@@ -81,7 +81,6 @@ export class WebhookService {
     const chat = await this.chatService.findOrCreateByContact(
       agent.id,
       contact.id,
-      agent.role === 'system'
     );
 
     let savedMsg: Message | null = null;

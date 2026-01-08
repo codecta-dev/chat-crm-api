@@ -16,7 +16,7 @@ export class ChatsController {
 
   @Get('/list')
   findAll(@CurrentUser() user: AuthUser) {
-    return this.service.getChats(user.id, user.role);
+    return this.service.getChats(user.id);
   }
 
   @Get(':id/messages')

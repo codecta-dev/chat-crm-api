@@ -30,7 +30,7 @@ export class WhatsappController {
 
   @Post('send/template')
   async sendTemplateMessage(@CurrentUser() user: AuthUser, @Body() body: { to: string }) {
-    const success = await this.service.sendTemplateMessage(body.to, 'hello_world', 'en_US', user.companyId);
+    const success = await this.service.sendTemplateMessage(body.to, 'hello_world', 'en_US');
     return { success, message: 'Template message sent' };
   }
 }
