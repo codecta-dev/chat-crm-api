@@ -3,6 +3,7 @@ import { ExecutionContext } from '@nestjs/common';
 import { UsersService } from '@modules/users/users.service';
 import { Payload } from '@auth';
 import { IdentifyGuard } from './identify.guard';
+import { userFactory } from '@factories';
 
 describe('IdentifyGuard', () => {
   let guard: IdentifyGuard;
@@ -11,11 +12,7 @@ describe('IdentifyGuard', () => {
     identify: jest.fn(),
   };
 
-  const mockUser = {
-    id: '123',
-    email: 'test@example.com',
-    name: 'Test User',
-  };
+  const mockUser = userFactory.build();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
