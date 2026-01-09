@@ -5,8 +5,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { CurrentUser } from './decorators/current-user.decorator';
 import type { AuthUser } from './auth.types';
-import { AuthGuard } from '@nestjs/passport';
-import { AuthGuard as AuthUserGuard } from './auth.guard';
+import { IdentifyGuard, JwtAuthGuard } from './guards';
 
 @Controller('auth')
 export class AuthController {
@@ -36,6 +35,6 @@ export class AuthController {
   }
 
   @Get('me')
-  @UseGuards(AuthGuard('jwt'), AuthUserGuard)
+  @UseGuards(JwtAuthGuard, IdentifyGuard)
   getProfile(@CurrentUser() user: AuthUser) { return user }
 }
