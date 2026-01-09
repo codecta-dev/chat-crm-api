@@ -3,7 +3,7 @@ import { factory } from './current-user.decorator';
 import { AuthUser } from '../auth.types';
 
 describe('extractUser', () => {
-  const authUser: AuthUser = {
+  const authUser: Partial<AuthUser> = {
     id: '123',
     username: 'jeremi',
   };

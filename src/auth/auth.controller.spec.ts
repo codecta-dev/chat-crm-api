@@ -3,8 +3,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { Payload } from '@auth';
-import { AuthGuard } from './auth.guard';
+import { AuthUser, Payload } from '@auth';
+import { IdentifyGuard } from './guards/identify.guard';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -16,7 +16,7 @@ describe('AuthController', () => {
     sign: jest.fn(),
   };
 
-  const mockAuthGuard = {
+  const mockIdentifyGuard = {
     canActivate: jest.fn(() => true),
   };
 
@@ -30,8 +30,8 @@ describe('AuthController', () => {
         },
       ],
     })
-      .overrideGuard(AuthGuard)
-      .useValue(mockAuthGuard)
+      .overrideGuard(IdentifyGuard)
+      .useValue(mockIdentifyGuard)
       .compile();
 
     controller = module.get<AuthController>(AuthController);
@@ -92,7 +92,7 @@ describe('AuthController', () => {
         id: 'uuid',
         username: 'jeremi',
         avatar: 'avatar.png'
-      };
+      } as unknown as AuthUser;
 
       const result = controller.getProfile(mockUser);
 
