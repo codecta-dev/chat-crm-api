@@ -1,11 +1,10 @@
 import * as bcrypt from 'bcrypt';
-import { BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Chat } from '../../chats/entities/chat.entity';
-import { Company } from '../../companies/entities/company.entity';
 import { Notification } from '../../notifications/entities/notification.entity';
 
 export type UserRole = 'admin' | 'supervisor' | 'support' | 'agent' | 'system';
-export type UserStatue = 'online' | 'offline' | 'busy';
+export type UserStatus = 'online' | 'offline' | 'busy';
 
 @Entity('users')
 export class User {
@@ -13,10 +12,10 @@ export class User {
   id: string;
 
   @Column({ length: 255, nullable: true })
-  firstNames?: string;
+  firstName?: string;
 
   @Column({ length: 255, nullable: true })
-  lastNames?: string;
+  lastName?: string;
 
   @Index({ unique: true })
   @Column({ type: 'varchar', nullable: true })
@@ -34,17 +33,11 @@ export class User {
   @Column()
   password: string;
 
-  @Column({ default: 'agent' })
-  role: UserRole;
-
   @Column({ default: 'offline' })
-  status: UserStatue;
+  status: UserStatus;
 
   @Column({ type: 'varchar', length: 512, nullable: true })
   address?: string;
-
-  @Column({ type: 'timestamp', nullable: true })
-  lastLogin?: Date;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -57,10 +50,6 @@ export class User {
 
   @OneToMany(() => Chat, chat => chat.assignedAgent)
   chats: Chat[];
-
-  @ManyToOne(() => Company, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'companyId' })
-  company: Company;
 
   @OneToMany(() => Notification, (notification) => notification.user)
   notifications: Notification[]
