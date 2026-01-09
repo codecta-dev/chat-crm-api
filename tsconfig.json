@@ -38,6 +38,9 @@
       "@modules/*": [
         "./src/modules/*"
       ],
+      "@factories": [
+        "./test/factories/index"
+      ],
       "@core/*": [
         "./src/core/*"
       ]

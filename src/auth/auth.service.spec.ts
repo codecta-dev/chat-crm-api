@@ -4,7 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '@modules/users/users.service';
-import { User } from '@modules/users/entities/user.entity';
+import { userFactory } from '@factories';
 
 jest.mock('bcrypt', () => ({
   compare: jest.fn(),
@@ -69,28 +69,16 @@ describe('AuthService', () => {
       password: '123456',
     };
 
-    const userMock = {
-      id: 1,
-      username: 'jeremi',
-      password: 'hashed-password',
-      role: 'admin',
-      avatar: 'avatar.png',
-    } as unknown as User;
+    const userMock = userFactory.build();
 
-    it('should return payload and token if credentials are valid', async () => {
+    it('should return token if credentials are valid', async () => {
       mockUsersService.find.mockResolvedValue(userMock);
       mockJwtService.signAsync.mockResolvedValue('jwt-token');
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
       const result = await service.sign(credentials);
 
-      expect(result).toEqual({
-        payload: {
-          sub: 1,
-          company: 'no implemented yet',
-        },
-        token: 'jwt-token',
-      });
+      expect(result).toEqual('jwt-token');
       expect(mockUsersService.find).toHaveBeenCalledWith({ username: 'jeremi' });
       expect(mockJwtService.signAsync).toHaveBeenCalled();
     });
