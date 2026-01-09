@@ -3,7 +3,6 @@ import * as bcrypt from 'bcrypt';
 
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '@modules/users/users.service';
-import { Payload } from '@auth';
 
 @Injectable()
 export class AuthService {
@@ -16,10 +15,7 @@ export class AuthService {
     return await bcrypt.compare(pass, hash)
   }
 
-  async sign(credentials: { username: string, password: string }): Promise<Partial<{
-    payload: Payload,
-    token: string
-  }>> {
+  async sign(credentials: { username: string, password: string }): Promise<string> {
     const user = await this.userService.find({ username: credentials.username });
 
     if (!user || !(await this.valid(credentials.password, user.password))) throw new UnauthorizedException();
@@ -29,10 +25,9 @@ export class AuthService {
       company: 'no implemented yet'
     };
 
-    return {
-      payload,
-      token: await this.jwtService.signAsync(payload)
-    };
+    const token = await this.jwtService.signAsync(payload);
+
+    return token;
   }
 
   refresh() {

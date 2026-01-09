@@ -17,7 +17,7 @@ export class AuthController {
     @Body() body: LoginDto,
     @Res({ passthrough: true }) res: Response
   ) {
-    const { payload, token } = await this.authService.sign(body);
+    const token = await this.authService.sign(body);
 
     res.cookie('access_token', token, {
       httpOnly: true,
@@ -25,7 +25,7 @@ export class AuthController {
       secure: process.env.COOKIE_SECURE === '1',
     });
 
-    return { message: 'Login Success', payload }
+    return { message: 'Login Success' }
   }
 
   @Post('logout')
