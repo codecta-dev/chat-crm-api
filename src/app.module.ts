@@ -17,6 +17,7 @@ import { IsUniqueConstraint } from './utils/validators';
 import { AuthModule } from './auth/auth.module';
 import { CoreModules } from '@modules';
 
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
