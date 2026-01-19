@@ -16,33 +16,29 @@ import { Chat } from '../chats/entities';
 import { User } from './entities/user.entity';
 import { CoreService } from '@core/core.service';
 import { AuthUser } from '@auth';
+import { ClsService } from 'nestjs-cls';
+import { UserRepository } from './user.repository';
 
 @Injectable()
 export class UsersService extends CoreService<User> {
   constructor(
     @InjectRepository(User)
+    // This will be removed in the future
     private readonly repo: Repository<User>,
+    private readonly UserRepo: UserRepository,
     @InjectRepository(Chat)
     private readonly chatRepo: Repository<Chat>,
     private readonly logger: PinoLogger,
     private readonly csv: CsvParser,
+    private readonly cls: ClsService,
   ) { super(repo) }
 
-  async identify(sub: string): Promise<AuthUser | null> {
-    return this.repo.findOne({
-      where: { id: sub },
-      select: {
-        id: true,
-        username: true,
-        firstName: true,
-        lastName: true,
-        address: true,
-        avatar: true,
-        email: true,
-        phoneNumber: true,
-        status: true,
-      }
-    });
+  private get userId() {
+    return this.cls.get<string>('user-id');
+  }
+
+  async identify(): Promise<AuthUser | null> {
+    return this.UserRepo.findUserById(this.userId);
   }
 
   async importCsv(file: Express.Multer.File, companyId?: string): Promise<{ count: number }> {
