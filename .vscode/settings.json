@@ -36,6 +36,7 @@
     "<C-d>": false,
     "<C-j>": false
   },
+  "editor.lineNumbers": "relative",
   // Conventional Commits
   "conventionalCommits.scopes": [
     "auth",
