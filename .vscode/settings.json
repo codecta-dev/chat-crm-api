@@ -33,7 +33,8 @@
   },
   // Vim
   "vim.handleKeys": {
-    "<C-d>": false
+    "<C-d>": false,
+    "<C-j>": false
   },
   // Conventional Commits
   "conventionalCommits.scopes": [
@@ -41,5 +42,10 @@
     "user",
     "config",
     "member"
-  ]
+  ],
+  // Jest
+  "jest.runMode": {
+    "type": "on-save"
+  },
+  "jest.rootPath": "./src",
 }
