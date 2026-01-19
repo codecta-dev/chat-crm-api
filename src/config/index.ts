@@ -12,6 +12,9 @@ import { loggerConfig } from './logger.config';
 import { I18nModule } from 'nestjs-i18n';
 import { i18nConfig } from './i18n.config';
 
+import { CqrsModule } from '@nestjs/cqrs'
+import { cqrsConfig } from './cqrs.config';
+
 import { BullModule } from '@nestjs/bullmq';
 import { bullmqConfig } from './bullmq.config';
 import { ClsModule } from 'nestjs-cls';
@@ -24,6 +27,7 @@ const configs = [
   CacheModule.registerAsync(cacheConfig),
   BullModule.forRoot(bullmqConfig),
   ClsModule.forRoot(clsConfig),
+  CqrsModule.forRoot(cqrsConfig),
 ]
 
 @Module({
