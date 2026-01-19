@@ -6,20 +6,25 @@ import { LoginDto } from './dto/login.dto';
 import { AuthUser } from '@auth';
 import { IdentifyGuard } from './guards/identify.guard';
 import { userFactory } from '@factories';
+import { MemberService } from '@modules/member/member.service';
 
 describe('AuthController', () => {
   let controller: AuthController;
   let res: jest.Mocked<Response>;
-  let mockCookie: jest.Mock;
-  let mockClearCookie: jest.Mock;
 
-  const mockAuthService = {
-    sign: jest.fn(),
-  };
-
-  const mockIdentifyGuard = {
-    canActivate: jest.fn(() => true),
-  };
+  const mocks = {
+    authService: {
+      sign: jest.fn(),
+    },
+    identityGuard: {
+      canActivate: jest.fn(),
+    },
+    memberService: {
+      getCompanies: jest.fn()
+    },
+    cookie: jest.fn().mockReturnThis(),
+    clearCookie: jest.fn().mockReturnThis()
+  }
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -27,22 +32,23 @@ describe('AuthController', () => {
       providers: [
         {
           provide: AuthService,
-          useValue: mockAuthService,
+          useValue: mocks.authService,
+        },
+        {
+          provide: MemberService,
+          useValue: mocks.memberService,
         },
       ],
     })
       .overrideGuard(IdentifyGuard)
-      .useValue(mockIdentifyGuard)
+      .useValue(mocks.identityGuard)
       .compile();
 
     controller = module.get<AuthController>(AuthController);
 
-    mockCookie = jest.fn().mockReturnThis();
-    mockClearCookie = jest.fn().mockReturnThis();
-
     res = {
-      cookie: mockCookie,
-      clearCookie: mockClearCookie,
+      cookie: mocks.cookie,
+      clearCookie: mocks.clearCookie,
     } as unknown as jest.Mocked<Response>;
   });
 
@@ -54,12 +60,12 @@ describe('AuthController', () => {
     it('should call AuthService.sign and set cookie', async () => {
       const dto: LoginDto = { username: 'jeremi', password: '1234' };
 
-      mockAuthService.sign.mockResolvedValue('fake-token');
+      mocks.authService.sign.mockResolvedValue('fake-token');
 
       const result = await controller.login(dto, res);
 
-      expect(mockAuthService.sign).toHaveBeenCalledWith(dto);
-      expect(mockCookie).toHaveBeenCalledWith(
+      expect(mocks.authService.sign).toHaveBeenCalledWith(dto);
+      expect(mocks.cookie).toHaveBeenCalledWith(
         'access_token',
         'fake-token',
         expect.objectContaining({ httpOnly: true }),
@@ -74,7 +80,7 @@ describe('AuthController', () => {
     it('should clear cookie and return message', () => {
       const result = controller.logout(res);
 
-      expect(mockClearCookie).toHaveBeenCalledWith('access_token');
+      expect(mocks.clearCookie).toHaveBeenCalledWith('access_token');
       expect(result).toEqual({ message: 'Logout success' });
     });
   });
