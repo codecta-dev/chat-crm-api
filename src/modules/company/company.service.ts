@@ -20,7 +20,7 @@ export class CompanyService {
   }
 
   get id() {
-    const companyId = this.cls.get<string>('company-id');
+    const companyId = this.cls.get('company.id');
 
     return companyId
   }

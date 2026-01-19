@@ -13,11 +13,11 @@ export class MemberService {
   ) { }
 
   private get userId(): string {
-    return this.cls.get<string>('user-id');
+    return this.cls.get('user.id');
   }
 
   private get companyId() {
-    return this.cls.get<string>('company-id');
+    return this.cls.get('company.id');
   }
 
   async getMemberActive(): Promise<Member | null> {

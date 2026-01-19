@@ -12,8 +12,11 @@ export const clsConfig: ClsModuleOptions = {
     mount: true,
     setup: (cls, context) => {
       const req = context.switchToHttp().getRequest<RequestAuth>();
-      cls.set('company-id', req.headers['x-company-id']);
-      cls.set('user-id', req.user?.sub)
+      const companyId = req.headers['x-company-id'] as string;
+      const userId = req.user?.sub;
+
+      cls.set('company.id', companyId);
+      cls.set('user.id', userId);
     },
   },
 };
