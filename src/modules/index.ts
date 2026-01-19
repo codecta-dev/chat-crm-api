@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ChatsModule } from './chats/chats.module';
-import { CompaniesModule } from './companies/companies.module';
+import { CompanyModule } from './company/company.module';
 import { ContactsModule } from './contacts/contacts.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { NotificationsModule } from './notifications/notifications.module';
@@ -9,7 +9,7 @@ import { WhatsappModule } from './whatsapp/whatsapp.module';
 
 export {
   ChatsModule,
-  CompaniesModule,
+  CompanyModule,
   ContactsModule,
   MetricsModule,
   NotificationsModule,
@@ -19,7 +19,7 @@ export {
 
 export const modules = [
   ChatsModule,
-  CompaniesModule,
+  CompanyModule,
   ContactsModule,
   NotificationsModule,
   UsersModule,
