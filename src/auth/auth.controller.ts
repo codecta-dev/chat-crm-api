@@ -6,10 +6,15 @@ import { LoginDto } from './dto/login.dto';
 import { CurrentUser } from './decorators/current-user.decorator';
 import type { AuthUser } from './auth.types';
 import { IdentifyGuard, JwtAuthGuard } from './guards';
+import { CompanyGuard } from '@modules/company/company.guard';
+import { MemberService } from '@modules/member/member.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(
+    private readonly service: AuthService,
+    private readonly member: MemberService,
+  ) { }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -17,7 +22,7 @@ export class AuthController {
     @Body() body: LoginDto,
     @Res({ passthrough: true }) res: Response
   ) {
-    const token = await this.authService.sign(body);
+    const token = await this.service.sign(body);
 
     res.cookie('access_token', token, {
       httpOnly: true,
@@ -32,6 +37,12 @@ export class AuthController {
   logout(@Res({ passthrough: true }) res: Response): { message: string } {
     res.clearCookie('access_token');
     return { message: 'Logout success' }
+  }
+
+  @Get('me/companies')
+  @UseGuards(JwtAuthGuard, CompanyGuard)
+  getCompanies() {
+    return this.member.getCompanies();
   }
 
   @Get('me')
