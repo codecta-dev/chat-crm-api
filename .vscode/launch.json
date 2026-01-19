@@ -14,7 +14,7 @@
         "--runTestsByPath",
         "${jest.testFile}"
       ],
-      "cwd": "/app",
+      "cwd": "/app/src",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "runtimeExecutable": "npm"
