@@ -1,34 +1,42 @@
 import {
-  Body,
   Controller,
-  Delete,
-  Get,
   HttpCode,
   HttpStatus,
-  Param,
-  Patch,
+  Get,
   Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
   Query,
-  UploadedFile,
   UseGuards,
   UseInterceptors,
   UsePipes,
+  UploadedFile,
 } from '@nestjs/common';
+
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 
-import { UsersService } from './users.service';
+import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
+
+import { type UserSearchDto } from './dto/user-search.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { type UserSearchDto } from './dto/user-search.dto';
-import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { userTableQuerySchema, type UserTableQueryDto } from '../../common/schemas/user-table-query.schema';
+
+import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 
 @Controller('users')
 @UseGuards(AuthGuard('jwt'))
 export class UsersController {
   constructor(private readonly service: UsersService) { }
+
+  @Get('me')
+  me() {
+    return this.service.identify();
+  }
 
   @Post('import')
   @UseInterceptors(FileInterceptor('file'))
