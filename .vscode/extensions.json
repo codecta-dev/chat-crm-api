@@ -4,6 +4,8 @@
     "redhat.vscode-yaml",
     "dbaeumer.vscode-eslint",
     "ms-vscode.vscode-docker",
-    "mariusalchimavicius.json-to-ts"
+    "patbenatar.advanced-new-file",
+    "Orta.vscode-jest",
+    "esbenp.prettier-vscode"
   ],
 }
