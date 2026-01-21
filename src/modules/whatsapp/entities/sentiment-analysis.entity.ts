@@ -1,7 +1,7 @@
+import { Message } from "@modules/message/message.entity";
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Message } from "../../chats/entities";
 
-@Entity()
+@Entity('sentiments')
 export class SentimentAnalysis {
   @PrimaryGeneratedColumn('uuid')
   id: string;
