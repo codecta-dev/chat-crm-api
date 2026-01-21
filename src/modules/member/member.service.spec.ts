@@ -34,8 +34,8 @@ describe('MemberService', () => {
 
     service = module.get<MemberService>(MemberService);
     mocks.clsService.get.mockImplementation((key: string) => {
-      if (key === 'user-id') return 'user-123';
-      if (key === 'company-id') return 'company-456';
+      if (key === 'user.id') return 'user.123';
+      if (key === 'company.id') return 'company.456';
       return null;
     });
   });
@@ -48,8 +48,8 @@ describe('MemberService', () => {
     it.each([
       {
         description: 'should return a member if it exists',
-        mockReturn: { id: 'm1', user: { id: 'user-123' }, company: { id: 'company-456' } } as Member,
-        expected: { id: 'm1', user: { id: 'user-123' }, company: { id: 'company-456' } } as Member,
+        mockReturn: { id: 'm1', user: { id: 'user.123' }, company: { id: 'company.456' } } as Member,
+        expected: { id: 'm1', user: { id: 'user.123' }, company: { id: 'company.456' } } as Member,
       },
       {
         description: 'should return null if it does not exist',
@@ -57,15 +57,14 @@ describe('MemberService', () => {
         expected: null,
       },
     ])('$description', async ({ mockReturn, expected }) => {
-      // Configuramos el mock
       mocks.repository.findOne.mockResolvedValue(mockReturn);
 
       const result = await service.getMemberActive();
 
       expect(mocks.repository.findOne).toHaveBeenCalledWith({
         where: {
-          user: { id: 'user-123' },
-          company: { id: 'company-456' },
+          user: { id: 'user.123' },
+          company: { id: 'company.456' },
         },
         loadRelationIds: true
       });
@@ -78,7 +77,7 @@ describe('MemberService', () => {
     it.each([
       {
         description: 'should return company ids for current user',
-        userId: 'user-123',
+        userId: 'user.123',
         mockReturn: [
           { company: 'company-1' },
           { company: 'company-2' },
@@ -88,7 +87,7 @@ describe('MemberService', () => {
       },
       {
         description: 'should return empty array when user has no companies',
-        userId: 'user-456',
+        userId: 'user.456',
         mockReturn: [] as Member[],
         expected: [],
       },
@@ -105,7 +104,7 @@ describe('MemberService', () => {
       const result = await service.getCompanies();
 
       expect(result).toEqual(expected);
-      expect(mocks.clsService.get).toHaveBeenCalledWith('user-id');
+      expect(mocks.clsService.get).toHaveBeenCalledWith('user.id');
       expect(mocks.repository.find).toHaveBeenCalledWith({
         where: { user: { id: userId } },
         loadRelationIds: { relations: ['company'] },

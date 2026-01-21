@@ -57,9 +57,9 @@ describe('MemberService', () => {
         expected: null,
       },
     ])('$name', async ({ userId, companyId, member, expected }) => {
-      cls.get.mockImplementation((key: string) => {
-        if (key === 'user-id') return userId;
-        if (key === 'company-id') return companyId;
+      cls.get.mockImplementation((key) => {
+        if (key === 'user.id') return userId;
+        if (key === 'company.id') return companyId;
       });
 
       repo.findOne.mockResolvedValue(member as unknown as Member);
@@ -97,7 +97,7 @@ describe('MemberService', () => {
         expected: [],
       },
     ])('$name', async ({ userId, members, expected }) => {
-      cls.get.mockImplementation((key: string) => (key === 'user-id' ? userId : null));
+      cls.get.mockImplementation((key) => (key === 'user.id' ? userId : null));
       repo.find.mockResolvedValue(members as unknown as Member[]);
 
       const result = await service.getCompanies();
