@@ -7,7 +7,7 @@ import {
   WebSocketGateway,
   WebSocketServer
 } from '@nestjs/websockets';
-import { ClsInterceptor, ClsService } from 'nestjs-cls';
+import { ClsInterceptor } from 'nestjs-cls';
 import { Socket, Server } from 'socket.io';
 
 @WebSocketGateway({
@@ -15,7 +15,7 @@ import { Socket, Server } from 'socket.io';
 })
 @UseInterceptors(ClsInterceptor)
 export class SentimentGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  constructor(private readonly cls: ClsService) { }
+  constructor() { }
 
   @WebSocketServer()
   server: Server;
@@ -28,9 +28,7 @@ export class SentimentGateway implements OnGatewayConnection, OnGatewayDisconnec
   }
 
   @SubscribeMessage('sentiment:calculate')
-  handleSentiment(@MessageBody() data: any) {
-    const chat = this.cls.get('chat.id');
-
-    this.server.to(chat).emit('sentiment:calculate:update', data);
+  handleSentiment(@MessageBody() data: { chatId: string }) {
+    this.server.to(data.chatId).emit('sentiment:calculate:update', data);
   }
 }
