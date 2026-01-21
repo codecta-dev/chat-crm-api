@@ -1,22 +1,18 @@
-import { Payload } from "@auth";
-import { Request } from "express";
 import { ClsModuleOptions } from "nestjs-cls";
-
-interface RequestAuth extends Request {
-  user: Payload
-}
+import { setupHttpContext } from "./setups/cls/http.setup";
+import { setupWsContext } from "./setups/cls/ws.setup";
 
 export const clsConfig: ClsModuleOptions = {
   global: true,
   interceptor: {
     mount: true,
     setup: (cls, context) => {
-      const req = context.switchToHttp().getRequest<RequestAuth>();
-      const companyId = req.headers['x-company-id'] as string;
-      const userId = req.user?.sub;
-
-      cls.set('company.id', companyId);
-      cls.set('user.id', userId);
+      if (context.getType() === 'http') {
+        setupHttpContext(cls, context)
+      }
+      if (context.getType() === 'ws') {
+        setupWsContext(cls, context)
+      }
     },
   },
 };
