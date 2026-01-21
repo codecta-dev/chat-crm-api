@@ -10,8 +10,8 @@ import {
   UpdateDateColumn
 } from "typeorm";
 import { Contact } from "../../contacts/entities/contact.entity";
-import { Message } from "./message.entity";
 import { User } from "../../users/entities/user.entity";
+import { Message } from "@modules/message/message.entity";
 
 export type ChatStatus = 'open' | 'pending' | 'closed' | 'archived';
 export type ChatPriority = 'low' | 'medium' | 'high' | 'urgent';

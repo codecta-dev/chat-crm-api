@@ -1,7 +1,7 @@
 import { OnQueueEvent, OnWorkerEvent, Processor, WorkerHost } from "@nestjs/bullmq";
 import { Job } from "bullmq";
 import { PinoLogger } from "nestjs-pino";
-import { Message } from "../../chats/entities";
+import { Message } from "@modules/message/message.entity";
 import { SentimentAnalysis } from "../entities/sentiment-analysis.entity";
 import { SentimentService } from "../services/sentiment.service";
 

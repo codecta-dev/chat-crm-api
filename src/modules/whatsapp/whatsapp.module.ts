@@ -20,12 +20,14 @@ import { WhatsAppApiClient } from './whatsapp-api.client';
 import { WhatsappGateway } from './whatsapp.gateway';
 import { ChatsModule } from '../chats/chats.module';
 import { ChatsService } from '../chats/chats.service';
-import { Chat, Message } from '../chats/entities';
+import { Chat } from '../chats/entities';
 import { ContactsModule } from '../contacts/contacts.module';
 import { Contact } from '../contacts/entities/contact.entity';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { User } from '../users/entities/user.entity';
 import { UsersModule } from '../users/users.module';
+import { Message } from '@modules/message/message.entity';
+import { MessageModule } from '@modules/message/message.module';
 
 @Module({
   imports: [
@@ -48,6 +50,7 @@ import { UsersModule } from '../users/users.module';
     forwardRef(() => ChatsModule),
     ContactsModule,
     UsersModule,
+    MessageModule,
   ],
   controllers: [
     WhatsappController,

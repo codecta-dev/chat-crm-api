@@ -16,9 +16,9 @@ import {
   subMonths
 } from 'date-fns';
 import { Between, IsNull, Repository } from 'typeorm';
-import { Chat, Message, Transfer } from '../chats/entities';
-import { User } from '../users/entities/user.entity';
+import { Chat, Transfer } from '../chats/entities';
 import { SentimentAnalysis } from '../whatsapp/entities/sentiment-analysis.entity';
+import { Message } from '@modules/message/message.entity';
 
 export interface TopAgentMetrics {
   agentId: string;
@@ -38,7 +38,6 @@ export class MetricsService {
     @InjectRepository(Message) private messageRepo: Repository<Message>,
     @InjectRepository(Transfer) private transferRepo: Repository<Transfer>,
     @InjectRepository(SentimentAnalysis) private sentimentRepo: Repository<SentimentAnalysis>,
-    @InjectRepository(User) private userRepo: Repository<User>,
   ) { }
 
   async kpis() {

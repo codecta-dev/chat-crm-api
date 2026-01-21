@@ -3,11 +3,15 @@ import { AuthGuard } from '@nestjs/passport';
 import { ChatsService } from '../chats.service';
 import { CreateChatDto, UpdateChatDto } from '../dto/chat.dto';
 import { type AuthUser, CurrentUser } from '@auth';
+import { MessageService } from '@modules/message/message.services';
 
 @Controller('chats')
 @UseGuards(AuthGuard('jwt'))
 export class ChatsController {
-  constructor(private readonly service: ChatsService) { }
+  constructor(
+    private readonly service: ChatsService,
+    private readonly messages: MessageService,
+  ) { }
 
   @Post()
   create(@Body() dto: CreateChatDto) {
@@ -21,7 +25,7 @@ export class ChatsController {
 
   @Get(':id/messages')
   findMessages(@Param('id') id: string) {
-    return this.service.getChatMessages(id);
+    return this.messages.getChatMessages(id);
   }
 
   @Get(':id/assigned/:userId')

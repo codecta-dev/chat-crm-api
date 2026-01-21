@@ -8,7 +8,7 @@ import { PinoLogger } from "nestjs-pino";
 import { Repository } from "typeorm";
 import { WhatsAppConfigService } from "./whatsapp-config.service";
 import { ChatsService } from "../../chats/chats.service";
-import { Message } from "../../chats/entities";
+import { Message, MessageDirection, MessageSenderType, MessageStatus } from "@modules/message/message.entity";
 import { ContactsService } from "../../contacts/contacts.service";
 import { NotificationsService } from "../../notifications/notifications.service";
 import { UsersService } from "../../users/users.service";
@@ -90,9 +90,9 @@ export class WebhookService {
       chat: chat,
       contact: chat.contact,
       agent: chat.assignedAgent,
-      direction: 'in',
-      status: 'received',
-      senderType: 'client',
+      direction: MessageDirection.IN,
+      status: MessageStatus.RECEIVED,
+      senderType: MessageSenderType.CLIENT,
     };
 
     switch (type) {

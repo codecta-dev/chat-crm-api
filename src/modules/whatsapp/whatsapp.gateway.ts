@@ -6,6 +6,7 @@ import { JwtPayload } from '../../auth/auth.types';
 import { ChatsService } from '../chats/chats.service';
 import { WhatsAppHttpException } from './exceptions/whatsapp.exceptions';
 import { UsersService } from '../users/users.service';
+import { MessageDirection, MessageSenderType, MessageType } from '@modules/message/message.entity';
 
 @WebSocketGateway({
   namespace: 'whatsapp',
@@ -66,11 +67,11 @@ export class WhatsappGateway implements OnGatewayConnection, OnGatewayDisconnect
     }
 
     const msg = await this.chatsService.addMessage(data.chat, {
-      senderType: 'user',
+      senderType: MessageSenderType.USER,
       body: data.body,
       mediaUrl: undefined, // * This is optional
-      direction: 'out',
-      type: 'text' // * This is type message
+      direction: MessageDirection.OUT,
+      type: MessageType.TEXT // * This is type message
     })
 
     this.logger.debug(`Mensaje guardado en DB: ${JSON.stringify(msg)}`);

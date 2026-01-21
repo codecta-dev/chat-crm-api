@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { Message } from "../../chats/entities";
+import { Message } from "@modules/message/message.entity";
 import { SentimentClient } from "../clients/sentiment.client";
 import { SentimentAnalysis } from "../entities/sentiment-analysis.entity";
 import { SentimentGateway } from "../gateways/sentiment.gateway";

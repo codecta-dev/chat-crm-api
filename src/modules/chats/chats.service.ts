@@ -5,15 +5,17 @@ import { Queue } from 'bullmq';
 import { PinoLogger } from 'nestjs-pino';
 import { Repository } from 'typeorm';
 import { CreateChatDto, UpdateChatDto } from './dto/chat.dto';
-import { Chat, Message, Transfer } from './entities';
+import { Chat, Transfer } from './entities';
+import { Message } from '@modules/message/message.entity';
+import { MessageService } from '@modules/message/message.services';
 
 @Injectable()
 export class ChatsService {
   constructor(
     @InjectRepository(Chat) private readonly chatRepo: Repository<Chat>,
-    @InjectRepository(Message) private readonly messageRepo: Repository<Message>,
     @InjectRepository(Transfer) private readonly transferRepo: Repository<Transfer>,
     @InjectQueue('sentiment') private readonly sentimentQueue: Queue,
+    private readonly messages: MessageService,
     private readonly logger: PinoLogger,
   ) { }
 
@@ -31,14 +33,6 @@ export class ChatsService {
     return result.affected === 1;
   }
 
-  async getChatMessages(chatId: string): Promise<Message[]> {
-    return this.messageRepo.find({
-      where: { chat: { id: chatId } },
-      order: { createdAt: 'DESC' },
-      loadRelationIds: true,
-    });
-  }
-
   async addMessage(
     chatId: string,
     payload: Pick<Message, 'senderType' | 'body' | 'mediaUrl' | 'direction' | 'type'>,
@@ -54,8 +48,7 @@ export class ChatsService {
 
     if (!chat) throw new NotFoundException('Chat not found');
 
-    const message = this.createMessageEntity(chat, payload)
-    const savedMessage = await this.messageRepo.save(message)
+    const savedMessage = await this.messages.createSimpleMessage(payload, chat.contact.id, chat.id);
 
     this.logger.debug("Sentiment processor here")
     // Consumer
@@ -106,13 +99,6 @@ export class ChatsService {
     return chats;
   }
 
-  async getMessagesByChatId(chatId: string): Promise<Message[]> {
-    return this.messageRepo.find({
-      where: { chat: { id: chatId } },
-      order: { createdAt: 'DESC' },
-    });
-  }
-
   create(dto: CreateChatDto) {
     const chat = this.chatRepo.save(dto);
     return chat;
@@ -132,37 +118,6 @@ export class ChatsService {
 
   remove(id: number) {
     return `This action removes a #${id} chat`;
-  }
-
-  private async getChatOrFail(chatId: string): Promise<Chat> {
-    return this.chatRepo.findOneOrFail({
-      where: { id: chatId },
-      loadRelationIds: true,
-    });
-  }
-
-  private determineMessageType(mediaUrl?: string): 'image' | 'text' {
-    return mediaUrl ? 'image' : 'text';
-  }
-
-  private determineSenderType(direction: 'in' | 'out'): 'client' | 'user' {
-    return direction === 'in' ? 'client' : 'user';
-  }
-
-  private createMessageEntity(
-    chat: Chat,
-    payload: Pick<Message, 'senderType' | 'body' | 'mediaUrl' | 'direction' | 'type'>,
-  ): Message {
-    return this.messageRepo.create({
-      chat: { id: chat.id },
-      contact: { id: chat.contact?.id },
-      agent: { id: chat.assignedAgent?.id },
-      senderType: this.determineSenderType(payload.direction),
-      direction: payload.direction,
-      body: payload.body,
-      mediaUrl: payload.mediaUrl,
-      type: this.determineMessageType(payload.mediaUrl),
-    });
   }
 
   private async updateChatLastMessage(
