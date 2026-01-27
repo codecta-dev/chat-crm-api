@@ -6,6 +6,7 @@
     "ms-vscode.vscode-docker",
     "patbenatar.advanced-new-file",
     "Orta.vscode-jest",
-    "esbenp.prettier-vscode"
+    "esbenp.prettier-vscode",
+    "qufiwefefwoyn.inline-sql-syntax"
   ],
 }
