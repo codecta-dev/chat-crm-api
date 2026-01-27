@@ -12,13 +12,13 @@ import {
   startOfMonth,
   startOfToday,
   subDays,
-  subHours,
   subMonths
 } from 'date-fns';
 import { Between, IsNull, Repository } from 'typeorm';
 import { Chat, Transfer } from '../chats/entities';
 import { SentimentAnalysis } from '../whatsapp/entities/sentiment-analysis.entity';
-import { Message } from '@modules/message/message.entity';
+import { MetricsRepository } from './metrics.repository';
+import { getRange } from 'src/lib/range-date';
 
 export interface TopAgentMetrics {
   agentId: string;
@@ -35,16 +35,16 @@ type SentimentType = 'POS' | 'NEU' | 'NEG';
 export class MetricsService {
   constructor(
     @InjectRepository(Chat) private chatRepo: Repository<Chat>,
-    @InjectRepository(Message) private messageRepo: Repository<Message>,
     @InjectRepository(Transfer) private transferRepo: Repository<Transfer>,
     @InjectRepository(SentimentAnalysis) private sentimentRepo: Repository<SentimentAnalysis>,
+    private readonly repo: MetricsRepository
   ) { }
 
   async kpis() {
     const [activeChats, messagesThisMonth, agentsActive, transfersThisMonth] = await Promise.all([
       this.activeChats(),
       this.messageThiMonth(),
-      this.agentActiveByDay(),
+      this.agentActiveThiMonth(),
       this.transfersThisMonth(),
     ])
 
@@ -84,85 +84,30 @@ export class MetricsService {
   }
 
   async messageThiMonth() {
-    const now = new Date();
+    const currentMonth = getRange('month', 0);
+    const previousMonth = getRange('month', 1);
 
-    const current = await this.messageRepo.count({
-      where: {
-        createdAt: Between(
-          startOfMonth(now),
-          endOfMonth(now)
-        ),
-        deletedAt: IsNull(),
-      },
-    })
+    const current = await this.repo.rangeCount('messages',
+      currentMonth.start,
+      currentMonth.end
+    )
 
-    const previous = await this.messageRepo.count({
-      where: {
-        createdAt: Between(
-          startOfMonth(subDays(new Date(), 1)),
-          endOfDay(subDays(new Date(), 1))
-        )
-      }
-    })
+    const previous = await this.repo.rangeCount('messages',
+      previousMonth.start,
+      previousMonth.end
+    )
 
     return this.buildKPI(current, previous)
   }
 
-  async agentActiveByDay() {
-    const now = new Date()
-    const todayStart = startOfMonth(now)
-    const todayEnd = endOfMonth(now)
-    const yesterdayStart = startOfMonth(subDays(now, 1))
-    const yesterdayEnd = endOfMonth(subDays(now, 1))
+  async agentActiveThiMonth() {
+    const currentMonth = getRange('month');
+    const previousMonth = getRange('month', 1);
 
-    const current = await this.messageRepo
-      .createQueryBuilder('message')
-      .select('COUNT(DISTINCT message.agentId)', 'count')
-      .where('message.createdAt BETWEEN :start AND :end', {
-        start: todayStart,
-        end: todayEnd,
-      })
-      .andWhere('message.agentId IS NOT NULL')
-      .getRawOne<{ count: string }>()
-      .then((res: { count: string }) => Number(res.count))
-
-    const previous = await this.messageRepo
-      .createQueryBuilder('message')
-      .select('COUNT(DISTINCT message.agentId)', 'count')
-      .where('message.createdAt BETWEEN :start AND :end', {
-        start: yesterdayStart,
-        end: yesterdayEnd,
-      })
-      .andWhere('message.agentId IS NOT NULL')
-      .getRawOne<{ count: string }>()
-      .then((res: { count: string }) => Number(res.count))
-
-    return this.buildKPI(current, previous)
-  }
-
-  async agentActive() {
-    const now = new Date();
-    const threshold: Date = subHours(new Date(), 1);
-    const previousThreshold = subHours(now, 2);
-
-    const current = await this.messageRepo
-      .createQueryBuilder('message')
-      .select('COUNT(DISTINCT message.agentId)', 'count')
-      .where('message.createdAt > :threshold', { threshold })
-      .andWhere('message.agentId IS NOT NULL')
-      .getRawOne<{ count: string }>()
-      .then((res: { count: string }) => Number(res.count))
-
-    const previous = await this.messageRepo
-      .createQueryBuilder('message')
-      .select('COUNT(DISTINCT message.agentId)', 'count')
-      .where('message.createdAt BETWEEN :start AND :end', {
-        start: previousThreshold,
-        end: threshold,
-      })
-      .andWhere('message.agentId IS NOT NULL')
-      .getRawOne()
-      .then((res: { count: string }) => Number(res.count))
+    const [current, previous] = await Promise.all([
+      this.repo.rangeCount('messages', currentMonth.start, currentMonth.end, 'agent_id'),
+      this.repo.rangeCount('messages', previousMonth.start, currentMonth.end, 'agent_id')
+    ])
 
     return this.buildKPI(current, previous)
   }
@@ -364,33 +309,7 @@ export class MetricsService {
   }
 
   async getTopContacts() {
-    const now = new Date();
-
-    const results = await this.messageRepo
-      .createQueryBuilder('message')
-      .select('contact.id', 'id')
-      .addSelect('contact.username', 'username')
-      .addSelect('contact.firstNames', 'firstNames')
-      .addSelect('contact.lastNames', 'lastNames')
-      .addSelect('contact.phoneNumber', 'phoneNumber')
-      .addSelect('contact.profile', 'profile')
-      .addSelect('COUNT(*)', 'messageCount')
-      .innerJoin('message.contact', 'contact')
-      .where('message.createdAt >= :start', { start: startOfMonth<Date>(now) })
-      .groupBy('contact.id')
-      .orderBy('messageCount', 'DESC')
-      .limit(5)
-      .getRawMany<{
-        id: string
-        username: string
-        firstNames: string
-        lastNames: string
-        phoneNumber: string
-        profile?: string
-        messageCount: number
-      }>()
-
-    return results
+    return this.repo.getTopContacts()
   }
 
   private fillMissingData(
@@ -417,145 +336,11 @@ export class MetricsService {
     return filled;
   }
 
-  async getBestAgents(): Promise<
-    { agentId: string; agentName: string; totalPositive: number; avgPos: number; score: number }[]
-  > {
-    return this.sentimentRepo
-      .createQueryBuilder('sa')
-      .select('m.agentId', 'agentId')
-      .addSelect('u.username', 'username')
-      .addSelect('COUNT(sa.id)', 'totalPositive')
-      .addSelect('AVG(sa.pos)', 'avgPos')
-      .addSelect('COUNT(sa.id) * AVG(sa.pos)', 'score')
-      .innerJoin('sa.message', 'm')
-      .innerJoin('m.agent', 'u')
-      .where("sa.label = :label", { label: 'POS' })
-      .groupBy('m.agentId')
-      .addGroupBy('username')
-      .orderBy('score', 'DESC')
-      .limit(5) // Top 5
-      .getRawMany();
+  async getAgentsFast(label: SentimentType, limit: number = 5) {
+    return this.repo.getAgentsFast(label, limit);
   }
 
-  async getTopFiveAgents() {
-    const results = await this.messageRepo
-      .createQueryBuilder('message')
-      .innerJoin('chats', 'chat', 'chat.id = message.ChatId')
-      .innerJoin('users', 'agent', 'agent.id = chat.assignedAgentId')
-      .innerJoin('sentiment_analysis', 'sentiment', 'sentiment.messageId = message.id')
-      .select('chat.assignedAgentId', 'agentId')
-      .addSelect('agent.firstNames', 'firstNames')
-      .addSelect('agent.lastNames', 'lastNames')
-      .addSelect('agent.username', 'username')
-      .addSelect(
-        'SUM(CASE WHEN sentiment.label = "POS" THEN 1 ELSE 0 END)',
-        'totalPositive',
-      )
-      .addSelect('AVG(sentiment.pos)', 'avgPositiveScore')
-      .addSelect('COUNT(message.id)', 'totalMessages')
-      .where('message.agentId IS NULL') // Mensajes que NO enviaron los agentes
-      .andWhere('message.direction = :direction', { direction: 'out' }) // Mensajes de clientes
-      .andWhere('message.deletedAt IS NULL')
-      .andWhere('chat.assignedAgentId IS NOT NULL')
-      .groupBy('chat.assignedAgentId')
-      .addGroupBy('agent.firstNames')
-      .addGroupBy('agent.lastNames')
-      .getRawMany<{
-        agentId: string;
-        firstNames: string;
-        lastNames: string;
-        totalPositive: string;
-        avgPositiveScore: string;
-        totalMessages: string;
-        username: string;
-      }>();
-
-    // Calcular score ponderado y ordenar
-    const metrics: TopAgentMetrics[] = results
-      .map((row) => {
-        const totalPositive = parseInt(row.totalPositive);
-        const avgPositiveScore = parseFloat(row.avgPositiveScore) || 0;
-
-        // Score ponderado: 60% total positivos, 40% promedio
-        const weightedScore = (totalPositive * 0.6) + (avgPositiveScore * 100 * 0.4);
-
-        return {
-          agentId: row.agentId,
-          agentName: row.firstNames && row.lastNames ? `${row.firstNames} ${row.lastNames}`.trim() : row.username,
-          totalPositive,
-          averagePositiveScore: Math.round(avgPositiveScore * 1000) / 1000,
-          weightedScore: Math.round(weightedScore * 100) / 100,
-        };
-      })
-      .sort((a, b) => b.weightedScore - a.weightedScore)
-      .slice(0, 5);
-
-    return metrics;
-  }
-
-  async getBestAgentsFast(): Promise<
-    { agentId: string; agentName: string; totalPositive: number; avgPos: number; score: number }[]
-  > {
-    return this.messageRepo
-      .createQueryBuilder('m')
-      .innerJoin('users', 'u', 'm.agentId = u.id')
-      .leftJoin('sentiment_analysis', 'sa', 'sa.messageId = m.id AND sa.label = :label', { label: 'POS' })
-      .select('u.id', 'agentId')
-      .addSelect('u.firstNames', 'firstNames')
-      .addSelect('u.lastNames', 'lastNames')
-      .addSelect('u.username', 'username')
-      .addSelect('u.avatar', 'profile')
-      .addSelect('u.phoneNumber', 'phoneNumber')
-      .addSelect('COUNT(sa.id)', 'totalPositive')
-      .addSelect('AVG(sa.pos)', 'avgPos')
-      .addSelect('COUNT(sa.id) * AVG(sa.pos)', 'score')
-      .groupBy('u.id')
-      .addGroupBy('u.username')
-      .orderBy('score', 'DESC')
-      .limit(5)
-      .getRawMany();
-  }
-
-  async getAgentsFast(label: SentimentType, limit: number = 5): Promise<
-    { agentId: string; agentName: string; total: number; avg: number; score: number }[]
-  > {
-    return this.messageRepo
-      .createQueryBuilder('m')
-      .innerJoin('users', 'u', 'm.agentId = u.id')
-      .leftJoin('sentiment_analysis', 'sa', 'sa.messageId = m.id AND sa.label = :label', { label })
-      .select('u.id', 'agentId')
-      .addSelect('u.firstNames', 'firstNames')
-      .addSelect('u.lastNames', 'lastNames')
-      .addSelect('u.username', 'username')
-      .addSelect('u.avatar', 'profile')
-      .addSelect('u.phoneNumber', 'phoneNumber')
-      .addSelect('COUNT(sa.id)', 'total')
-      .addSelect('AVG(sa.pos)', 'avg')
-      .addSelect('COUNT(sa.id) * AVG(sa.pos)', 'score')
-      .groupBy('u.id')
-      .addGroupBy('u.username')
-      .orderBy('score', 'DESC')
-      .limit(limit)
-      .getRawMany();
-  }
-
-  async getBestClients(userId: string): Promise<
-    { clientId: string; clientName: string; totalMessages: number; avgSentiment: number; score: number }[]
-  > {
-    return this.messageRepo
-      .createQueryBuilder('m')
-      .innerJoin('contacts', 'c', 'm.contactId = c.id')
-      .leftJoin('sentiment_analysis', 'sa', 'sa.messageId = m.id AND sa.label = :label', { label: 'POS' })
-      .where('m.agentId = :agentId', { agentId: userId })
-      .select('c.id', 'contactId')
-      .addSelect('c.username', 'username')
-      .addSelect('COUNT(m.id)', 'totalMessages')
-      .addSelect('AVG(sa.pos)', 'avgPos')
-      .addSelect('COUNT(sa.id)', 'totalPositive')
-      .addSelect('COUNT(m.id) * AVG(sa.pos)', 'score')
-      .groupBy('c.id')
-      .orderBy('score', 'DESC')
-      .limit(5)
-      .getRawMany();
+  async getBestClients(userId: string) {
+    return this.repo.getBestClients(userId);
   }
 }

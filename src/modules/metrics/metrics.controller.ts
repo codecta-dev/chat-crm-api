@@ -36,13 +36,13 @@ export class MetricsController {
   @Get("best-agents")
   @HttpCode(HttpStatus.OK)
   async getBestAgents() {
-    return this.metricsService.getBestAgentsFast();
+    return this.metricsService.getAgentsFast('POS');
   }
 
   @Get("bad-agents")
   @HttpCode(HttpStatus.OK)
   async getBadAgents() {
-    return this.metricsService.getAgentsFast("NEG");
+    return this.metricsService.getAgentsFast('NEG');
   }
 
   @Get("best-clients")
