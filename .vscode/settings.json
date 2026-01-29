@@ -42,7 +42,8 @@
     "auth",
     "user",
     "config",
-    "member"
+    "member",
+    "metric"
   ],
   // Jest
   "jest.runMode": {
