@@ -7,7 +7,7 @@ export class KpiBuilder {
     this.inputs.b = b;
 
     this.outputs[keys[0]] = a;
-    this.outputs[keys[1]] = a;
+    this.outputs[keys[1]] = b;
 
     return this;
   }
