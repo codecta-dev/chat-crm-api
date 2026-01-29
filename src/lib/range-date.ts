@@ -13,7 +13,7 @@ import {
   subHours
 } from 'date-fns';
 
-type RangeUnit = 'month' | 'week' | 'day' | 'hour';
+export type RangeUnit = 'month' | 'week' | 'day' | 'hour';
 
 export function getRange(unit: RangeUnit, offset = 0, baseDate = new Date()) {
   let target: Date = baseDate;
