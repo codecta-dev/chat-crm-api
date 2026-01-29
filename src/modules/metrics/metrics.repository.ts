@@ -1,11 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { startOfMonth } from "date-fns";
 import { DataSource } from "typeorm";
-import { AgentMetric, AgentQuery, ClientMetric, ClientQuery } from "./metrics.interface";
+import { AgentQuery, ClientQuery } from "./metrics.interface";
+import { getRange, RangeUnit } from "src/lib/range-date";
 
-type Table = 'messages' | 'contacts' | 'users';
+export type Table = 'messages' | 'transfers' | 'chats' | 'contacts' | 'users';
 
 export type SentimentType = 'POS' | 'NEU' | 'NEG';
+type comparePeriodsOptions = { targetTable: Table, column: string, timeUnit: RangeUnit };
 
 @Injectable()
 export class MetricsRepository {
@@ -13,22 +15,49 @@ export class MetricsRepository {
 
   async rangeCount(table: Table, start: Date, end: Date, column?: string) {
     const selectColumn = column
-      ? `COUNT(DISTINCT "${column}")`
+      ? `COUNT(DISTINCT \`${column}\`)`
       : 'COUNT(*)';
 
     const whereColumn = column
-      ? `AND "${column}" IS NOT NULL`
+      ? `AND \`${column}\` IS NOT NULL`
       : '';
 
     const query = await this.dataSource.query<{ count: string }>(
       `SELECT ${selectColumn} as count
-       FROM "${table}"
-       WHERE "created_at" BETWEEN $1 AND $2
-       ${whereColumn}`,
+     FROM \`${table}\`
+     WHERE \`created_at\` BETWEEN ? AND ?
+     ${whereColumn}`,
       [start, end]
     );
 
-    return parseInt(query.count, 10)
+    return parseInt(query.count, 10);
+  }
+
+  async comparePeriods({ targetTable, column = 'id', timeUnit }: comparePeriodsOptions) {
+    const currentPeriod = getRange(timeUnit);
+    const previousPeriod = getRange(timeUnit, 1);
+
+    const currentStart = currentPeriod.start.toISOString();
+    const currentEnd = currentPeriod.end.toISOString();
+    const previousStart = previousPeriod.start.toISOString();
+    const previousEnd = previousPeriod.end.toISOString();
+
+    const raw: { current: string, previous: string }[] = await this.dataSource.sql`
+      SELECT (
+        SELECT COUNT(DISTINCT(${() => column})) FROM ${() => targetTable}
+        WHERE created_at BETWEEN ${currentStart} AND ${currentEnd} 
+        AND ${() => column} IS NOT NULL
+      ) as current, (
+        SELECT COUNT(DISTINCT(${() => column})) FROM ${() => targetTable}
+        WHERE created_at BETWEEN ${previousStart} AND ${previousEnd} 
+        AND ${() => column} IS NOT NULL
+      ) as previous
+    `;
+
+    return {
+      current: parseInt(raw[0].current) || 0,
+      previous: parseInt(raw[0].previous) || 0,
+    };
   }
 
   async getTopContacts() {
@@ -61,16 +90,14 @@ export class MetricsRepository {
       [start]
     );
 
-    // MySQL returns COUNT(*) directly as a number
-    return results;
+    return results; // MySQL returns COUNT(*) directly as a number
   }
 
   async getAgentsFast(
     label: SentimentType,
     limit: number = 5
-  ): Promise<AgentMetric[]> {
-    const results = await this.dataSource.query<AgentQuery[]>(
-      await this.dataSource.sql`
+  ): Promise<AgentQuery[]> {
+    const qb: AgentQuery[] = await this.dataSource.sql`
       SELECT 
         u.id AS agentId,
         ANY_VALUE(u.first_names) AS firstNames,
@@ -80,25 +107,17 @@ export class MetricsRepository {
         COUNT(sa.id) * AVG(sa.pos) AS score
       FROM message m
       INNER JOIN users u ON m.agent_id = u.id
-      LEFT JOIN sentiment_analysis sa ON sa.message_id = m.id AND sa.label = ?
+      LEFT JOIN sentiment_analysis sa ON sa.message_id = m.id AND sa.label = ${label}
       GROUP BY u.id
       ORDER BY score DESC
-      LIMIT ?
-    `,
-      [label, limit]
-    );
+      LIMIT ${limit}
+    `;
 
-    return results.map((r) => ({
-      agentId: r.agentId,
-      agentName: `${r.firstNames} ${r.lastNames}`.trim(),
-      total: Number(r.total),
-      avg: Number(r.avg) || 0,
-      score: Number(r.score) || 0
-    }));
+    return qb;
   }
 
-  async getBestClients(userId: string): Promise<ClientMetric[]> {
-    const results = await this.dataSource.query<ClientQuery[]>(await this.dataSource.sql`
+  async getBestClients(userId: string, label: SentimentType = 'POS', limit: number = 5): Promise<ClientQuery[]> {
+    const qb: ClientQuery[] = await this.dataSource.sql`
       SELECT 
         c.id AS contactId,
         c.username AS username,
@@ -108,21 +127,13 @@ export class MetricsRepository {
         COUNT(m.id) * AVG(sa.pos) AS score
       FROM message m
       INNER JOIN contacts c ON m.contact_id = c.id
-      LEFT JOIN sentiment_analysis sa ON sa.message_id = m.id AND sa.label = ?
-      WHERE m.agent_id = ?
+      LEFT JOIN sentiment_analysis sa ON sa.message_id = m.id AND sa.label = ${label}
+      WHERE m.agent_id = ${userId}
       GROUP BY c.id
       ORDER BY score DESC
-      LIMIT 5
-    `,
-      ['POS', userId]
-    );
+      LIMIT ${limit}
+    `;
 
-    return results.map((r) => ({
-      clientId: r.contactId,
-      clientName: r.username || 'Sin nombre',
-      totalMessages: Number(r.totalMessages),
-      avgSentiment: Number(r.avgPos) || 0,
-      score: Number(r.score) || 0
-    }));
+    return qb;
   }
 }
