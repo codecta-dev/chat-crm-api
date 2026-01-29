@@ -12,4 +12,5 @@ export const databaseConfig: TypeOrmModuleOptions = {
   migrations: [__dirname + '/../migrations/*.ts'],
   synchronize: process.env.NODE_ENV !== 'production',
   namingStrategy: new SnakeNamingStrategy(),
+  // logging: ['query'],
 };
