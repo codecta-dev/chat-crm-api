@@ -15,7 +15,7 @@ import { SentimentAnalysis } from '../whatsapp/entities/sentiment-analysis.entit
 import { MetricsRepository, Table } from './metrics.repository';
 import { MetricMapper } from './metrics.mapper';
 import { KpiBuilder } from './builders/kpi.builder';
-import { RangeUnit } from 'src/lib/range-date';
+import { PeriodTime } from 'src/lib/period';
 
 export interface TopAgentMetrics {
   agentId: string;
@@ -56,7 +56,7 @@ export class MetricsService {
   async getPeriodKpi(
     targetTable: Table,
     column: string,
-    period: RangeUnit = 'month'
+    period: PeriodTime = 'month'
   ) {
     const { current, previous } = await this.repo.comparePeriods({
       targetTable,

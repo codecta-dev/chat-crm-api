@@ -13,9 +13,11 @@ import {
   subHours
 } from 'date-fns';
 
-export type RangeUnit = 'month' | 'week' | 'day' | 'hour';
+export type PeriodTime = 'month' | 'week' | 'day' | 'hour';
 
-export function getRange(unit: RangeUnit, offset = 0, baseDate = new Date()) {
+export interface Period { start: Date; end: Date; }
+
+export function period(unit: PeriodTime, offset = 0, baseDate = new Date()): Period {
   let target: Date = baseDate;
 
   switch (unit) {

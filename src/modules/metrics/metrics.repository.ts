@@ -2,40 +2,20 @@ import { Injectable } from "@nestjs/common";
 import { startOfMonth } from "date-fns";
 import { DataSource } from "typeorm";
 import { AgentQuery, ClientQuery } from "./metrics.interface";
-import { getRange, RangeUnit } from "src/lib/range-date";
+import { period, PeriodTime } from "src/lib/period";
 
 export type Table = 'messages' | 'transfers' | 'chats' | 'contacts' | 'users';
-
 export type SentimentType = 'POS' | 'NEU' | 'NEG';
-type comparePeriodsOptions = { targetTable: Table, column: string, timeUnit: RangeUnit };
+
+type comparePeriodsParams = { targetTable: Table, column: string, timeUnit: PeriodTime };
 
 @Injectable()
 export class MetricsRepository {
   constructor(private readonly dataSource: DataSource) { }
 
-  async rangeCount(table: Table, start: Date, end: Date, column?: string) {
-    const selectColumn = column
-      ? `COUNT(DISTINCT \`${column}\`)`
-      : 'COUNT(*)';
-
-    const whereColumn = column
-      ? `AND \`${column}\` IS NOT NULL`
-      : '';
-
-    const query = await this.dataSource.query<{ count: string }>(
-      `SELECT ${selectColumn} as count
-     FROM \`${table}\`
-     WHERE \`created_at\` BETWEEN ? AND ?
-     ${whereColumn}`,
-      [start, end]
-    );
-
-    return parseInt(query.count, 10);
-  }
-
-  async comparePeriods({ targetTable, column = 'id', timeUnit }: comparePeriodsOptions) {
-    const currentPeriod = getRange(timeUnit);
-    const previousPeriod = getRange(timeUnit, 1);
+  async comparePeriods({ targetTable, column = 'id', timeUnit }: comparePeriodsParams) {
+    const currentPeriod = period(timeUnit);
+    const previousPeriod = period(timeUnit, 1);
 
     const currentStart = currentPeriod.start.toISOString();
     const currentEnd = currentPeriod.end.toISOString();
