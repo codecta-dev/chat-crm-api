@@ -4,21 +4,18 @@ import {
   addDays,
   addHours,
   addMonths,
-  endOfDay,
   endOfMonth,
-  endOfToday,
   format,
-  startOfDay,
   startOfMonth,
-  startOfToday,
   subDays,
   subMonths
 } from 'date-fns';
-import { Between, IsNull, Repository } from 'typeorm';
-import { Chat, Transfer } from '../chats/entities';
+import { Repository } from 'typeorm';
 import { SentimentAnalysis } from '../whatsapp/entities/sentiment-analysis.entity';
-import { MetricsRepository } from './metrics.repository';
-import { getRange } from 'src/lib/range-date';
+import { MetricsRepository, Table } from './metrics.repository';
+import { MetricMapper } from './metrics.mapper';
+import { KpiBuilder } from './builders/kpi.builder';
+import { RangeUnit } from 'src/lib/range-date';
 
 export interface TopAgentMetrics {
   agentId: string;
@@ -34,103 +31,40 @@ type SentimentType = 'POS' | 'NEU' | 'NEG';
 @Injectable()
 export class MetricsService {
   constructor(
-    @InjectRepository(Chat) private chatRepo: Repository<Chat>,
-    @InjectRepository(Transfer) private transferRepo: Repository<Transfer>,
     @InjectRepository(SentimentAnalysis) private sentimentRepo: Repository<SentimentAnalysis>,
     private readonly repo: MetricsRepository
   ) { }
 
   async kpis() {
     const [activeChats, messagesThisMonth, agentsActive, transfersThisMonth] = await Promise.all([
-      this.activeChats(),
-      this.messageThiMonth(),
-      this.agentActiveThiMonth(),
-      this.transfersThisMonth(),
+      this.getPeriodKpi('chats', 'id'),
+      this.getPeriodKpi('messages', 'id'),
+      this.getPeriodKpi('messages', 'agent_id'),
+      this.getPeriodKpi('transfers', 'id'),
     ])
 
     return { activeChats, messagesThisMonth, agentsActive, transfersThisMonth };
   }
 
-  buildKPI(current: number, previous: number): { value: number; porcentLastMonth: string } {
-    const change = previous === 0 ? 0 : (current - previous) / previous;
-    const percentage = (change * 100).toFixed(2);
-    const sign = change >= 0 ? '+' : '';
-    return {
-      value: current,
-      porcentLastMonth: `${sign}${percentage}%`,
-    };
+  getKpi(current: number, previous: number) {
+    return new KpiBuilder()
+      .compare(current, previous, ['current', 'previous'])
+      .percent('porcentChange')
+      .build()
   }
 
-  async activeChats() {
-    const current = await this.chatRepo.count({
-      where: {
-        endedAt: IsNull(),
-        deletedAt: IsNull()
-      }
-    })
-
-    const previous = await this.chatRepo.count({
-      where: {
-        endedAt: IsNull(),
-        deletedAt: IsNull(),
-        createdAt: Between(
-          startOfMonth(subMonths(new Date(), 1)),
-          endOfMonth(subMonths(new Date(), 1))
-        ),
-      },
-    })
-
-    return this.buildKPI(current, previous)
-  }
-
-  async messageThiMonth() {
-    const currentMonth = getRange('month', 0);
-    const previousMonth = getRange('month', 1);
-
-    const current = await this.repo.rangeCount('messages',
-      currentMonth.start,
-      currentMonth.end
-    )
-
-    const previous = await this.repo.rangeCount('messages',
-      previousMonth.start,
-      previousMonth.end
-    )
-
-    return this.buildKPI(current, previous)
-  }
-
-  async agentActiveThiMonth() {
-    const currentMonth = getRange('month');
-    const previousMonth = getRange('month', 1);
-
-    const [current, previous] = await Promise.all([
-      this.repo.rangeCount('messages', currentMonth.start, currentMonth.end, 'agent_id'),
-      this.repo.rangeCount('messages', previousMonth.start, currentMonth.end, 'agent_id')
-    ])
-
-    return this.buildKPI(current, previous)
-  }
-
-  async transfersThisMonth() {
-    const current = await this.transferRepo.count({
-      where: {
-        createdAt: Between(startOfMonth(new Date()), endOfMonth(new Date())),
-        deletedAt: IsNull(),
-      },
+  async getPeriodKpi(
+    targetTable: Table,
+    column: string,
+    period: RangeUnit = 'month'
+  ) {
+    const { current, previous } = await this.repo.comparePeriods({
+      targetTable,
+      column,
+      timeUnit: period,
     });
 
-    const previous = await this.transferRepo.count({
-      where: {
-        createdAt: Between(
-          startOfMonth(subMonths(new Date(), 1)),
-          endOfMonth(subMonths(new Date(), 1))
-        ),
-        deletedAt: IsNull(),
-      },
-    });
-
-    return this.buildKPI(current, previous)
+    return this.getKpi(current, previous);
   }
 
   async getSentimentTrendByRange(
@@ -217,61 +151,6 @@ export class MetricsService {
     return this.fillMissingData(result, start, end, stepFn, formatStr);
   }
 
-  async sentimentToday() {
-    const today = {
-      start: startOfToday(),
-      end: endOfToday()
-    };
-    const yesterday = {
-      start: startOfDay(subDays(new Date(), 1)),
-      end: endOfDay(subDays(new Date(), 1))
-    }
-
-    const current = await this.sentimentRepo
-      .createQueryBuilder('sentiment')
-      .select([
-        'AVG(sentiment.pos) AS avgPos',
-        'AVG(sentiment.neg) AS avgNeg',
-        'AVG(sentiment.neu) AS avgNeu',
-      ])
-      .where('sentiment.createdAt BETWEEN :start AND :end', today)
-      .getRawOne()
-      .then((res: {
-        avgPos: string | null;
-        avgNeg: string | null;
-        avgNeu: string | null
-      }) => ({
-        pos: parseFloat(res.avgPos ?? '0'),
-        neg: parseFloat(res.avgNeg ?? '0'),
-        neu: parseFloat(res.avgNeu ?? '0'),
-      }))
-
-    const previous = await this.sentimentRepo
-      .createQueryBuilder('sentiment')
-      .select([
-        'AVG(sentiment.pos) AS avgPos',
-        'AVG(sentiment.neg) AS avgNeg',
-        'AVG(sentiment.neu) AS avgNeu',
-      ])
-      .where('sentiment.createdAt BETWEEN :start AND :end', yesterday)
-      .getRawOne()
-      .then((res: {
-        avgPos: string | null;
-        avgNeg: string | null;
-        avgNeu: string | null
-      }) => ({
-        pos: parseFloat(res.avgPos ?? '0'),
-        neg: parseFloat(res.avgNeg ?? '0'),
-        neu: parseFloat(res.avgNeu ?? '0'),
-      }))
-
-    return {
-      pos: this.buildKPI(current.pos, previous.pos),
-      neg: this.buildKPI(current.neg, previous.neg),
-      neu: this.buildKPI(current.neu, previous.neu),
-    }
-  }
-
   async getMonthlySentimentTrend(): Promise<{
     date: string; // 'YYYY-MM-DD'
     pos: number;
@@ -337,10 +216,13 @@ export class MetricsService {
   }
 
   async getAgentsFast(label: SentimentType, limit: number = 5) {
-    return this.repo.getAgentsFast(label, limit);
+    const queries = await this.repo.getAgentsFast(label, limit);
+    return MetricMapper.toAgentMetrics(queries);
   }
 
   async getBestClients(userId: string) {
-    return this.repo.getBestClients(userId);
+    const queries = await this.repo.getBestClients(userId);
+
+    return MetricMapper.toBestClients(queries);
   }
 }
