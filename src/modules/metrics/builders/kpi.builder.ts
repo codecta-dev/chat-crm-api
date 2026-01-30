@@ -2,6 +2,11 @@ export class KpiBuilder {
   private inputs: Record<string, any> = {};
   private outputs: Record<string, any> = {};
 
+  label(value: string, key = 'label') {
+    this.outputs[key] = value;
+    return this;
+  }
+
   compare(a: number, b: number, keys = ['a', 'b']) {
     this.inputs.a = a;
     this.inputs.b = b;

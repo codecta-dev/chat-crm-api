@@ -8,10 +8,33 @@ export type Table = 'messages' | 'transfers' | 'chats' | 'contacts' | 'users';
 export type SentimentType = 'POS' | 'NEU' | 'NEG';
 
 type comparePeriodsParams = { targetTable: Table, column: string, timeUnit: PeriodTime };
+type CompareParams = { target: Table, column: string, period: PeriodTime };
 
 @Injectable()
 export class MetricsRepository {
   constructor(private readonly dataSource: DataSource) { }
+
+  async compare(filters: CompareParams) {
+    const curr = period(filters.period);
+    const prev = period(filters.period, 1);
+
+    const raw: { current: string, previous: string }[] = await this.dataSource.sql`
+      SELECT (
+        SELECT COUNT(DISTINCT(${() => filters.column})) FROM ${() => filters.target}
+        WHERE created_at BETWEEN ${curr.start} AND ${curr.end} 
+        AND ${() => filters.column} IS NOT NULL
+      ) as current, (
+        SELECT COUNT(DISTINCT(${() => filters.column})) FROM ${() => filters.target}
+        WHERE created_at BETWEEN ${prev.start} AND ${prev.end} 
+        AND ${() => filters.column} IS NOT NULL
+      ) as previous
+    `;
+
+    return {
+      current: parseInt(raw[0].current) || 0,
+      previous: parseInt(raw[0].previous) || 0,
+    };
+  }
 
   async comparePeriods({ targetTable, column = 'id', timeUnit }: comparePeriodsParams) {
     const currentPeriod = period(timeUnit);

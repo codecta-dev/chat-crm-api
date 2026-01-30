@@ -1,3 +1,4 @@
+import { KpiBuilder } from "./builders/kpi.builder";
 import { AgentQuery, ClientQuery } from "./metrics.interface";
 
 export class MetricMapper {
@@ -20,5 +21,13 @@ export class MetricMapper {
       avgSentiment: Number(q.avgPos) || 0,
       score: Number(q.score) || 0
     }));
+  }
+
+  static compare(label: string, values: [number, number]) {
+    return new KpiBuilder()
+      .label(label)
+      .compare(values[0], values[1], ['previus', 'current'])
+      .percent()
+      .build();
   }
 }

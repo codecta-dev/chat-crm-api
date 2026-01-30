@@ -4,8 +4,7 @@ import {
   addDays,
   addHours,
   addMonths,
-  endOfMonth,
-  format,
+  endOfMonth, format,
   startOfMonth,
   subDays,
   subMonths
@@ -14,7 +13,6 @@ import { Repository } from 'typeorm';
 import { SentimentAnalysis } from '../whatsapp/entities/sentiment-analysis.entity';
 import { MetricsRepository, Table } from './metrics.repository';
 import { MetricMapper } from './metrics.mapper';
-import { KpiBuilder } from './builders/kpi.builder';
 import { PeriodTime } from 'src/lib/period';
 
 export interface TopAgentMetrics {
@@ -28,43 +26,34 @@ type SentimentTrendRange = 'day' | 'week' | 'month' | 'year';
 
 type SentimentType = 'POS' | 'NEU' | 'NEG';
 
+interface CompareFilters {
+  period: PeriodTime
+}
+
 @Injectable()
 export class MetricsService {
   constructor(
     @InjectRepository(SentimentAnalysis) private sentimentRepo: Repository<SentimentAnalysis>,
-    private readonly repo: MetricsRepository
+    private readonly repo: MetricsRepository,
   ) { }
 
-  async kpis() {
-    const [activeChats, messagesThisMonth, agentsActive, transfersThisMonth] = await Promise.all([
-      this.getPeriodKpi('chats', 'id'),
-      this.getPeriodKpi('messages', 'id'),
-      this.getPeriodKpi('messages', 'agent_id'),
-      this.getPeriodKpi('transfers', 'id'),
-    ])
 
-    return { activeChats, messagesThisMonth, agentsActive, transfersThisMonth };
-  }
+  async getCompares({ period }: CompareFilters) {
+    const configs: Record<string, { target: Table, column: string }> = {
+      chats: { target: 'chats', column: 'id' },
+      messages: { target: 'messages', column: 'id' },
+      agents: { target: 'messages', column: 'agent_id' },
+      transfers: { target: 'transfers', column: 'id' },
+    };
 
-  getKpi(current: number, previous: number) {
-    return new KpiBuilder()
-      .compare(current, previous, ['current', 'previous'])
-      .percent('porcentChange')
-      .build()
-  }
+    const entries = await Promise.all(
+      Object.entries(configs).map(async ([label, { target, column }]) => {
+        const { current, previous } = await this.repo.compare({ target, column, period });
+        return MetricMapper.compare(label, [current, previous]);
+      })
+    );
 
-  async getPeriodKpi(
-    targetTable: Table,
-    column: string,
-    period: PeriodTime = 'month'
-  ) {
-    const { current, previous } = await this.repo.comparePeriods({
-      targetTable,
-      column,
-      timeUnit: period,
-    });
-
-    return this.getKpi(current, previous);
+    return entries;
   }
 
   async getSentimentTrendByRange(
