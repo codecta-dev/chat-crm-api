@@ -4,7 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '@modules/users/users.service';
-import { userFactory } from '@factories';
+import { UserFactory } from '@factories';
 
 jest.mock('bcrypt', () => ({
   compare: jest.fn(),
@@ -69,7 +69,7 @@ describe('AuthService', () => {
       password: '123456',
     };
 
-    const userMock = userFactory.build();
+    const userMock = UserFactory.build();
 
     it('should return token if credentials are valid', async () => {
       mockUsersService.find.mockResolvedValue(userMock);

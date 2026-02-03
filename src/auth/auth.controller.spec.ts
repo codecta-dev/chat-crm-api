@@ -5,8 +5,8 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { AuthUser } from '@auth';
 import { IdentifyGuard } from './guards/identify.guard';
-import { userFactory } from '@factories';
 import { MemberService } from '@modules/member/member.service';
+import { UserFactory } from '@factories';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -87,7 +87,7 @@ describe('AuthController', () => {
 
   describe('getProfile', () => {
     it('should return user from decorator', () => {
-      const mockUser = userFactory.build() as AuthUser;
+      const mockUser = UserFactory.build() as AuthUser;
 
       const result = controller.getProfile(mockUser);
 

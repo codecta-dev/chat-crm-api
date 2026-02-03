@@ -1,1 +1,1 @@
-export { userFactory } from "./user.factory";
+export { UserFactory } from "./user.factory";

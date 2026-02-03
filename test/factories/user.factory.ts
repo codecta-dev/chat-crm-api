@@ -1,26 +1,33 @@
 import { Factory } from 'fishery';
-import { faker } from '@faker-js/faker/locale/en';
+import { faker } from '@faker-js/faker';
+import { DataSource } from 'typeorm';
 import { User } from '@modules/users/entities/user.entity';
 
-export const userFactory: Factory<User> = Factory.define<User>(({ associations }) => {
-  const user: User = {
-    id: faker.string.uuid(),
-    firstName: faker.person.firstName(),
-    lastName: faker.person.lastName(),
-    phoneNumber: faker.phone.number({ style: 'international' }),
-    username: faker.internet.username(),
-    email: faker.internet.email(),
-    address: faker.location.streetAddress(),
-    avatar: faker.image.avatar(),
-    password: 'password',
-    status: 'online',
-    chats: associations.chats || [],
-    notifications: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: undefined,
-    hashPassword: async () => { }, // stub for tests
-  };
+type UserTransientParams = {
+  dataSource?: DataSource;
+};
 
-  return user;
-});
+export const UserFactory = Factory.define<User, UserTransientParams>(
+  ({ onCreate, sequence, transientParams }) => {
+    onCreate(async (user) => {
+      if (transientParams.dataSource) {
+        const repository = transientParams.dataSource.getRepository(User);
+        return await repository.save(user);
+      }
+      return user;
+    });
+
+    const user = new User();
+    user.firstName = faker.person.firstName();
+    user.lastName = faker.person.lastName();
+    user.phoneNumber = faker.phone.number({ style: 'international' });
+    user.email = faker.internet.email();
+    user.username = `user_${sequence}_${faker.internet.username()}`;
+    user.avatar = faker.image.avatar();
+    user.password = 'Test1234!'; // Hashead for @BeforeInsert
+    user.status = 'offline';
+    user.address = faker.location.streetAddress();
+
+    return user;
+  }
+);
