@@ -3,7 +3,6 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  JoinColumn,
   CreateDateColumn,
 } from 'typeorm';
 import { AnalysisType } from './analysis.enum';
@@ -26,8 +25,6 @@ export class Analysis {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(
-    () => Message, (message) => message.analyses, { onDelete: 'SET NULL', nullable: true })
-  @JoinColumn({ name: 'messageId' })
+  @ManyToOne(() => Message, { onDelete: 'SET NULL', nullable: true, })
   message: Message;
 }

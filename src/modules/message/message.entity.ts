@@ -4,12 +4,9 @@ import {
   DeleteDateColumn,
   Entity,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn
 } from "typeorm";
-import { Analysis } from "@modules/analysis/analysis.entity";
-import { SentimentAnalysis } from "@modules/whatsapp/entities/sentiment-analysis.entity";
 import { Chat } from "@modules/chats/entities";
 import { Contact } from "@modules/contacts/entities/contact.entity";
 import { User } from "@modules/users/entities/user.entity";
@@ -91,13 +88,4 @@ export class Message {
 
   @ManyToOne(() => User, { nullable: true })
   agent: User;
-
-  @OneToMany(() => SentimentAnalysis, (a) => a.message, { nullable: true })
-  analysis: SentimentAnalysis[]
-
-  @OneToMany(
-    () => Analysis, (analysis) => analysis.message,
-    { cascade: true }
-  )
-  analyses: Analysis[];
 }

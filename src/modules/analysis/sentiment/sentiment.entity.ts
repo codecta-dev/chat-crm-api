@@ -2,13 +2,14 @@ import {
   Check,
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   OneToOne,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
-import { SentimentLabel } from "./sentiment-label.enum";
+import { SentimentLabel } from "./sentiment.enum";
 import { Analysis } from "../analysis.entity";
 
 @Entity()
@@ -16,7 +17,7 @@ import { Analysis } from "../analysis.entity";
 @Check(`"scoreNeu" BETWEEN 0 AND 1`)
 @Check(`"scoreNeg" BETWEEN 0 AND 1`)
 export class SentimentAnalysis {
-  @PrimaryColumn('uuid')
+  @PrimaryGeneratedColumn('uuid')
   SentimentAnalysisId: string;
 
   @Column({
@@ -35,11 +36,14 @@ export class SentimentAnalysis {
   @Column({ type: 'decimal', precision: 5, scale: 4, default: 0 })
   scoreNeg: number;
 
-  @OneToOne(() => Analysis, { onDelete: 'SET NULL', nullable: true })
-  @JoinColumn({ name: 'analysisId' })
+  @OneToOne(() => Analysis, {
+    onDelete: 'SET NULL',
+    nullable: true
+  })
+  @JoinColumn({ name: 'analysis_id' })
   analysis: Analysis;
 
   @CreateDateColumn() createdAt: Date;
-
-  @UpdateDateColumn() updateAt: Date;
+  @UpdateDateColumn() updatedAt: Date;
+  @DeleteDateColumn({ nullable: true }) deletedAt?: Date;
 }
