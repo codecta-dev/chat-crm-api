@@ -11,9 +11,13 @@ import {
 } from 'date-fns';
 import { Repository } from 'typeorm';
 import { SentimentAnalysis } from '../whatsapp/entities/sentiment-analysis.entity';
-import { MetricsRepository, Table } from './metrics.repository';
+import { MetricsRepository } from './metrics.repository';
 import { MetricMapper } from './metrics.mapper';
 import { PeriodTime } from 'src/lib/period';
+import { CompareMetric, SentimentActor, SentimentType } from './metrics.types';
+import { SentimentRepository } from './repositories/sentiment.repository';
+import { SentimentTopQuery } from './metrics.interface';
+import { COMPARE_PERIOD_CONFIG } from './constants/metrics.constants';
 
 export interface TopAgentMetrics {
   agentId: string;
@@ -24,36 +28,36 @@ export interface TopAgentMetrics {
 }
 type SentimentTrendRange = 'day' | 'week' | 'month' | 'year';
 
-type SentimentType = 'POS' | 'NEU' | 'NEG';
-
-interface CompareFilters {
-  period: PeriodTime
-}
-
 @Injectable()
 export class MetricsService {
   constructor(
     @InjectRepository(SentimentAnalysis) private sentimentRepo: Repository<SentimentAnalysis>,
     private readonly repo: MetricsRepository,
+    private readonly sentiment: SentimentRepository,
   ) { }
 
+  private sentimentTopMap: Record<SentimentActor,
+    (type: SentimentType, limit: number) => Promise<SentimentTopQuery[]>> = {
+      agent: (type, limit) => this.sentiment.topAgent(type, limit),
+      client: (type, limit) => this.sentiment.topClient(type, limit),
+    }
 
-  async getCompares({ period }: CompareFilters) {
-    const configs: Record<string, { target: Table, column: string }> = {
-      chats: { target: 'chats', column: 'id' },
-      messages: { target: 'messages', column: 'id' },
-      agents: { target: 'messages', column: 'agent_id' },
-      transfers: { target: 'transfers', column: 'id' },
-    };
+  async getSentimentTop(actor: SentimentActor, type: SentimentType, limit: number = 5) {
+    const handler = this.sentimentTopMap[actor];
+    const queries = await handler(type, limit);
 
-    const entries = await Promise.all(
-      Object.entries(configs).map(async ([label, { target, column }]) => {
-        const { current, previous } = await this.repo.compare({ target, column, period });
-        return MetricMapper.compare(label, [current, previous]);
-      })
-    );
+    return MetricMapper.sentimentTop(queries, actor);
+  }
 
-    return entries;
+  async getComparePeriod(metric: CompareMetric, period: PeriodTime) {
+    const { target, column } = COMPARE_PERIOD_CONFIG[metric];
+    const { current, previous } = await this.repo.comparePeriod({ target, column, period })
+
+    return MetricMapper.compare(metric, [current, previous]);
+  }
+
+  async getTrendPeriod(period: PeriodTime) {
+    return this.sentiment.trendPeriod(period)
   }
 
   async getSentimentTrendByRange(

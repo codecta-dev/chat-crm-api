@@ -1,18 +1,25 @@
-import { Controller, Get, HttpCode, HttpStatus, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Param, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { MetricsService } from './metrics.service';
 import { type AuthUser, CurrentUser } from '@auth';
-import { CompareQuery } from './dtos/compare-query.dto';
+import { CompareQuery } from './dtos/queries/compare-query.dto';
+import { SentimentTopQuery } from './dtos/queries/sentiment-top.query.dto';
+import { CompareParams } from './dtos/params/compare.params.dto';
+import { SentimentTrendQuery } from './dtos/queries/sentiment-trend.query.dto';
 
 @Controller('metrics')
 @UseGuards(AuthGuard('jwt'))
 export class MetricsController {
   constructor(private readonly service: MetricsService) { }
 
-  @Get('compare')
-  @HttpCode(HttpStatus.OK)
-  async compare(@Query() { period = 'month' }: CompareQuery) {
-    return this.service.getCompares({ period });
+  @Get('sentiment/top')
+  async sentimentTop(@Query() query: SentimentTopQuery) {
+    return this.service.getSentimentTop(query.actor, query.type, query.limit);
+  }
+
+  @Get(':metric/compare')
+  async metricCompare(@Param() { metric }: CompareParams, @Query() { period }: CompareQuery) {
+    return this.service.getComparePeriod(metric, period);
   }
 
   @Get("sentiment/monthly-trend")
@@ -23,8 +30,8 @@ export class MetricsController {
 
   @Get("sentiment/trend")
   @HttpCode(HttpStatus.OK)
-  async getSentimentTrend(@Query("range") range: 'day' | 'week' | 'month' | 'year', @Query("userId") userId: string) {
-    return this.service.getSentimentTrendByRange(range, userId);
+  async getSentimentTrend(@Query() { period }: SentimentTrendQuery) {
+    return this.service.getTrendPeriod(period);
   }
 
   @Get("top-contacts")

@@ -6,6 +6,7 @@ import { SentimentAnalysis } from '../whatsapp/entities/sentiment-analysis.entit
 import { WhatsappModule } from '../whatsapp/whatsapp.module';
 import { Message } from '@modules/message/message.entity';
 import { MetricsRepository } from './metrics.repository';
+import { SentimentRepository } from './repositories/sentiment.repository';
 
 @Module({
   imports: [
@@ -13,7 +14,11 @@ import { MetricsRepository } from './metrics.repository';
     WhatsappModule,
   ],
   controllers: [MetricsController],
-  providers: [MetricsService, MetricsRepository],
+  providers: [
+    MetricsService,
+    MetricsRepository,
+    SentimentRepository,
+  ],
   exports: [TypeOrmModule, MetricsService],
 })
 export class MetricsModule { }

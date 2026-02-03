@@ -1,15 +1,20 @@
-import { KpiBuilder } from "./builders/kpi.builder";
-import { AgentQuery, ClientQuery } from "./metrics.interface";
+import { CompareBuilder } from "./builders/compare.builder";
+import { ScoreBuilder } from "./builders/score.builder";
+import { AgentQuery, ClientQuery, SentimentTopQuery, SentimentTop } from "./metrics.interface";
+import { SentimentActor } from "./metrics.types";
 
 export class MetricMapper {
 
   static toAgentMetrics(queries: AgentQuery[]) {
     return queries.map((r) => ({
-      agentId: r.agentId,
-      agentName: `${r.firstNames} ${r.lastNames}`.trim(),
-      total: Number(r.total),
-      avg: Number(r.avg) || 0,
-      score: Number(r.score) || 0
+      id: r.id,
+      agentName: `${r.firstName} ${r.lastName}`.trim(),
+      avg: {
+        pos: Number(r.avgPos) || 0,
+        neu: Number(r.avgNeu) || 0,
+        neg: Number(r.avgNeg) || 0
+      },
+      total: Number(r.total) || 0
     }));
   }
 
@@ -23,8 +28,18 @@ export class MetricMapper {
     }));
   }
 
+  static sentimentTop(tops: SentimentTopQuery[], actor?: SentimentActor): SentimentTop[] {
+    return tops.map(element => {
+      return new ScoreBuilder<SentimentTop>(element)
+        .onwer('onwer', ['id', 'username'], actor)
+        .metrics('sentiment', { pos: 'avgPos', neu: 'avgNeu', neg: 'avgNeg' })
+        .stat('total')
+        .build()
+    });
+  }
+
   static compare(label: string, values: [number, number]) {
-    return new KpiBuilder()
+    return new CompareBuilder()
       .label(label)
       .compare(values[0], values[1], ['previus', 'current'])
       .percent()

@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
-import { startOfMonth } from "date-fns";
+import { startOfMonth, subMonths } from "date-fns";
 import { DataSource } from "typeorm";
-import { AgentQuery, ClientQuery } from "./metrics.interface";
+import { AgentQuery, ClientQuery, ContactQuery } from "./metrics.interface";
 import { period, PeriodTime } from "src/lib/period";
 
 export type Table = 'messages' | 'transfers' | 'chats' | 'contacts' | 'users';
@@ -12,9 +12,11 @@ type CompareParams = { target: Table, column: string, period: PeriodTime };
 
 @Injectable()
 export class MetricsRepository {
-  constructor(private readonly dataSource: DataSource) { }
+  constructor(
+    private readonly dataSource: DataSource,
+  ) { }
 
-  async compare(filters: CompareParams) {
+  async comparePeriod(filters: CompareParams) {
     const curr = period(filters.period);
     const prev = period(filters.period, 1);
 
@@ -63,19 +65,11 @@ export class MetricsRepository {
     };
   }
 
-  async getTopContacts() {
+  async getTopContacts(limit = 5) {
     const now = new Date();
-    const start = startOfMonth<Date>(now);
+    const start = startOfMonth<Date>(subMonths(now, 2));
 
-    const results = await this.dataSource.query<{
-      id: string
-      username: string
-      firstNames: string
-      lastNames: string
-      phoneNumber: string
-      profile?: string
-      messageCount: number
-    }>(await this.dataSource.sql`
+    const results: ContactQuery[] = await this.dataSource.sql`
         SELECT 
           c.id,
           c.username,
@@ -83,15 +77,14 @@ export class MetricsRepository {
           c.last_names AS lastNames,
           c.phone_number AS phoneNumber,
           c.profile,
-          COUNT(*) AS messageCount
-        FROM message m
-        INNER JOIN contact c ON m.contact_id = c.id
-        WHERE m.created_at >= ?
-        GROUP BY c.id, c.username, c.first_names, c.last_names, c.phone_number, c.profile
-        ORDER BY messageCount DESC
-        LIMIT 5`,
-      [start]
-    );
+          COUNT(m.id) AS count,
+          RANK() OVER (ORDER BY COUNT(m.id) DESC) AS \'rank\'
+        FROM messages m
+        INNER JOIN contacts c ON m.contact_id = c.id
+        WHERE m.created_at >= ${start}
+        GROUP BY c.id
+        ORDER BY count DESC, c.username
+        LIMIT ${limit}`;
 
     return results; // MySQL returns COUNT(*) directly as a number
   }
@@ -103,16 +96,19 @@ export class MetricsRepository {
     const qb: AgentQuery[] = await this.dataSource.sql`
       SELECT 
         u.id AS agentId,
-        ANY_VALUE(u.first_names) AS firstNames,
-        ANY_VALUE(u.last_names) AS lastNames,
-        COUNT(sa.id) AS total,
-        AVG(sa.pos) AS avg,
-        COUNT(sa.id) * AVG(sa.pos) AS score
-      FROM message m
-      INNER JOIN users u ON m.agent_id = u.id
-      LEFT JOIN sentiment_analysis sa ON sa.message_id = m.id AND sa.label = ${label}
-      GROUP BY u.id
-      ORDER BY score DESC
+        u.username AS username,
+        u.first_name AS firstName,
+        u.last_name AS lastName,
+        COUNT(sa.sentiment_analysis_id) AS total,
+        AVG(sa.score_pos) AS avgPos,
+        AVG(sa.score_neu) AS avgNeu,
+        AVG(sa.score_neg) AS avgNeg
+      FROM messages m
+      INNER JOIN users u ON u.id = m.agent_id
+      INNER JOIN analysis a ON a.message_id = m.id
+      INNER JOIN sentiment_analysis sa ON sa.analysis_id = a.analysis_id
+      GROUP BY sa.sentiment_analysis_id
+      ORDER BY total DESC
       LIMIT ${limit}
     `;
 
