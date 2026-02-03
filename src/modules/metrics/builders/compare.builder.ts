@@ -1,4 +1,4 @@
-export class KpiBuilder {
+export class CompareBuilder {
   private inputs: Record<string, any> = {};
   private outputs: Record<string, any> = {};
 
