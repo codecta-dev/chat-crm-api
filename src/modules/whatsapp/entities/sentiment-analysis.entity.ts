@@ -6,7 +6,7 @@ export class SentimentAnalysis {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => Message, (m) => m.analysis, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Message, { onDelete: 'CASCADE' })
   message: Message;
 
   @Column({ type: 'enum', enum: ['NEG', 'NEU', 'POS'] })
