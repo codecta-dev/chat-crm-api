@@ -10,10 +10,13 @@ import {
   subMonths,
   subWeeks,
   subDays,
-  subHours
+  subHours,
+  subYears,
+  startOfYear,
+  endOfYear
 } from 'date-fns';
 
-export type PeriodTime = 'month' | 'week' | 'day' | 'hour';
+export type PeriodTime = 'month' | 'week' | 'day' | 'hour' | 'year';
 
 export interface Period { start: Date; end: Date; }
 
@@ -45,5 +48,11 @@ export function period(unit: PeriodTime, offset = 0, baseDate = new Date()): Per
         start: startOfHour(target),
         end: endOfHour(target),
       };
+    case 'year':
+      target = subYears(baseDate, offset);
+      return {
+        start: startOfYear(target),
+        end: endOfYear(target),
+      }
   }
 }
