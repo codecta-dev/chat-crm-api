@@ -1,17 +1,18 @@
 import { Factory } from 'fishery';
 import { faker } from '@faker-js/faker';
-import { DataSource } from 'typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 import { User } from '@modules/users/entities/user.entity';
 
 type UserTransientParams = {
-  dataSource?: DataSource;
+  manager?: DataSource | EntityManager;
 };
 
 export const UserFactory = Factory.define<User, UserTransientParams>(
   ({ onCreate, sequence, transientParams }) => {
     onCreate(async (user) => {
-      if (transientParams.dataSource) {
-        const repository = transientParams.dataSource.getRepository(User);
+      const manager = transientParams.manager;
+      if (manager) {
+        const repository = manager.getRepository(User);
         return await repository.save(user);
       }
       return user;
