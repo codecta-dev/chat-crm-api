@@ -32,6 +32,9 @@
       "@auth/*": [
         "./src/auth/*"
       ],
+      "@entities": [
+        "./src/entities/index"
+      ],
       "@modules": [
         "./src/modules/index"
       ],
