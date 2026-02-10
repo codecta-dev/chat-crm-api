@@ -19,6 +19,6 @@ import { SentimentRepository } from './repositories/sentiment.repository';
     MetricsRepository,
     SentimentRepository,
   ],
-  exports: [TypeOrmModule, MetricsService, SentimentRepository],
+  exports: [TypeOrmModule, MetricsService],
 })
 export class MetricsModule { }

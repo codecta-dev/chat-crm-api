@@ -22,12 +22,6 @@ export class MetricsController {
     return this.service.getComparePeriod(metric, period);
   }
 
-  @Get("sentiment/monthly-trend")
-  @HttpCode(HttpStatus.OK)
-  async getMonthlyTrend() {
-    return this.service.getMonthlySentimentTrend();
-  }
-
   @Get("sentiment/trend")
   @HttpCode(HttpStatus.OK)
   async getSentimentTrend(@Query() { period }: SentimentTrendQuery) {
