@@ -18,6 +18,7 @@ import { CoreService } from '@core/core.service';
 import { AuthUser } from '@auth';
 import { ClsService } from 'nestjs-cls';
 import { UserRepository } from './user.repository';
+import { ChatStatus } from '@modules/chats/entities/chat.entity';
 
 @Injectable()
 export class UsersService extends CoreService<User> {
@@ -154,7 +155,7 @@ export class UsersService extends CoreService<User> {
     const agentsWithLoad = await Promise.all(
       agents.map(async (agent) => {
         const activeChats = await this.chatRepo.count({
-          where: { assignedAgent: { id: agent.id }, status: 'open' },
+          where: { assignedAgent: { id: agent.id }, status: ChatStatus.OPEN },
         });
         return { agent, activeChats };
       }),

@@ -1,7 +1,7 @@
 import { Company } from "@modules/company/entities/company.entity";
 import { User } from "@modules/users/entities/user.entity";
 import { Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import type { MemberRole, MemberStatus } from "./member.types";
+import { MemberRole, MemberStatus } from "./member.types";
 
 @Entity('members')
 @Index(['user', 'company'], { unique: true })
@@ -15,9 +15,9 @@ export class Member {
   @ManyToOne(() => Company)
   company: Company;
 
-  @Column({ default: 'agent' })
+  @Column({ type: 'simple-enum', enum: MemberRole, default: MemberRole.AGENT })
   role: MemberRole;
 
-  @Column({ default: 'active' })
+  @Column({ type: 'simple-enum', enum: MemberStatus, default: MemberStatus.ACTIVE })
   status: MemberStatus;
 }

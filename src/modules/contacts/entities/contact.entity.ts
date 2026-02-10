@@ -39,7 +39,7 @@ export class Contact {
   @Column({ default: 'manual' })
   source: ContactSource;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   lastInteractionAt: Date;
 
   @Column('simple-array', { nullable: true })

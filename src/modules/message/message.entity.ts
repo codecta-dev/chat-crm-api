@@ -21,6 +21,7 @@ export enum MessageType {
 }
 
 export enum MessageSenderType {
+  AGENT = 'agent',
   USER = 'user',
   CLIENT = 'client',
   SYSTEM = 'system',
@@ -41,35 +42,45 @@ export enum MessageDirection {
 
 @Entity('messages')
 export class Message {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn('uuid', { name: 'message_id' })
   id: string;
 
   @Column({ unique: true, nullable: true })
-  waMessageId: string;
+  waId?: string;
 
-  @Column({ nullable: true })
-  replyToMessageId: string;
-
-  @Column({ default: MessageSenderType.SYSTEM })
+  @Column({
+    type: 'simple-enum',
+    enum: MessageSenderType,
+    default: MessageSenderType.SYSTEM
+  })
   senderType: MessageSenderType;
 
+  @Column({
+    type: 'uuid',
+    nullable: true,
+  })
+  senderId: string;
+
+  /**
+   * @deprecated This deleted and replace with content in the future
+   */
   @Column({ nullable: true, type: 'text' })
   body: string;
 
-  @Column({ type: 'enum', enum: MessageType, default: MessageType.TEXT })
+  @Column({ nullable: true, type: 'text' })
+  content: string;
+
+  @Column({ type: 'simple-enum', enum: MessageType, default: MessageType.TEXT })
   type: MessageType;
 
   @Column({ nullable: true })
   mediaUrl?: string;
 
-  @Column({ type: 'enum', enum: MessageStatus, default: MessageStatus.SENT })
+  @Column({ type: 'simple-enum', enum: MessageStatus, default: MessageStatus.SENT })
   status: MessageStatus;
 
-  @Column({ type: 'enum', enum: MessageDirection, default: MessageDirection.IN })
+  @Column({ type: 'simple-enum', enum: MessageDirection, default: MessageDirection.IN })
   direction: MessageDirection;
-
-  @Column('json', { nullable: true })
-  reactions: any;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -80,12 +91,24 @@ export class Message {
   @DeleteDateColumn({ nullable: true })
   deletedAt?: Date
 
-  @ManyToOne(() => Chat, chat => chat.messages)
-  chat: Chat;
+  @ManyToOne(() => Chat, chat => chat.messages, {
+    nullable: true, cascade: ['insert'], onDelete: 'SET NULL'
+  })
+  chat?: Chat;
 
-  @ManyToOne(() => Contact, contact => contact.messages, { nullable: true })
-  contact: Contact;
+  /**
+   * @deprecated This relation replace with sender_type in the future
+   */
+  @ManyToOne(() => Contact, contact => contact.messages, {
+    nullable: true, cascade: ['insert'], onDelete: 'SET NULL'
+  })
+  contact?: Contact;
 
-  @ManyToOne(() => User, { nullable: true })
-  agent: User;
+  /**
+   * @deprecated This relation replace with sender_type in the future
+   */
+  @ManyToOne(() => User, {
+    nullable: true, cascade: ['insert'], onDelete: 'SET NULL'
+  })
+  agent?: User;
 }

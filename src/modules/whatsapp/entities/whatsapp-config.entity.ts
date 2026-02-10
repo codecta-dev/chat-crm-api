@@ -34,7 +34,7 @@ export class WhatsAppConfig {
   @JoinColumn({ name: 'companyId' })
   company: Company;
 
-  @DeleteDateColumn({ type: 'timestamp', nullable: true })
+  @DeleteDateColumn({ nullable: true })
   deletedAt?: Date;
 
   @CreateDateColumn()
