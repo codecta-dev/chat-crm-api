@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ChatsService } from '../chats.service';
-import { CreateChatDto, UpdateChatDto } from '../dto/chat.dto';
+import { ChatDto, UpdateChatDto } from '../dto/chat.dto';
 import { type AuthUser, CurrentUser } from '@auth';
 import { MessageService } from '@modules/message/message.services';
 
@@ -14,7 +14,7 @@ export class ChatsController {
   ) { }
 
   @Post()
-  create(@Body() dto: CreateChatDto) {
+  create(@Body() dto: ChatDto) {
     return this.service.create(dto);
   }
 

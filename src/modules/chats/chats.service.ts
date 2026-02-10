@@ -4,10 +4,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Queue } from 'bullmq';
 import { PinoLogger } from 'nestjs-pino';
 import { Repository } from 'typeorm';
-import { CreateChatDto, UpdateChatDto } from './dto/chat.dto';
+import { ChatDto, UpdateChatDto } from './dto/chat.dto';
 import { Chat, Transfer } from './entities';
 import { Message } from '@modules/message/message.entity';
 import { MessageService } from '@modules/message/message.services';
+import { ChatStatus } from './entities/chat.entity';
 
 @Injectable()
 export class ChatsService {
@@ -62,7 +63,7 @@ export class ChatsService {
   }
 
   updateLastMessage(chatId: string, messageId: string) {
-    return this.chatRepo.update({ id: chatId }, { status: 'open', lastMessage: { id: messageId } });
+    return this.chatRepo.update({ id: chatId }, { status: ChatStatus.OPEN, lastMessage: { id: messageId } });
   }
 
   async findOrCreateByContact(agentId: string, contactId: string, isSystem: boolean = false): Promise<Chat> {
@@ -76,7 +77,7 @@ export class ChatsService {
     chat = this.chatRepo.create({
       assignedAgent: { id: agentId },
       contact: { id: contactId },
-      status: isSystem ? 'pending' : 'open',
+      status: isSystem ? ChatStatus.PENDING : ChatStatus.OPEN,
     });
 
     return await this.chatRepo.save(chat);
@@ -99,8 +100,12 @@ export class ChatsService {
     return chats;
   }
 
-  create(dto: CreateChatDto) {
-    const chat = this.chatRepo.save(dto);
+  create(dto: ChatDto) {
+    const chat = this.chatRepo.save({
+      ...dto,
+      client: { id: dto.client_id }
+    });
+
     return chat;
   }
 
@@ -128,7 +133,6 @@ export class ChatsService {
       const chat = await this.chatRepo.findOneOrFail({
         where: { id: chatId },
       });
-      chat.status = 'open';
       chat.lastMessage = message;
       await this.chatRepo.save(chat);
     } catch (error) {

@@ -43,12 +43,12 @@ export class Company {
   @OneToMany(() => Contact, contact => contact.company)
   contacts: Contact[];
 
-  @DeleteDateColumn({ type: 'timestamp', nullable: true })
+  @DeleteDateColumn({ nullable: true })
   deletedAt?: Date;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @CreateDateColumn()
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamp' })
+  @UpdateDateColumn()
   updatedAt: Date;
 }
