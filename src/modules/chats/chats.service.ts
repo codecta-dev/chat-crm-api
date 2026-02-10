@@ -8,7 +8,7 @@ import { ChatDto, UpdateChatDto } from './dto/chat.dto';
 import { Chat, Transfer } from './entities';
 import { Message } from '@modules/message/message.entity';
 import { MessageService } from '@modules/message/message.services';
-import { ChatStatus } from './entities/chat.entity';
+import { ChatStatus } from './chat.enum';
 
 @Injectable()
 export class ChatsService {

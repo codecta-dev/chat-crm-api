@@ -1,7 +1,7 @@
 import { createZodDto } from "nestjs-zod";
 import { ChatSchema } from "../schemas/chat.schema";
-import { ChatChannel, ChatPriority, ChatStatus } from "../entities/chat.entity";
 import { IsEnum, IsNotEmpty, IsOptional, IsUUID } from "class-validator";
+import { ChatStatus, ChatPriority, ChatChannel } from "../chat.enum";
 
 export class ChatDto {
   @IsEnum(ChatStatus)

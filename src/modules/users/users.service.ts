@@ -18,7 +18,7 @@ import { CoreService } from '@core/core.service';
 import { AuthUser } from '@auth';
 import { ClsService } from 'nestjs-cls';
 import { UserRepository } from './user.repository';
-import { ChatStatus } from '@modules/chats/entities/chat.entity';
+import { ChatStatus } from '@modules/chats/chat.enum';
 
 @Injectable()
 export class UsersService extends CoreService<User> {

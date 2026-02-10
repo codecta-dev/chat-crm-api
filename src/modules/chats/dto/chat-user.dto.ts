@@ -1,6 +1,6 @@
 // /src/modules/chats/dto/chat-user.dto.ts
 
-import { ChatStatus } from "../entities/chat.entity";
+import { ChatStatus } from "../chat.enum";
 
 // Estructura simplificada de un mensaje para el frontend
 export interface ChatMessageDto {
