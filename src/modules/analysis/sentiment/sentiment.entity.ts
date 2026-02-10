@@ -1,5 +1,4 @@
 import {
-  Check,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -13,15 +12,12 @@ import { SentimentLabel } from "./sentiment.enum";
 import { Analysis } from "../analysis.entity";
 
 @Entity()
-@Check(`"scorePos" BETWEEN 0 AND 1`)
-@Check(`"scoreNeu" BETWEEN 0 AND 1`)
-@Check(`"scoreNeg" BETWEEN 0 AND 1`)
 export class SentimentAnalysis {
   @PrimaryGeneratedColumn('uuid')
   SentimentAnalysisId: string;
 
   @Column({
-    type: 'enum',
+    type: 'simple-enum',
     enum: SentimentLabel,
     default: SentimentLabel.NEUTRAL
   })
@@ -38,7 +34,8 @@ export class SentimentAnalysis {
 
   @OneToOne(() => Analysis, {
     onDelete: 'SET NULL',
-    nullable: true
+    nullable: true,
+    cascade: ['insert']
   })
   @JoinColumn({ name: 'analysis_id' })
   analysis: Analysis;
