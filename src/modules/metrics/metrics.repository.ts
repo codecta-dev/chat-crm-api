@@ -105,7 +105,7 @@ export class MetricsRepository {
         AVG(sa.score_neg) AS avgNeg
       FROM messages m
       INNER JOIN users u ON u.id = m.agent_id
-      INNER JOIN analysis a ON a.message_id = m.id
+      INNER JOIN analysis a ON a.message_id =m.message_id
       INNER JOIN sentiment_analysis sa ON sa.analysis_id = a.analysis_id
       GROUP BY sa.sentiment_analysis_id
       ORDER BY total DESC
@@ -126,7 +126,7 @@ export class MetricsRepository {
         COUNT(m.id) * AVG(sa.pos) AS score
       FROM message m
       INNER JOIN contacts c ON m.contact_id = c.id
-      LEFT JOIN sentiment_analysis sa ON sa.message_id = m.id AND sa.label = ${label}
+      LEFT JOIN sentiment_analysis sa ON sa.message_id =m.message_id AND sa.label = ${label}
       WHERE m.agent_id = ${userId}
       GROUP BY c.id
       ORDER BY score DESC
