@@ -12,26 +12,7 @@ import {
 import { Contact } from "../../contacts/entities/contact.entity";
 import { User } from "../../users/entities/user.entity";
 import { Message } from "@modules/message/message.entity";
-
-export enum ChatStatus {
-  OPEN = 'open',
-  PENDING = 'pending',
-  CLOSED = 'closed',
-  ARCHIVED = 'archived',
-}
-export enum ChatPriority {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-  URGENT = 'urgent',
-}
-export enum ChatChannel {
-  WHATSAPP = 'whatsapp',
-  TELEGRAM = 'telegram',
-  MESSENGER = 'messenger',
-  SMS = 'sms',
-  EMAIL = 'email'
-}
+import { ChatStatus, ChatPriority, ChatChannel } from "../chat.enum";
 
 @Entity('chats')
 export class Chat {

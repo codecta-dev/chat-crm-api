@@ -1,12 +1,6 @@
 import { Chat, User } from "@entities";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-
-export enum ReasonAssignment {
-  TRANSFER = 'transfer',
-  ESCALATION = 'escalation',
-  MANUAL = 'manual',
-  AUTO = 'auto',
-}
+import { ReasonAssignment } from "../chat.enum";
 
 @Entity()
 export class ChatAssignments {

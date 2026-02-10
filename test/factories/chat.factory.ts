@@ -1,8 +1,9 @@
 import { Factory } from 'fishery';
 import { faker } from '@faker-js/faker/locale/en';
-import { Chat, ChatStatus, ChatPriority, ChatChannel } from '@modules/chats/entities/chat.entity';
+import { Chat } from '@modules/chats/entities/chat.entity';
 import { ContactFactory, MessageFactory } from '@factories';
 import { DataSource, EntityManager } from 'typeorm';
+import { ChatStatus, ChatPriority, ChatChannel } from '@modules/chats/chat.enum';
 
 type ChatTransientParams = {
   manager?: DataSource | EntityManager;
