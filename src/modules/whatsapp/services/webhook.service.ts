@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
-import { InjectQueue } from "@nestjs/bullmq";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { WhatsappNotification, WhatsappNotificationContact, WhatsappNotificationMessage } from "@daweto/whatsapp-api-types";
-import { Queue } from "bullmq";
 import { PinoLogger } from "nestjs-pino";
 import { Repository } from "typeorm";
 import { WhatsAppConfigService } from "./whatsapp-config.service";
@@ -26,8 +24,8 @@ export class WebhookService {
     private readonly notificationService: NotificationsService,
     @InjectRepository(Message)
     private readonly messageRepo: Repository<Message>,
-    @InjectQueue('sentiment')
-    private readonly sentimentQueue: Queue,
+    // @InjectQueue('sentiment')
+    // private readonly sentimentQueue: Queue,
   ) { }
 
   async handleIncomingMessage(payload: WhatsappNotification) {
@@ -108,7 +106,8 @@ export class WebhookService {
     }
 
     if (savedMsg) {
-      await this.sentimentQueue.add('analyze', savedMsg);
+      // This is replace with modules/analysis/sentiment - WIP
+      // await this.sentimentQueue.add('analyze', savedMsg); 
       void this.chatService.updateLastMessage(chat.id, savedMsg.id);
       const room = this.whatsappGateway.server.sockets.adapter?.rooms?.get(chat.id);
       this.logger.debug("Rooms: ", room);

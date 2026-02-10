@@ -1,6 +1,5 @@
 import { Body, Controller, Post, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
-import { SentimentClient } from "../clients/sentiment.client";
 import { SendMessageDto } from "../dto/send-message.dto";
 import { WhatsappService } from "../whatsapp.service";
 import { CurrentUser, type AuthUser } from "@auth";
@@ -10,17 +9,18 @@ import { CurrentUser, type AuthUser } from "@auth";
 export class WhatsappController {
   constructor(
     private readonly service: WhatsappService,
-    private readonly client: SentimentClient,
+    // private readonly client: SentimentClient,
   ) { }
 
-  @Post('nlp')
-  async analyze(@Body('text') text: string) {
-    const res = await this.client.analyze(text);
-    return {
-      success: !!res,
-      res
-    }
-  }
+  // This will be replace with othe method - WIP
+  // @Post('nlp')
+  // async analyze(@Body('text') text: string) {
+  //   const res = await this.client.analyze(text);
+  //   return {
+  //     success: !!res,
+  //     res
+  //   }
+  // }
 
   @Post('send')
   async sendMessage(@Body() body: SendMessageDto) {

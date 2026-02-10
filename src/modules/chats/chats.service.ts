@@ -1,13 +1,10 @@
-import { InjectQueue } from '@nestjs/bullmq';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Queue } from 'bullmq';
 import { PinoLogger } from 'nestjs-pino';
 import { Repository } from 'typeorm';
 import { ChatDto, UpdateChatDto } from './dto/chat.dto';
 import { Chat, Transfer } from './entities';
 import { Message } from '@modules/message/message.entity';
-import { MessageService } from '@modules/message/message.services';
 import { ChatStatus } from './chat.enum';
 
 @Injectable()
@@ -15,8 +12,8 @@ export class ChatsService {
   constructor(
     @InjectRepository(Chat) private readonly chatRepo: Repository<Chat>,
     @InjectRepository(Transfer) private readonly transferRepo: Repository<Transfer>,
-    @InjectQueue('sentiment') private readonly sentimentQueue: Queue,
-    private readonly messages: MessageService,
+    // @InjectQueue('sentiment') private readonly sentimentQueue: Queue,
+    // private readonly messages: MessageService,
     private readonly logger: PinoLogger,
   ) { }
 
@@ -34,6 +31,13 @@ export class ChatsService {
     return result.affected === 1;
   }
 
+  /**
+   * @deprecated This method in removed in the future 
+   * 
+   * @param chatId chat id for gateway chat
+   * @param payload content to the message
+   * @returns saved message
+   */
   async addMessage(
     chatId: string,
     payload: Pick<Message, 'senderType' | 'body' | 'mediaUrl' | 'direction' | 'type'>,
@@ -49,11 +53,12 @@ export class ChatsService {
 
     if (!chat) throw new NotFoundException('Chat not found');
 
-    const savedMessage = await this.messages.createSimpleMessage(payload, chat.contact.id, chat.id);
+    // const savedMessage = await this.messages.createSimpleMessage(payload, chat.contact.id, chat.id);
+    const savedMessage = new Message();
 
     this.logger.debug("Sentiment processor here")
     // Consumer
-    await this.sentimentQueue.add('analyze', savedMessage);
+    // await this.sentimentQueue.add('analyze', savedMessage);
 
     this.updateChatLastMessage(chat.id, savedMessage).catch((error) =>
       this.logger.error('Error updating chat last message', error),
