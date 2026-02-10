@@ -18,9 +18,9 @@ export class SentimentProcessor extends WorkerHost {
       case 'analyze': {
         this.logger.debug("Sentiment Analysis process")
         const analysis = await this.service.save(message)
-        const global = await this.service.getGlobalChatSentiment(message.chat.id)
+        const global = await this.service.getGlobalChatSentiment(message?.chat?.id ?? '')
 
-        this.service.emitGlobalSentiment(message.chat.id, global)
+        this.service.emitGlobalSentiment(message?.chat?.id ?? '', global)
 
         return analysis
       }

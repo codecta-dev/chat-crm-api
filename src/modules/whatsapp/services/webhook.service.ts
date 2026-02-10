@@ -86,7 +86,7 @@ export class WebhookService {
     let savedMsg: Message | null = null;
 
     const msg: Partial<Message> = {
-      waMessageId: message.id,
+      waId: message.id,
       chat: chat,
       contact: chat.contact,
       agent: chat.assignedAgent,
