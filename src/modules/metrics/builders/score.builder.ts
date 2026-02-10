@@ -53,6 +53,12 @@ export class ScoreBuilder<T> {
     return this;
   }
 
+  label<K extends keyof T>(key: K = 'label' as K, newKey?: string) {
+    const finalKey = newKey ?? key;
+    this.outputs[finalKey] = this.object[key as string] as T[K]
+    return this;
+  }
+
   build(): T {
     return this.outputs as T;
   }

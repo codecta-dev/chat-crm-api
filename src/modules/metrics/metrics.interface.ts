@@ -26,6 +26,7 @@ type SentimentContact = Pick<Contact, 'id' | 'username'>;
 
 export interface SentimentTopQuery extends SentimentUser {
   total: number,
+  label: string,
   avgPos: number,
   avgNeu: number,
   avgNeg: number,
@@ -33,6 +34,9 @@ export interface SentimentTopQuery extends SentimentUser {
 
 export interface SentimentTop {
   onwer: SentimentUser | SentimentContact,
+  agent?: SentimentUser,
+  contact?: SentimentContact,
+  label: string,
   sentiment: {
     pos: number,
     neu: number,

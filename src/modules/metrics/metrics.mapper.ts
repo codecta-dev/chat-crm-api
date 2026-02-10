@@ -33,6 +33,7 @@ export class MetricMapper {
       return new ScoreBuilder<SentimentTop>(element)
         .onwer('onwer', ['id', 'username'], actor)
         .metrics('sentiment', { pos: 'avgPos', neu: 'avgNeu', neg: 'avgNeg' })
+        .label()
         .stat('total')
         .build()
     });
