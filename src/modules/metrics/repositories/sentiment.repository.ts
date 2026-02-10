@@ -25,7 +25,7 @@ export class SentimentRepository {
         AVG(sa.score_neg) as avg_neg 
       FROM sentiment_analysis sa 
       INNER JOIN analysis a ON a.analysis_id = sa.analysis_id
-      INNER JOIN messages m ON m.id = a.message_id 
+      INNER JOIN messages m ON m.message_id = a.message_id 
       LEFT JOIN users u ON u.id = m.agent_id
       WHERE m.created_at BETWEEN ${start} AND ${end}
         AND u.id = COALESCE(${userId}, u.id)
@@ -42,15 +42,19 @@ export class SentimentRepository {
         u.id AS id,
         u.username AS username,
         COUNT(sa.sentiment_analysis_id) AS total,
+        sa.label as label,
         AVG(sa.score_pos) AS avgPos,
         AVG(sa.score_neu) AS avgNeu,
         AVG(sa.score_neg) AS avgNeg
       FROM messages m
-      INNER JOIN users u ON u.id = m.agent_id -- agent relation
-      INNER JOIN analysis a ON a.message_id = m.id
+      INNER JOIN users u ON u.id = m.sender_id -- agent relation
+      INNER JOIN analysis a ON a.message_id = m.message_id
       INNER JOIN sentiment_analysis sa ON sa.analysis_id = a.analysis_id
-      WHERE sa.label = COALESCE(${label}, sa.label)
-      GROUP BY sa.sentiment_analysis_id
+      WHERE 
+        sa.label = COALESCE(${label}, sa.label) AND 
+        m.sender_type = 'agent' AND
+        m.sender_id IS NOT NULL
+      GROUP BY u.id, sa.label
       ORDER BY total DESC
       LIMIT ${limit}
     `;
@@ -61,16 +65,20 @@ export class SentimentRepository {
       SELECT 
         c.id AS id,
         c.username AS username,
+        sa.label as label,
         COUNT(sa.sentiment_analysis_id) AS total,
         AVG(sa.score_pos) AS avgPos,
         AVG(sa.score_neu) AS avgNeu,
         AVG(sa.score_neg) AS avgNeg
       FROM messages m
-      INNER JOIN contacts c ON c.id = m.contact_id -- contact relation
-      INNER JOIN analysis a ON a.message_id = m.id
+      INNER JOIN contacts c ON c.id = m.sender_id -- contact relation
+      INNER JOIN analysis a ON a.message_id =m.message_id
       INNER JOIN sentiment_analysis sa ON sa.analysis_id = a.analysis_id
-      WHERE sa.label = COALESCE(${label}, sa.label)
-      GROUP BY sa.sentiment_analysis_id
+      WHERE 
+        sa.label = COALESCE(${label}, sa.label) AND
+        m.sender_type = 'client' AND
+        m.sender_id IS NOT NULL
+      GROUP BY c.id, sa.label
       ORDER BY total DESC
       LIMIT ${limit}
     `;
