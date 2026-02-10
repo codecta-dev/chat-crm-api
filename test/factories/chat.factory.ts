@@ -1,33 +1,46 @@
 import { Factory } from 'fishery';
 import { faker } from '@faker-js/faker/locale/en';
 import { Chat, ChatStatus, ChatPriority, ChatChannel } from '@modules/chats/entities/chat.entity';
-import { ContactFactory } from './contact.factory';
-import { UserFactory } from './user.factory';
+import { ContactFactory, MessageFactory } from '@factories';
+import { DataSource, EntityManager } from 'typeorm';
 
-export const ChatFactory = Factory.define<Chat>(({ associations }) => {
-  const statuses: ChatStatus[] = ['open', 'pending', 'closed', 'archived'];
-  const priorities: ChatPriority[] = ['low', 'medium', 'high', 'urgent'];
-  const channels: ChatChannel[] = ['whatsapp', 'telegram', 'messenger', 'sms', 'email'];
+type ChatTransientParams = {
+  manager?: DataSource | EntityManager;
+};
 
-  const status = faker.helpers.arrayElement(statuses);
+export const ChatFactory = Factory.define<Chat, ChatTransientParams>(({
+  associations,
+  transientParams,
+  onCreate
+}) => {
+
+  onCreate(chat => {
+    const manager = transientParams.manager;
+
+    if (manager) {
+      const repo = manager.getRepository(Chat);
+      return repo.save(chat)
+    }
+
+    return chat;
+  })
+
+  const status = faker.helpers.enumValue(ChatStatus);
   const createdAt = faker.date.recent({ days: 30 });
 
-  const chat: Chat = {
-    id: faker.string.uuid(),
-    status: status,
-    lastMessage: associations.lastMessage || undefined,
-    priority: faker.helpers.arrayElement(priorities),
-    channel: faker.helpers.arrayElement(channels),
-    endedAt: (status === 'closed' || status === 'archived')
-      ? faker.date.between({ from: createdAt, to: new Date() })
-      : undefined,
-    createdAt: createdAt,
-    updatedAt: new Date(),
-    deletedAt: undefined,
-    contact: associations.contact || ContactFactory.build(),
-    assignedAgent: associations.assignedAgent || UserFactory.build(),
-    messages: associations.messages || [],
-  };
+  const chat = new Chat();
+
+  chat.status = status;
+  chat.lastMessage = associations.lastMessage;
+  chat.priority = faker.helpers.enumValue(ChatPriority);
+  chat.channel = faker.helpers.enumValue(ChatChannel);
+  chat.endedAt = (status === ChatStatus.CLOSED || status === ChatStatus.ARCHIVED)
+    ? faker.date.between({ from: createdAt, to: new Date() })
+    : undefined;
+
+  // associations
+  chat.client = associations.client ?? ContactFactory.build();
+  chat.messages = associations.messages || MessageFactory.buildList(1);
 
   return chat;
 });

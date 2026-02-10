@@ -13,7 +13,7 @@ export const UserFactory = Factory.define<User, UserTransientParams>(
       const manager = transientParams.manager;
       if (manager) {
         const repository = manager.getRepository(User);
-        return await repository.save(user);
+        return repository.save(user);
       }
       return user;
     });
