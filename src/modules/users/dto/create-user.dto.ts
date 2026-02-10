@@ -1,7 +1,6 @@
 import { isUnique } from '@utils/validators';
 import { IsEmail, IsOptional, IsString, Matches, MinLength } from "class-validator";
 import { i18nValidationMessage as t } from "nestjs-i18n";
-import { Exclude } from 'class-transformer';
 
 export class CreateUserDto {
   @IsString()
@@ -38,6 +37,5 @@ export class CreateUserDto {
 
   @IsString()
   @MinLength(8)
-  @Exclude()
   password: string;
 }
