@@ -2,7 +2,7 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { useContainer } from 'class-validator';
 import cookieParser from 'cookie-parser';
 import { I18nValidationExceptionFilter, I18nValidationPipe } from 'nestjs-i18n';
-import { Logger } from 'nestjs-pino';
+import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
 
 import { AppModule } from './app.module';
 import { ClassSerializerInterceptor } from '@nestjs/common';
@@ -22,7 +22,10 @@ async function bootstrap() {
   );
 
   // Interceptors
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+  app.useGlobalInterceptors(
+    new ClassSerializerInterceptor(app.get(Reflector)),
+    new LoggerErrorInterceptor(),
+  );
 
   // Validate decorators (isUnique)
   useContainer(app.select(AppModule), { fallbackOnErrors: true });

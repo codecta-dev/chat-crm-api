@@ -1,20 +1,23 @@
-import { IncomingMessage } from "http";
+import { Params } from "nestjs-pino";
 
-export const loggerConfig = {
+export const loggerConfig: Params = {
   pinoHttp: {
-    level: 'debug',
-    transport: {
+    level: process.env.NODE_ENV !== 'production' ? 'debug' : 'info',
+    transport: process.env.NODE_ENV !== 'production' ? {
       target: 'pino-pretty',
       options: {
         singleLine: true,
         colorize: true,
-        translateTime: 'dd/mm/yyyy, h:MM:ss TT',
-        levelFirst: false,
-        messageFormat: '[Chat Crm] {level} [{context}] {msg}',
+        translateTime: 'yyyy-mm-dd HH:MM:ss',
+        ignore: 'pid,hostname,context',
+        levelFirst: true,
+        messageFormat: '{if context}{context} |{end}{http} {msg}{if statusCode}{statusCode}{end}',
+        customColors: 'error:red,info:cyan,debug:blue,warn:yellow',
       },
-    },
-    customProps: (req: IncomingMessage) => ({
-      context: `${req.method} ${req.url}`,
+    } : undefined,
+    customProps: (req, res) => ({
+      http: `${req.method} ${req.url}`,
+      statusCode: ` - ${res.statusCode}`,
     }),
   },
 };
