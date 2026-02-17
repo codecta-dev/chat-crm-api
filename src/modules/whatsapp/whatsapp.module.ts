@@ -1,5 +1,5 @@
 import { HttpModule } from '@nestjs/axios';
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -12,9 +12,6 @@ import { WhatsAppMessageFactory } from './factories/whatsapp-message.factory';
 import { WhatsAppConfigSubscriber } from './subscribers/whatsapp-config.subscriber';
 import { WhatsAppApiClient } from './whatsapp-api.client';
 import { WhatsappGateway } from './whatsapp.gateway';
-import { ChatsModule } from '../chats/chats.module';
-import { ChatsService } from '../chats/chats.service';
-import { Chat } from '../chats/entities';
 import { ContactsModule } from '../contacts/contacts.module';
 import { Contact } from '../contacts/entities/contact.entity';
 import { NotificationsModule } from '../notifications/notifications.module';
@@ -33,11 +30,9 @@ import { MessageModule } from '@modules/message/message.module';
       Contact,
       User,
       WhatsAppConfig,
-      Chat,
     ]),
     HttpModule,
     NotificationsModule,
-    forwardRef(() => ChatsModule),
     ContactsModule,
     UsersModule,
     MessageModule,
@@ -55,7 +50,6 @@ import { MessageModule } from '@modules/message/message.module';
     WhatsAppConfigSubscriber,
     WhatsAppApiClient,
     WhatsAppMessageFactory,
-    ChatsService,
   ],
   exports: [
     WebhookService,

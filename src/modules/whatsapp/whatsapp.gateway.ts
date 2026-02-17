@@ -3,10 +3,7 @@ import { PinoLogger } from 'nestjs-pino';
 import { Server, Socket } from 'socket.io';
 import { WhatsappService } from './whatsapp.service';
 import { JwtPayload } from '../../auth/auth.types';
-import { ChatsService } from '../chats/chats.service';
-import { WhatsAppHttpException } from './exceptions/whatsapp.exceptions';
 import { UsersService } from '../users/users.service';
-import { MessageDirection, MessageSenderType, MessageType } from '@modules/message/message.entity';
 
 @WebSocketGateway({
   namespace: 'whatsapp',
@@ -19,7 +16,7 @@ import { MessageDirection, MessageSenderType, MessageType } from '@modules/messa
 export class WhatsappGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly logger: PinoLogger,
-    private readonly chatsService: ChatsService,
+    // private readonly chatsService: ChatsService,
     private readonly userService: UsersService,
     private readonly whatsappService: WhatsappService,
   ) { this.logger.setContext(WhatsappGateway.name) }
@@ -52,30 +49,30 @@ export class WhatsappGateway implements OnGatewayConnection, OnGatewayDisconnect
     this.logger.debug(`Client ${client.id} join to chat ${chatId}`);
   }
 
-  @SubscribeMessage('send-message')
-  async handleSendMessage(@ConnectedSocket() client: Socket, @MessageBody() data: { chat: string; to: string, body: string }) {
-    this.logger.debug(`Mensaje recibido desde React: ${JSON.stringify(client.handshake.auth)}`);
-    const auth = client.handshake.auth as JwtPayload;
-    const isSent = await this.whatsappService.sendTextMessage(data.to, data.body, auth.company).catch((err: WhatsAppHttpException) => {
-      client.emit('error-event', { type: err.type, message: err.message });
-      return false;
-    });
+  // @SubscribeMessage('send-message')
+  // async handleSendMessage(@ConnectedSocket() client: Socket, @MessageBody() data: { chat: string; to: string, body: string }) {
+  //   this.logger.debug(`Mensaje recibido desde React: ${JSON.stringify(client.handshake.auth)}`);
+  //   const auth = client.handshake.auth as JwtPayload;
+  //   const isSent = await this.whatsappService.sendTextMessage(data.to, data.body, auth.company).catch((err: WhatsAppHttpException) => {
+  //     client.emit('error-event', { type: err.type, message: err.message });
+  //     return false;
+  //   });
 
-    if (!isSent) {
-      this.logger.error('Error enviando mensaje a través de WhatsApp API');
-      return;
-    }
+  //   if (!isSent) {
+  //     this.logger.error('Error enviando mensaje a través de WhatsApp API');
+  //     return;
+  //   }
 
-    const msg = await this.chatsService.addMessage(data.chat, {
-      senderType: MessageSenderType.USER,
-      body: data.body,
-      mediaUrl: undefined, // * This is optional
-      direction: MessageDirection.OUT,
-      type: MessageType.TEXT // * This is type message
-    })
+  //   const msg = await this.chatsService.addMessage(data.chat, {
+  //     senderType: MessageSenderType.USER,
+  //     body: data.body,
+  //     mediaUrl: undefined, // * This is optional
+  //     direction: MessageDirection.OUT,
+  //     type: MessageType.TEXT // * This is type message
+  //   })
 
-    this.logger.debug(`Mensaje guardado en DB: ${JSON.stringify(msg)}`);
+  //   this.logger.debug(`Mensaje guardado en DB: ${JSON.stringify(msg)}`);
 
-    this.server.to(data.chat).emit('new-message', msg);
-  }
+  //   this.server.to(data.chat).emit('new-message', msg);
+  // }
 }

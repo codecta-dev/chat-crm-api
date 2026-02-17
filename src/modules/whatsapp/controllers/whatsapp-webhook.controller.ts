@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Post, Query, Res } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Query, Res } from '@nestjs/common';
 import type { // Usa 'type' para los tipos (interfaces/clases)
   WhatsappNotification,
   WhatsappNotificationValue
@@ -47,14 +47,14 @@ export class WhatsappWebhookController {
     }
   }
 
-  @Post()
-  async handleWebhook(@Body() body: WhatsappNotification, @Res() res: Response): Promise<Response> {
-    void await this.webhookService.handleIncomingMessage(body).catch((err: Error) => {
-      this.logger.error(`Error handling incoming message: ${err?.message}`, err.stack);
-      this.logger.debug(`Payload: ${err.stack}`);
-    });
+  // @Post()
+  // async handleWebhook(@Body() body: WhatsappNotification, @Res() res: Response): Promise<Response> {
+  //   void await this.webhookService.handleIncomingMessage(body).catch((err: Error) => {
+  //     this.logger.error(`Error handling incoming message: ${err?.message}`, err.stack);
+  //     this.logger.debug(`Payload: ${err.stack}`);
+  //   });
 
-    return res.sendStatus(HttpStatus.OK);
-  }
+  //   return res.sendStatus(HttpStatus.OK);
+  // }
 }
 
