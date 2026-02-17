@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Message } from "./message.entity";
-import { Repository } from "typeorm";
+import { Message, MessageSenderType, MessageType } from "./message.entity";
+import { DataSource, Repository } from "typeorm";
 import { CreateMessageDto } from "./entities/create-message.dto";
 
 @Injectable()
@@ -9,6 +9,7 @@ export class MessageRepository {
   constructor(
     @InjectRepository(Message)
     private readonly repo: Repository<Message>,
+    private readonly dataSource: DataSource,
   ) { }
 
   async create(dto: CreateMessageDto, chatId: string, agentId: string) {
@@ -20,6 +21,23 @@ export class MessageRepository {
     });
 
     return this.repo.save(message);
+  }
+
+  async createFromChat(
+    chatId: string, content: string, senderId: string,
+    senderType: MessageSenderType, type: MessageType,
+  ) {
+    return this.dataSource.transaction((manager) => {
+      const message = this.repo.create({
+        chat: { id: chatId },
+        content,
+        senderId,
+        senderType,
+        type
+      });
+
+      return manager.save(message);
+    })
   }
 
   async findChatMessages(chatId: string) {
