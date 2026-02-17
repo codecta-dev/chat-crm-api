@@ -28,13 +28,15 @@ export const MessageFactory = Factory.define<Message, MessageTransientParams>(
 
     const message = new Message();
     message.waId = `wa_${faker.string.uuid()}`;
-    message.senderType = params.senderType ?? MessageSenderType.USER;
+    message.senderType = params.senderType ?? MessageSenderType.AGENT;
     message.body = faker.lorem.sentence();
     message.content = faker.lorem.sentence();
     message.type = MessageType.TEXT;
     message.mediaUrl = faker.internet.url();
     message.status = MessageStatus.SENT;
-    message.direction = MessageDirection.IN;
+    message.direction = message.senderType == MessageSenderType.AGENT
+      ? MessageDirection.IN
+      : MessageDirection.OUT;
 
     // relations
     message.chat = associations.chat;

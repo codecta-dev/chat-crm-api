@@ -79,15 +79,15 @@ describe('Entity Factories Integration Tests', () => {
     const analysis = await AnalysisFactory.params({ createdAt: subYears(new Date(), 2) })
       .transient({ manager: queryRunner.manager }).create();
 
-    expect(analysis.analysisId).toBeDefined();
+    expect(analysis.id).toBeDefined();
     expect(analysis.message).toBeDefined();
   });
 
   it('Sentiment Analysis factory', async () => {
     const sentiment = await SentimentAnalysisFactory.transient({ manager: queryRunner.manager }).create();
 
-    expect(sentiment.SentimentAnalysisId).toBeDefined();
-    expect(sentiment.analysis.analysisId).toBeDefined();
+    expect(sentiment.id).toBeDefined();
+    expect(sentiment.analysis.id).toBeDefined();
     expect(sentiment.analysis.message.id).toBeDefined();
   })
 });
