@@ -1,47 +1,54 @@
 import { HttpService } from "@nestjs/axios";
-import { Injectable } from "@nestjs/common";
-import { AxiosError } from "axios";
+import { Inject, Injectable } from "@nestjs/common";
 import { PinoLogger } from "nestjs-pino";
-import { catchError, firstValueFrom, map, retry, throwError, timeout } from "rxjs";
-
-export interface SentimentResponse {
-  text: string;
-  label: 'NEG' | 'NEU' | 'POS';
-  probabilities: {
-    NEG: number;
-    NEU: number;
-    POS: number;
-  };
-}
+import {
+  firstValueFrom as first,
+  map, retry, tap, timeout,
+} from "rxjs";
+import {
+  SENTIMENT_RETRIES as retries,
+  SENTIMENT_TIMEOUT as time,
+} from "./sentiment.constants";
+import {
+  SentimentResponse as Response
+} from "./sentiment.interface";
+import { SentimentLabel } from "./sentiment.enum";
+import sentimentConfig from "src/config/sentiment.config";
+import type { ConfigType } from "@nestjs/config";
 
 @Injectable()
 export class SentimentClient {
-  private readonly url = process.env.IA_URL || "http://localhost:8000";
   constructor(
+    @Inject(sentimentConfig.KEY)
+    private readonly config: ConfigType<typeof sentimentConfig>,
     private readonly http: HttpService,
     private readonly logger: PinoLogger,
-  ) { }
+  ) { this.logger.setContext(SentimentClient.name) }
 
-  async analyze(text: string): Promise<SentimentResponse> {
+  async analyze(text: string) {
     const res$ = this.http
-      .post<SentimentResponse>(`${this.url}/analyze_message`, { text: text })
+      .post<Response>(this.config.endpoint, { text })
       .pipe(
-        timeout(1000),
-        retry(3),
-        map((res) => {
-          const data = res.data;
-          this.logger.debug(`Raw response: ${JSON.stringify(data)}`);
-          return data
-        }),
-        catchError((err: AxiosError) => {
-
-          this.logger.debug(`Calling IA service at ${this.url}/analyze_message with text="${text}"`);
-          this.logger.error(err.stack, 'Stack trace');
-
-          return throwError(() => new Error('Sentiment service unavailable'));
-        })
+        retry(retries),
+        timeout(time),
+        tap(({ data }) => this.logger.debug(data, 'Fetch Completed')),
+        map(({ data }) => data)
       )
 
-    return await firstValueFrom(res$)
+    return await first(res$).catch((err: unknown) => {
+      this.logger.error({ err }, `Error calling IA Api with text="${text}"`);
+
+      const analysis: Response = {
+        text: '',
+        label: SentimentLabel.NEUTRAL,
+        probabilities: {
+          POS: 0,
+          NEU: 0.1,
+          NEG: 0,
+        }
+      }
+
+      return analysis
+    });
   }
 }
