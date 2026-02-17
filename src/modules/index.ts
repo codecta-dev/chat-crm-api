@@ -5,7 +5,6 @@ import { ContactsModule } from './contacts/contacts.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { UsersModule } from './users/users.module';
-import { WhatsappModule } from './whatsapp/whatsapp.module';
 import { AnalysisModule } from './analysis/analysis.module';
 import { MessageModule } from './message/message.module';
 
@@ -16,7 +15,6 @@ export {
   MetricsModule,
   NotificationsModule,
   UsersModule,
-  WhatsappModule,
   AnalysisModule,
   MessageModule,
 };
@@ -27,7 +25,6 @@ export const modules = [
   ContactsModule,
   NotificationsModule,
   UsersModule,
-  WhatsappModule,
   MetricsModule,
   AnalysisModule,
   MessageModule,

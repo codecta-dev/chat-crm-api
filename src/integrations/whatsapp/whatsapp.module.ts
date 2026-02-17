@@ -6,19 +6,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { WebhookService } from './services/webhook.service';
 import { WhatsAppConfigService } from './services/whatsapp-config.service';
 import { WhatsappService } from './whatsapp.service';
-import { WhatsAppConfigController, WhatsappController, WhatsappWebhookController } from './controllers';
+import { WhatsAppConfigController, WhatsappWebhookController } from './controllers';
 import { WhatsAppConfig } from './entities';
 import { WhatsAppMessageFactory } from './factories/whatsapp-message.factory';
 import { WhatsAppConfigSubscriber } from './subscribers/whatsapp-config.subscriber';
 import { WhatsAppApiClient } from './whatsapp-api.client';
-import { WhatsappGateway } from './whatsapp.gateway';
-import { ContactsModule } from '../contacts/contacts.module';
-import { Contact } from '../contacts/entities/contact.entity';
-import { NotificationsModule } from '../notifications/notifications.module';
-import { User } from '../users/entities/user.entity';
-import { UsersModule } from '../users/users.module';
-import { Message } from '@modules/message/message.entity';
-import { MessageModule } from '@modules/message/message.module';
 
 @Module({
   imports: [
@@ -26,19 +18,11 @@ import { MessageModule } from '@modules/message/message.module';
       isGlobal: true,
     }),
     TypeOrmModule.forFeature([
-      Message,
-      Contact,
-      User,
       WhatsAppConfig,
     ]),
     HttpModule,
-    NotificationsModule,
-    ContactsModule,
-    UsersModule,
-    MessageModule,
   ],
   controllers: [
-    WhatsappController,
     WhatsappWebhookController,
     WhatsAppConfigController,
   ],
@@ -46,7 +30,6 @@ import { MessageModule } from '@modules/message/message.module';
     WebhookService,
     WhatsappService,
     WhatsAppConfigService,
-    WhatsappGateway,
     WhatsAppConfigSubscriber,
     WhatsAppApiClient,
     WhatsAppMessageFactory,
@@ -55,7 +38,6 @@ import { MessageModule } from '@modules/message/message.module';
     WebhookService,
     WhatsAppConfigService,
     WhatsappService,
-    WhatsappGateway,
     WhatsAppConfigSubscriber,
     WhatsAppApiClient,
   ],

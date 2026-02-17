@@ -1,5 +1,5 @@
+import { Company } from "@entities";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Company } from "../../company/entities/company.entity";
 
 @Entity('whatsapp_configs')
 export class WhatsAppConfig {

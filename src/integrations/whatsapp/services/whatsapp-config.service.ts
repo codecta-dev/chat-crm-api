@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PinoLogger } from 'nestjs-pino';
 import { Repository } from 'typeorm';
 
-import { Company } from '../../company/entities/company.entity';
+import { Company } from '../../../modules/company/entities/company.entity';
 import { CreateWhatsAppConfigDto, UpdateWhatsAppConfigDto } from '../dto/whatsapp-config.dto';
 import { WhatsAppConfig } from '../entities/whatsapp-config.entity';
 import { WhatsAppConfigNotFoundException } from '../exceptions/whatsapp-config.exceptions';

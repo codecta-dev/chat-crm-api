@@ -2,7 +2,7 @@ export { Chat } from "@modules/chats/entities";
 export { Contact } from "@modules/contacts/entities/contact.entity";
 export { User } from "@modules/users/entities/user.entity";
 export { Company } from "@modules/company/entities/company.entity";
-export { WhatsAppConfig } from "@modules/whatsapp/entities";
+export { WhatsAppConfig } from "src/integrations/whatsapp/entities";
 export { Notification } from "@modules/notifications/entities/notification.entity";
 export { Analysis } from "@modules/analysis/analysis.entity";
 export { SentimentAnalysis } from "@modules/analysis/sentiment/sentiment.entity";

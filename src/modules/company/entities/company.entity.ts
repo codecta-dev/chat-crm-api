@@ -9,7 +9,6 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Contact } from '../../contacts/entities/contact.entity';
-import { WhatsAppConfig } from '../../whatsapp/entities';
 
 export type CompanyStatus = 'active' | 'inactive' | 'suspended';
 
@@ -34,11 +33,6 @@ export class Company {
 
   @Column({ default: 'active' })
   status: CompanyStatus;
-
-  @OneToMany(
-    () => WhatsAppConfig,
-    whatsappConfig => whatsappConfig.company, { cascade: ['insert', 'update', 'soft-remove'] })
-  whatsAppConfigs: WhatsAppConfig[];
 
   @OneToMany(() => Contact, contact => contact.company)
   contacts: Contact[];

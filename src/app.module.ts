@@ -16,6 +16,7 @@ import { IsUniqueConstraint } from './utils/validators';
 // Modules
 import { AuthModule } from './auth/auth.module';
 import { CoreModules } from '@modules';
+import { IntegrationsModules } from './integrations';
 
 
 @Module({
@@ -24,6 +25,7 @@ import { CoreModules } from '@modules';
     AppConfigsModule,
     AuthModule,
     CoreModules,
+    IntegrationsModules,
   ],
   controllers: [AppController],
   providers: [AppService, IsUniqueConstraint,

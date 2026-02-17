@@ -1,27 +1,18 @@
 
 import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { PinoLogger } from "nestjs-pino";
-import { Repository } from "typeorm";
-import { WhatsAppConfigService } from "./whatsapp-config.service";
-import { Message } from "@modules/message/message.entity";
-import { ContactsService } from "../../contacts/contacts.service";
-import { NotificationsService } from "../../notifications/notifications.service";
-import { UsersService } from "../../users/users.service";
-import { WhatsappGateway } from "../whatsapp.gateway";
 
 @Injectable()
 export class WebhookService {
   constructor(
-    private readonly logger: PinoLogger,
-    private readonly configService: WhatsAppConfigService,
-    private readonly contactService: ContactsService,
+    // private readonly logger: PinoLogger,
+    // private readonly configService: WhatsAppConfigService,
+    // private readonly contactService: ContactsService,
     // private readonly chatService: ChatsService,
-    private readonly userService: UsersService,
-    private readonly whatsappGateway: WhatsappGateway,
-    private readonly notificationService: NotificationsService,
-    @InjectRepository(Message)
-    private readonly messageRepo: Repository<Message>,
+    // private readonly userService: UsersService,
+    // private readonly whatsappGateway: WhatsappGateway,
+    // private readonly notificationService: NotificationsService,
+    // @InjectRepository(Message)
+    // private readonly messageRepo: Repository<Message>,
     // @InjectQueue('sentiment')
     // private readonly sentimentQueue: Queue,
   ) { }

@@ -6,7 +6,7 @@ import type { // Usa 'type' para los tipos (interfaces/clases)
 import type { Response } from 'express';
 import { PinoLogger } from 'nestjs-pino';
 
-import { WebhookService } from '../services/webhook.service';
+// import { WebhookService } from '../services/webhook.service';
 import { WhatsAppConfigService } from '../services/whatsapp-config.service';
 
 @Controller('whatsapp/webhook')
@@ -14,7 +14,7 @@ export class WhatsappWebhookController {
   constructor(
     // private readonly whatsappGateway: WhatsappGateway,
     private readonly whatsappConfig: WhatsAppConfigService,
-    private readonly webhookService: WebhookService,
+    // private readonly webhookService: WebhookService,
     private readonly logger: PinoLogger,
   ) {
     this.logger.setContext(WhatsappWebhookController.name)
