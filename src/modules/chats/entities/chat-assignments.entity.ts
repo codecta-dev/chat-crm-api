@@ -1,8 +1,9 @@
 import { Chat, User } from "@entities";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, Unique } from "typeorm";
 import { ReasonAssignment } from "../chat.enum";
 
 @Entity()
+@Unique(['chat', 'agent'])
 export class ChatAssignments {
   @PrimaryGeneratedColumn('uuid', { name: 'chat_assignment_id' })
   id: string;
@@ -13,11 +14,11 @@ export class ChatAssignments {
   @ManyToOne(() => User)
   agent: User;
 
-  @Column({ type: 'datetime' })
+  @CreateDateColumn()
   assignedAt: Date;
 
-  @Column({ type: 'datetime' })
-  unassignedAt: Date;
+  @Column({ type: 'datetime', nullable: true })
+  unassignedAt?: Date;
 
   @Column({
     type: 'simple-enum',
