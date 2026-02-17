@@ -3,32 +3,40 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PinoLogger } from 'nestjs-pino';
 import { Repository } from 'typeorm';
 import { ChatDto, UpdateChatDto } from './dto/chat.dto';
-import { Chat, Transfer } from './entities';
+import { Chat } from './entities';
 import { Message } from '@modules/message/message.entity';
 import { ChatStatus } from './chat.enum';
+import { ChatRepository } from './chat.repository';
+import { ClsService } from 'nestjs-cls';
 
 @Injectable()
 export class ChatsService {
   constructor(
     @InjectRepository(Chat) private readonly chatRepo: Repository<Chat>,
-    @InjectRepository(Transfer) private readonly transferRepo: Repository<Transfer>,
-    // @InjectQueue('sentiment') private readonly sentimentQueue: Queue,
-    // private readonly messages: MessageService,
+    // @InjectRepository(Transfer) private readonly transferRepo: Repository<Transfer>,
+    private readonly repo: ChatRepository,
     private readonly logger: PinoLogger,
+    private readonly cls: ClsService,
   ) { }
 
-  async assignedUser(id: string, userId: string) {
-    const chat = await this.chatRepo.findOne({ where: { id: id }, loadRelationIds: true });
-    if (!chat) return false;
+  /**
+   * Retrieves the identifiers of agents assigned to a specific chat.
+   * 
+   * @param chatId - Unique identifier of the chat (from the Chat entity).
+   * @returns Promise resolving to an array of agent IDs associated with the chat.
+   * 
+   * @example
+   * const agentIds = await getAssigments("chat-123");
+   * // agentIds => ["agent-1", "agent-2", "agent-3"]
+   * 
+   */
+  async getAssigments(chatId: string) {
+    const agents = await this.repo.findAssigments(chatId);
+    return agents.map(agent => agent.id);
+  }
 
-    void this.transferRepo.save({
-      chat: { id },
-      fromAgent: chat.assignedAgent,
-      toAgent: { id: userId }
-    })
-
-    const result = await this.chatRepo.update({ id }, { assignedAgent: { id: userId } })
-    return result.affected === 1;
+  async assign(chatId: string, agentId: string) {
+    return this.repo.assign(chatId, agentId);
   }
 
   /**
@@ -86,6 +94,27 @@ export class ChatsService {
     });
 
     return await this.chatRepo.save(chat);
+  }
+
+  async list(agentId?: string) {
+
+    const agent = agentId ?? this.cls.get('user.id');
+    if (!agent) return {};
+
+    const chats = await this.repo.listChatsAssignments(agent);
+    return chats.map((chat) => ({
+      id: chat.chatId,
+      message: {
+        id: chat.messageId,
+        content: chat.messageContent,
+        datetime: chat.messageCreated,
+      },
+      client: {
+        id: chat.clientId,
+        username: chat.clientUsername,
+        phone: chat.clientPhone,
+      }
+    }))
   }
 
   async getChats(userID?: string, role?: string) {

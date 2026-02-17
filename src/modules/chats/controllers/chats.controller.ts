@@ -1,9 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, UseFilters, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ChatsService } from '../chats.service';
 import { ChatDto, UpdateChatDto } from '../dto/chat.dto';
 import { type AuthUser, CurrentUser } from '@auth';
 import { MessageService } from '@modules/message/message.services';
+import { ChatAssignExceptionFilter } from '../filters/chat-assign.filter';
+import { ChatAssignDto } from '../dto/chat-assign.dto';
 
 @Controller('chats')
 @UseGuards(AuthGuard('jwt'))
@@ -18,6 +20,28 @@ export class ChatsController {
     return this.service.create(dto);
   }
 
+  @Get('assignments/:chatId')
+  assignments(@Param('chatId') id: string) {
+    return this.service.getAssigments(id);
+  }
+
+  @UseFilters(ChatAssignExceptionFilter)
+  @Post('assign')
+  @HttpCode(HttpStatus.ACCEPTED)
+  async assign(@Body() { chatId, agentId }: ChatAssignDto) {
+    const res = await this.service.assign(chatId, agentId)
+    return {
+      message: 'agent assignated',
+      agent: res.agent.id,
+      chat: res.chat.id
+    };
+  }
+
+  @Get('list')
+  list(@Query('agentId') id?: string) {
+    return this.service.list(id);
+  }
+
   @Get('/list')
   findAll(@CurrentUser() user: AuthUser) {
     return this.service.getChats(user.id);
@@ -26,17 +50,6 @@ export class ChatsController {
   @Get(':id/messages')
   findMessages(@Param('id') id: string) {
     return this.messages.getChatMessages(id);
-  }
-
-  @Get(':id/assigned/:userId')
-  assinedUser(@Param('id') id: string, @Param('userId') userId: string) {
-    const result = this.service.assignedUser(id, userId);
-    return { success: result }
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.service.findOne(+id);
   }
 
   @Patch(':id')
