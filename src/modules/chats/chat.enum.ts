@@ -24,3 +24,11 @@ export enum ReasonAssignment {
   MANUAL = 'manual',
   AUTO = 'auto',
 }
+
+export enum ChatGatewayEvent {
+  Join = 'chat:join',
+  Joined = 'chat:joined',
+  SendMessage = 'chat:message:send',
+  ReceivedMessage = 'chat:message:received',
+  UpdateSentimentIndicator = 'chat:sentiment:update'
+}
