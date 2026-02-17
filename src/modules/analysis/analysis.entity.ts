@@ -11,8 +11,8 @@ import { Message } from '@modules/message/message.entity';
 
 @Entity('analysis')
 export class Analysis {
-  @PrimaryGeneratedColumn('uuid')
-  analysisId: string;
+  @PrimaryGeneratedColumn('uuid', { name: 'analysis_id' })
+  id: string;
 
   @Column({ type: 'simple-enum', enum: AnalysisType })
   type: AnalysisType;

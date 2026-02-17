@@ -13,8 +13,8 @@ import { Analysis } from "../analysis.entity";
 
 @Entity()
 export class SentimentAnalysis {
-  @PrimaryGeneratedColumn('uuid')
-  SentimentAnalysisId: string;
+  @PrimaryGeneratedColumn('uuid', { name: 'sentiment_analysis_id' })
+  id: string;
 
   @Column({
     type: 'simple-enum',
