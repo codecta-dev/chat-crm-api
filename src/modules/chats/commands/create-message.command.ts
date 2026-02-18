@@ -1,4 +1,4 @@
-import { MessageSenderType, MessageType } from "@modules/message/message.entity";
+import { MessageSenderType, MessageType } from "@modules/message/message.enum";
 import { Command } from "@nestjs/cqrs";
 
 export class CreateMessageCommand extends Command<{

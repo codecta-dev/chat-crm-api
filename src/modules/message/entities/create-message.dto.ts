@@ -1,5 +1,5 @@
 import { IsEnum, IsOptional, IsString, IsUUID, IsUrl } from 'class-validator';
-import { MessageType, MessageSenderType, MessageStatus, MessageDirection } from '../message.entity';
+import { MessageType, MessageSenderType, MessageStatus, MessageDirection } from "../message.enum";
 
 export class CreateMessageDto {
   @IsOptional()

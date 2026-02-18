@@ -12,7 +12,7 @@ import {
   Analysis, Chat, Company, Contact, User,
   SentimentAnalysis, WhatsAppConfig, Notification, Message
 } from "@entities";
-import { MessageSenderType } from "@modules/message/message.entity";
+import { MessageSenderType } from "@modules/message/message.enum";
 
 describe('Metrics Service - integration', () => {
   let module: TestingModule;

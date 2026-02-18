@@ -2,12 +2,14 @@ import { Factory } from 'fishery';
 import { faker } from '@faker-js/faker';
 import { DataSource, EntityManager } from 'typeorm';
 import {
-  Message,
+  Message
+} from '@modules/message/message.entity';
+import {
   MessageSenderType,
   MessageType,
   MessageStatus,
   MessageDirection
-} from '@modules/message/message.entity';
+} from "@modules/message/message.enum";
 import { UserFactory } from './user.factory';
 import { ContactFactory } from './contact.factory';
 

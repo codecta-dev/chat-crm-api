@@ -8,43 +8,12 @@ import {
   UpdateDateColumn
 } from "typeorm";
 import { Chat } from "@modules/chats/entities";
-
-export enum MessageType {
-  TEXT = 'text',
-  IMAGE = 'image',
-  FILE = 'file',
-  AUDIO = 'audio',
-  VIDEO = 'video',
-  DOCUMENT = 'document',
-}
-
-export enum MessageSenderType {
-  AGENT = 'agent',
-  USER = 'user',
-  CLIENT = 'client',
-  SYSTEM = 'system',
-}
-
-export enum MessageStatus {
-  SENT = 'sent',
-  DELIVERED = 'delivered',
-  RECEIVED = 'received',
-  READ = 'read',
-  FAILED = 'failed',
-}
-
-export enum MessageDirection {
-  IN = 'in',
-  OUT = 'out',
-}
+import { MessageSenderType, MessageType, MessageStatus, MessageDirection } from "./message.enum";
 
 @Entity('messages')
 export class Message {
   @PrimaryGeneratedColumn('uuid', { name: 'message_id' })
   id: string;
-
-  @Column({ unique: true, nullable: true })
-  waId?: string;
 
   @Column({
     type: 'simple-enum',
@@ -58,12 +27,6 @@ export class Message {
     nullable: true,
   })
   senderId: string;
-
-  /**
-   * @deprecated This deleted and replace with content in the future
-   */
-  @Column({ nullable: true, type: 'text' })
-  body: string;
 
   @Column({ nullable: true, type: 'text' })
   content: string;

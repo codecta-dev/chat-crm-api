@@ -1,7 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { MessageRepository } from "./message.repository";
 import { CreateMessageDto } from "./entities/create-message.dto";
-import { Message, MessageSenderType, MessageStatus, MessageType } from "./message.entity";
+import { Message } from "./message.entity";
+import { MessageSenderType, MessageStatus, MessageType } from "./message.enum";
 
 @Injectable()
 export class MessageService {
@@ -18,7 +19,7 @@ export class MessageService {
   }
 
   async createSimpleMessage(
-    payload: Pick<Message, 'direction' | 'body' | 'mediaUrl'>,
+    payload: Pick<Message, 'direction' | 'content' | 'mediaUrl'>,
     contactId: string,
     chatId: string,
   ) {
@@ -26,7 +27,7 @@ export class MessageService {
     return this.create({
       senderType: this.inferSender(payload.direction),
       direction: payload.direction,
-      body: payload.body,
+      body: payload.content,
       mediaUrl: payload.mediaUrl,
       status: MessageStatus.SENT,
       type: this.inferType(payload.mediaUrl),

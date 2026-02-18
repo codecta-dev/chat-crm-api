@@ -11,7 +11,7 @@ import { Server, Socket } from 'socket.io';
 import { ChatGatewayEvent as Event } from "../chat.enum";
 import { PinoLogger } from "nestjs-pino";
 import { CommandBus } from "@nestjs/cqrs";
-import { MessageSenderType, MessageType } from "@modules/message/message.entity";
+import { MessageSenderType, MessageType } from "@modules/message/message.enum";
 import { CreateMessageCommand } from "../commands/create-message.command";
 
 @WebSocketGateway({
