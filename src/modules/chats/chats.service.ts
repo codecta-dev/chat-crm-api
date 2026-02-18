@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PinoLogger } from 'nestjs-pino';
 import { Repository } from 'typeorm';
@@ -37,42 +37,6 @@ export class ChatsService {
 
   async assign(chatId: string, agentId: string) {
     return this.repo.assign(chatId, agentId);
-  }
-
-  /**
-   * @deprecated This method in removed in the future 
-   * 
-   * @param chatId chat id for gateway chat
-   * @param payload content to the message
-   * @returns saved message
-   */
-  async addMessage(
-    chatId: string,
-    payload: Pick<Message, 'senderType' | 'body' | 'mediaUrl' | 'direction' | 'type'>,
-  ): Promise<Message> {
-    if (!payload.body?.trim()) {
-      throw new BadRequestException('Message body cannot be empty');
-    }
-
-    const chat = await this.chatRepo.findOne({
-      where: { id: chatId },
-      relations: ['assignedAgent', 'contact'],
-    });
-
-    if (!chat) throw new NotFoundException('Chat not found');
-
-    // const savedMessage = await this.messages.createSimpleMessage(payload, chat.contact.id, chat.id);
-    const savedMessage = new Message();
-
-    this.logger.debug("Sentiment processor here")
-    // Consumer
-    // await this.sentimentQueue.add('analyze', savedMessage);
-
-    this.updateChatLastMessage(chat.id, savedMessage).catch((error) =>
-      this.logger.error('Error updating chat last message', error),
-    );
-
-    return savedMessage
   }
 
   updateLastMessage(chatId: string, messageId: string) {
