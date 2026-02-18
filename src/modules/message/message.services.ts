@@ -1,6 +1,5 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { MessageRepository } from "./message.repository";
-import { ClsService } from "nestjs-cls";
 import { CreateMessageDto } from "./entities/create-message.dto";
 import { Message, MessageSenderType, MessageStatus, MessageType } from "./message.entity";
 
@@ -8,17 +7,10 @@ import { Message, MessageSenderType, MessageStatus, MessageType } from "./messag
 export class MessageService {
   constructor(
     private readonly repo: MessageRepository,
-    private readonly cls: ClsService,
   ) { }
 
-  private get userId() {
-    const id = this.cls.get('user.id');
-    if (!id) throw new UnauthorizedException('User not found in context');
-    return id;
-  }
-
   async create(dto: CreateMessageDto, chatId: string) {
-    return this.repo.create(dto, chatId, this.userId);
+    return this.repo.create(dto, chatId);
   }
 
   async getChatMessages(chatId: string) {

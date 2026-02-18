@@ -8,8 +8,6 @@ import {
   UpdateDateColumn
 } from "typeorm";
 import { Chat } from "@modules/chats/entities";
-import { Contact } from "@modules/contacts/entities/contact.entity";
-import { User } from "@modules/users/entities/user.entity";
 
 export enum MessageType {
   TEXT = 'text',
@@ -95,20 +93,4 @@ export class Message {
     nullable: true, cascade: ['insert'], onDelete: 'SET NULL'
   })
   chat?: Chat;
-
-  /**
-   * @deprecated This relation replace with sender_type in the future
-   */
-  @ManyToOne(() => Contact, contact => contact.messages, {
-    nullable: true, cascade: ['insert'], onDelete: 'SET NULL'
-  })
-  contact?: Contact;
-
-  /**
-   * @deprecated This relation replace with sender_type in the future
-   */
-  @ManyToOne(() => User, {
-    nullable: true, cascade: ['insert'], onDelete: 'SET NULL'
-  })
-  agent?: User;
 }

@@ -12,12 +12,10 @@ export class MessageRepository {
     private readonly dataSource: DataSource,
   ) { }
 
-  async create(dto: CreateMessageDto, chatId: string, agentId: string) {
+  async create(dto: CreateMessageDto, chatId: string) {
     const message = this.repo.create({
       ...dto,
       chat: { id: chatId },
-      agent: { id: agentId },
-      contact: { id: dto.contactId },
     });
 
     return this.repo.save(message);

@@ -1,7 +1,6 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Chat } from "../../chats/entities";
 import { Company } from "../../company/entities/company.entity";
-import { Message } from "@modules/message/message.entity";
 
 export type ContactStatus = 'new' | 'lead' | 'prospect' | 'client';
 export type ContactSource = 'whatsapp' | 'manual';
@@ -59,7 +58,4 @@ export class Contact {
 
   @OneToMany(() => Chat, (chat) => chat.contact)
   chats: Chat[]
-
-  @OneToMany(() => Message, message => message.contact)
-  messages: Message[];
 }
