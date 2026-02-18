@@ -2,7 +2,6 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post
 import { AuthGuard } from '@nestjs/passport';
 import { ChatsService } from '../chats.service';
 import { ChatDto, UpdateChatDto } from '../dto/chat.dto';
-import { type AuthUser, CurrentUser } from '@auth';
 import { MessageService } from '@modules/message/message.services';
 import { ChatAssignExceptionFilter } from '../filters/chat-assign.filter';
 import { ChatAssignDto } from '../dto/chat-assign.dto';
@@ -40,11 +39,6 @@ export class ChatsController {
   @Get('list')
   list(@Query('agentId') id?: string) {
     return this.service.list(id);
-  }
-
-  @Get('/list')
-  findAll(@CurrentUser() user: AuthUser) {
-    return this.service.getChats(user.id);
   }
 
   @Get(':id/messages')

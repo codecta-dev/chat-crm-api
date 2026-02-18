@@ -1,5 +1,4 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Chat } from '../../chats/entities/chat.entity';
 import { Notification } from '../../notifications/entities/notification.entity';
 import { Exclude } from "class-transformer";
 
@@ -48,9 +47,6 @@ export class User {
 
   @DeleteDateColumn()
   deletedAt?: Date;
-
-  @OneToMany(() => Chat, chat => chat.assignedAgent)
-  chats: Chat[];
 
   @OneToMany(() => Notification, (notification) => notification.user)
   notifications: Notification[]

@@ -79,23 +79,6 @@ export class ChatsService {
     return this.chatRepo.update({ id: chatId }, { status: ChatStatus.OPEN, lastMessage: { id: messageId } });
   }
 
-  async findOrCreateByContact(agentId: string, contactId: string, isSystem: boolean = false): Promise<Chat> {
-    let chat = await this.chatRepo.findOne({
-      where: { contact: { id: contactId } },
-      relations: ['assignedAgent', 'contact'],
-    });
-
-    if (chat) return chat;
-
-    chat = this.chatRepo.create({
-      assignedAgent: { id: agentId },
-      contact: { id: contactId },
-      status: isSystem ? ChatStatus.PENDING : ChatStatus.OPEN,
-    });
-
-    return await this.chatRepo.save(chat);
-  }
-
   async list(agentId?: string) {
 
     const agent = agentId ?? this.cls.get('user.id');
@@ -115,23 +98,6 @@ export class ChatsService {
         phone: chat.clientPhone,
       }
     }))
-  }
-
-  async getChats(userID?: string, role?: string) {
-    this.logger.debug(`Fetching chats for userID: ${userID} with role: ${role}`);
-    const chats = await this.chatRepo.find({
-      where: (userID && role !== 'admin') ? { assignedAgent: { id: userID } } : {},
-      relations: {
-        contact: true,
-        lastMessage: true,
-      },
-      order: {
-        createdAt: 'DESC',
-      },
-      take: 20,
-    })
-
-    return chats;
   }
 
   create(dto: ChatDto) {

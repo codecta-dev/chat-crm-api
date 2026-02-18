@@ -1,5 +1,4 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Chat } from "../../chats/entities";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Company } from "../../company/entities/company.entity";
 
 export type ContactStatus = 'new' | 'lead' | 'prospect' | 'client';
@@ -55,7 +54,4 @@ export class Contact {
 
   @ManyToOne(() => Company, (company) => company.contacts, { nullable: true, onDelete: 'SET NULL' })
   company: Company;
-
-  @OneToMany(() => Chat, (chat) => chat.contact)
-  chats: Chat[]
 }

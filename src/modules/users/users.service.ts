@@ -18,7 +18,6 @@ import { CoreService } from '@core/core.service';
 import { AuthUser } from '@auth';
 import { ClsService } from 'nestjs-cls';
 import { UserRepository } from './user.repository';
-import { ChatStatus } from '@modules/chats/chat.enum';
 
 @Injectable()
 export class UsersService extends CoreService<User> {
@@ -136,37 +135,37 @@ export class UsersService extends CoreService<User> {
     return this.repo.save(created);
   }
 
-  async findAvailableAgent(companyId: string): Promise<User> {
-    const agents = await this.repo.find({
-      where: {
-        status: 'online',
-      },
-      order: {
-        status: 'DESC',
-        username: 'ASC'
-      },
-      relations: ['company'],
-    });
+  // async findAvailableAgent(companyId: string): Promise<User> {
+  //   const agents = await this.repo.find({
+  //     where: {
+  //       status: 'online',
+  //     },
+  //     order: {
+  //       status: 'DESC',
+  //       username: 'ASC'
+  //     },
+  //     relations: ['company'],
+  //   });
 
-    if (agents.length === 0) {
-      return this.findOrCreateSystemUser(companyId);
-    }
+  //   if (agents.length === 0) {
+  //     return this.findOrCreateSystemUser(companyId);
+  //   }
 
-    const agentsWithLoad = await Promise.all(
-      agents.map(async (agent) => {
-        const activeChats = await this.chatRepo.count({
-          where: { assignedAgent: { id: agent.id }, status: ChatStatus.OPEN },
-        });
-        return { agent, activeChats };
-      }),
-    );
+  //   const agentsWithLoad = await Promise.all(
+  //     agents.map(async (agent) => {
+  //       const activeChats = await this.chatRepo.count({
+  //         where: { assignedAgent: { id: agent.id }, status: ChatStatus.OPEN },
+  //       });
+  //       return { agent, activeChats };
+  //     }),
+  //   );
 
-    agentsWithLoad.sort((a, b) => a.activeChats - b.activeChats);
-    const bestAgent = agentsWithLoad[0].agent;
+  //   agentsWithLoad.sort((a, b) => a.activeChats - b.activeChats);
+  //   const bestAgent = agentsWithLoad[0].agent;
 
-    this.logger.debug(`Selected agent ${bestAgent.username}`);
-    return bestAgent;
-  }
+  //   this.logger.debug(`Selected agent ${bestAgent.username}`);
+  //   return bestAgent;
+  // }
 
   async getAgent() {
     const agent = await this.repo.findOne({ where: { status: 'online' } });

@@ -10,7 +10,6 @@ import {
   UpdateDateColumn
 } from "typeorm";
 import { Contact } from "../../contacts/entities/contact.entity";
-import { User } from "../../users/entities/user.entity";
 import { Message } from "@modules/message/message.entity";
 import { ChatStatus, ChatPriority, ChatChannel } from "../chat.enum";
 
@@ -61,18 +60,6 @@ export class Chat {
 
   @ManyToOne(() => Contact, { nullable: true, onDelete: 'SET NULL' })
   client: Contact;
-
-  /**
-   * @deprecated remove in the future
-   */
-  @ManyToOne(() => Contact, (contact) => contact.chats, { nullable: true, onDelete: 'SET NULL' })
-  contact: Contact;
-
-  /**
-   * @deprecated remove in the future
-   */
-  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
-  assignedAgent: User;
 
   @OneToMany(() => Message, (message) => message.chat, { nullable: true, onDelete: 'SET NULL' })
   messages: Message[];
