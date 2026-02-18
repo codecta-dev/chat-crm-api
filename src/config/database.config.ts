@@ -8,7 +8,10 @@ export const databaseConfig: TypeOrmModuleOptions = {
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  entities: [__dirname + '/../modules/**/*.entity{.ts,.js}'],
+  entities: [
+    __dirname + '/../modules/**/*.entity{.ts,.js}',
+    __dirname + '/../integrations/**/*.entity{.ts,.js}'
+  ],
   migrations: [__dirname + '/../migrations/*.ts'],
   synchronize: process.env.NODE_ENV !== 'production',
   namingStrategy: new SnakeNamingStrategy(),
@@ -28,7 +31,10 @@ export const testDatabaseSQLiteConfig: TypeOrmModuleOptions = {
   database: ':memory:',
   synchronize: true,
   dropSchema: true,
-  entities: [__dirname + '/../modules/**/*.entity{.ts,.js}'],
+  entities: [
+    __dirname + '/../modules/**/*.entity{.ts,.js}',
+    __dirname + '/../integrations/**/*.entity{.ts,.js}'
+  ],
   migrations: [__dirname + '/../migrations/*.ts'],
   namingStrategy: new SnakeNamingStrategy(),
   logger: 'formatted-console'
