@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common';
 import type {
   WhatsappNotification,
-  WhatsappNotificationValue
 } from '@daweto/whatsapp-api-types'
 
 import { WebhookQuery } from '../dto/webhook.query.dto';
@@ -23,16 +22,6 @@ export class WebhookController {
     private readonly logger: PinoLogger,
   ) {
     this.logger.setContext(WebhookController.name)
-  }
-
-  extractFromValue<T>(body: WhatsappNotification, key: keyof WhatsappNotificationValue): T[] {
-    const result = body.entry
-      ?.flatMap(entry => entry.changes ?? [])
-      .map(change => change.value?.[key])
-      .filter(items => Array.isArray(items))
-      .flat() ?? [];
-
-    return result as T[];
   }
 
   @Get()
