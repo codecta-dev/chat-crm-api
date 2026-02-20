@@ -1,50 +1,92 @@
 import { Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
-import { WhatsAppConfigService } from './services/whatsapp-config.service';
+import { ClsService } from 'nestjs-cls';
+import { Repository } from 'typeorm';
+
+import { WhatsAppConfig } from '@entities';
 import { WhatsAppMessageFactory } from './factories/whatsapp-message.factory';
 import { WhatsAppApiClient } from './whatsapp-api.client';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
-export class WhatsappService {
+export class WhatsAppService {
   constructor(
-    private readonly config: WhatsAppConfigService,
+    @InjectRepository(WhatsAppConfig)
+    private readonly configRepository: Repository<WhatsAppConfig>,
     private readonly client: WhatsAppApiClient,
     private readonly factory: WhatsAppMessageFactory,
+    private readonly cls: ClsService,
     private readonly logger: PinoLogger,
-  ) { this.logger.setContext(WhatsappService.name) }
+  ) { this.logger.setContext(WhatsAppService.name) }
 
-  async sendTemplateMessage(to: string, templateName: string, languageCode: string, companyId?: string) {
-    const { apiBaseUrl, apiVersion, phoneNumberId, accessToken } = await this.config.getActiveByCompany(companyId ?? '');
-    const url = `${apiBaseUrl}/${apiVersion}/${phoneNumberId}/messages`;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const payload: any = this.factory.template(to, templateName, languageCode);
+  async verifyToken(token: string) {
+    return !!(await this.configRepository.findOne({
+      where: { webhookVerifyToken: token },
+      cache: true,
+    }));
+  }
 
-    return this.client.sendMessage(url, accessToken, payload).catch(err => {
-      this.logger.debug(`Info request WhatsApp API: ${apiBaseUrl} - ${apiVersion} - ${phoneNumberId}`);
-      this.logger.debug(`Payload request WhatsApp API: ${JSON.stringify(payload, null, 2)}`);
-      this.logger.debug(`Error sending template message to ${to}`);
-      throw err;
+  async getConfig() {
+    this.logger.debug(`User ${this.cls.get('user.id')} get config with ${this.cls.get('company.id')}`)
+    return this.configRepository.findOne({ where: { company: { id: this.cls.get('company.id') } }, cache: true })
+  }
+
+  async getConfigByPhoneNumberId(phoneNumberId: string) {
+    return this.configRepository.findOne({
+      where: {
+        phoneNumberId,
+        isActive: true
+      },
+      cache: true,
+    })
+  }
+
+  createConfig(config: Partial<WhatsAppConfig>) {
+    const company = { id: this.cls.get('company.id') }
+    const waConfig = this.configRepository.create({
+      ...config,
+      company
     });
+
+    return this.configRepository.save(waConfig);
   }
 
-  async sendTextMessage(to: string, message: string, companyId?: string) {
-    const { apiBaseUrl, apiVersion, phoneNumberId, accessToken } = await this.config.getActiveByCompany(companyId);
-    const url = `${apiBaseUrl}/${apiVersion}/${phoneNumberId}/messages`;
-    const payload = this.factory.text(to, message);
-
-    return this.client.sendMessage(url, accessToken, payload).catch(err => {
-      this.logger.debug(`Info request WhatsApp API: ${apiBaseUrl} - ${apiVersion} - ${phoneNumberId}`);
-      this.logger.debug(`Payload request WhatsApp API: ${JSON.stringify(payload, null, 2)}`);
-      this.logger.debug(`Error sending message to ${to}`);
-      throw err;
-    });
+  updateConfig(config: Partial<WhatsAppConfig>) {
+    return this.configRepository.update(this.cls.get('company.id'), config);
   }
 
-  async sendMessage(to: string, message: string) {
-    const { apiBaseUrl, phoneNumberId, accessToken } = await this.config.active();
-    const url = `${apiBaseUrl}/${phoneNumberId}/messages`;
-    const payload = this.factory.text(to, message);
+  // async sendTemplateMessage(to: string, templateName: string, languageCode: string, companyId?: string) {
+  //   const { apiBaseUrl, apiVersion, phoneNumberId, accessToken } = await this.configService.getActiveByCompany(companyId ?? '');
+  //   const url = `${apiBaseUrl}/${apiVersion}/${phoneNumberId}/messages`;
+  //   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  //   const payload: any = this.factory.template(to, templateName, languageCode);
 
-    return this.client.sendMessage(url, accessToken, payload);
-  }
+  //   return this.client.sendMessage(url, accessToken, payload).catch(err => {
+  //     this.logger.debug(`Info request WhatsApp API: ${apiBaseUrl} - ${apiVersion} - ${phoneNumberId}`);
+  //     this.logger.debug(`Payload request WhatsApp API: ${JSON.stringify(payload, null, 2)}`);
+  //     this.logger.debug(`Error sending template message to ${to}`);
+  //     throw err;
+  //   });
+  // }
+
+  // async sendTextMessage(to: string, message: string, companyId?: string) {
+  //   const { apiBaseUrl, apiVersion, phoneNumberId, accessToken } = await this.configService.getActiveByCompany(companyId);
+  //   const url = `${apiBaseUrl}/${apiVersion}/${phoneNumberId}/messages`;
+  //   const payload = this.factory.text(to, message);
+
+  //   return this.client.sendMessage(url, accessToken, payload).catch(err => {
+  //     this.logger.debug(`Info request WhatsApp API: ${apiBaseUrl} - ${apiVersion} - ${phoneNumberId}`);
+  //     this.logger.debug(`Payload request WhatsApp API: ${JSON.stringify(payload, null, 2)}`);
+  //     this.logger.debug(`Error sending message to ${to}`);
+  //     throw err;
+  //   });
+  // }
+
+  // async sendMessage(to: string, message: string) {
+  //   const { apiBaseUrl, phoneNumberId, accessToken } = await this.configService.active();
+  //   const url = `${apiBaseUrl}/${phoneNumberId}/messages`;
+  //   const payload = this.factory.text(to, message);
+
+  //   return this.client.sendMessage(url, accessToken, payload);
+  // }
 }

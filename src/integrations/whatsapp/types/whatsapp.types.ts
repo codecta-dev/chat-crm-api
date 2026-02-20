@@ -1,25 +1,39 @@
-export type WhatsAppBaseMessage = {
-  messagingProduct?: string;
-  recipientType?: string;
-  to?: string;
-  type?: string;
-};
+export interface MessageContext {
+  phoneNumberId: string;
+  from: string;
+  messageId: string;
+  senderName?: string;
+}
 
-export type WhatsAppTextMessage = WhatsAppBaseMessage & {
-  text: { body: string };
-};
+export interface TextContent {
+  type: 'text';
+  text: string;
+}
 
-export type WhatsAppImageMessage = WhatsAppBaseMessage & {
-  type: "image";
-  image: { link: string; caption?: string };
-};
+export interface ImageContent {
+  type: 'image';
+  image?: {
+    id?: string;
+    caption?: string;
+    sha256?: string;
+    mime_type?: string;
+  };
+}
 
-export type WhatsAppLocationMessage = WhatsAppBaseMessage & {
-  type: "location";
-  location: { latitude: string; longitude: string; name?: string; address?: string };
-};
+interface DocumentContent {
+  type: 'document';
+  document?: {
+    id: string;
+    caption: string;
+    filename: string;
+    sha256: string;
+    mime_type: string;
+  };
+}
 
-export type WhatsAppMessage =
-  | WhatsAppTextMessage
-  | WhatsAppImageMessage
-  | WhatsAppLocationMessage;
+export type MessageContent = TextContent | ImageContent | DocumentContent; // | AudioContent | VideoContent ...
+
+export interface ParsedMessage {
+  context: MessageContext;
+  content: MessageContent;
+}
