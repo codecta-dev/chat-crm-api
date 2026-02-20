@@ -1,7 +1,5 @@
-import { WhatsAppConfigController } from "./whatsapp-config.controller";
-import { WhatsappWebhookController } from "./whatsapp-webhook.controller";
+import { WebhookController } from "./webhook.controller";
 
 export {
-  WhatsAppConfigController,
-  WhatsappWebhookController,
+  WebhookController,
 };

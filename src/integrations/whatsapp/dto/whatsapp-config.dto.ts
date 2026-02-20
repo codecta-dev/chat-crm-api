@@ -1,5 +1,5 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { IsBoolean, IsOptional, IsString, IsUrl, IsUUID, Matches } from 'class-validator';
+import { IsOptional, IsString, IsUrl, Matches } from 'class-validator';
 
 export class CreateWhatsAppConfigDto {
   @IsString()
@@ -21,13 +21,6 @@ export class CreateWhatsAppConfigDto {
   @IsOptional()
   @IsUrl()
   apiBaseUrl: string;
-
-  @IsOptional()
-  @IsBoolean()
-  isActive?: boolean;
-
-  @IsUUID()
-  companyId: string;
 }
 
 export class UpdateWhatsAppConfigDto extends PartialType(CreateWhatsAppConfigDto) { }
