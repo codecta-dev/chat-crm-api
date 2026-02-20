@@ -45,9 +45,6 @@ export class WebhookController {
 
   @Post()
   receiveMessage(@Body() payload: WhatsappNotification, @Res() res: Response) {
-
-    res.sendStatus(HttpStatus.OK)
-
     const change = payload.entry[0].changes[0].value;
     if (!change.messages?.length) return;
 
@@ -56,6 +53,8 @@ export class WebhookController {
     for (const msg of messages) {
       void this.commandBus.execute(new ReceiveWhatsAppMessageCommand(msg))
     }
+
+    res.sendStatus(HttpStatus.OK)
   }
 }
 
