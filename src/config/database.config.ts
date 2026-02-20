@@ -16,6 +16,15 @@ export const databaseConfig: TypeOrmModuleOptions = {
   synchronize: process.env.NODE_ENV !== 'production',
   namingStrategy: new SnakeNamingStrategy(),
   // logging: ['query'],
+  cache: {
+    type: 'ioredis',
+    duration: 60_000,
+    options: {
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT || '6379', 10),
+      password: process.env.REDIS_PASSWORD,
+    },
+  }
 };
 
 export const testDatabaseConfig: TypeOrmModuleOptions = {
