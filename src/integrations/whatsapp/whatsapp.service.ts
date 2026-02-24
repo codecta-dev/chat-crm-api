@@ -4,20 +4,19 @@ import { ClsService } from 'nestjs-cls';
 import { Repository } from 'typeorm';
 
 import { WhatsAppConfig } from '@entities';
-import { WhatsAppMessageFactory } from './factories/whatsapp-message.factory';
-import { WhatsAppApiClient } from './whatsapp-api.client';
 import { InjectRepository } from '@nestjs/typeorm';
+import { WhatsAppClient } from './clients/whatsapp.client';
+import { WhatsAppMessageBuilder } from './builders/whatsapp-message.builder';
 
 @Injectable()
-export class WhatsAppService {
+export class WhatsAppService extends WhatsAppMessageBuilder {
   constructor(
     @InjectRepository(WhatsAppConfig)
     private readonly configRepository: Repository<WhatsAppConfig>,
-    private readonly client: WhatsAppApiClient,
-    private readonly factory: WhatsAppMessageFactory,
+    private readonly client: WhatsAppClient,
     private readonly cls: ClsService,
     private readonly logger: PinoLogger,
-  ) { this.logger.setContext(WhatsAppService.name) }
+  ) { super(); this.logger.setContext(WhatsAppService.name) }
 
   async verifyToken(token: string) {
     return !!(await this.configRepository.findOne({
@@ -28,7 +27,26 @@ export class WhatsAppService {
 
   async getConfig() {
     this.logger.debug(`User ${this.cls.get('user.id')} get config with ${this.cls.get('company.id')}`)
-    return this.configRepository.findOne({ where: { company: { id: this.cls.get('company.id') } }, cache: true })
+    return this.configRepository.findOne({
+      where: {
+        company: { id: this.cls.get('company.id') }
+      }, cache: true
+    })
+  }
+
+  async sendText(to: string, body: string) {
+    const payload = this.text()
+      .to(to)
+      .body(body)
+      .build();
+
+    const config = await this.getConfig();
+    this.logger.debug(config, 'Config in service')
+
+    if (!config) return;
+    this.client.setConfig(config);
+
+    return this.client.send(payload);
   }
 
   async getConfigByPhoneNumberId(phoneNumberId: string) {

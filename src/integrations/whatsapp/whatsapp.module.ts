@@ -13,6 +13,7 @@ import { WhatsappController } from './controllers/whatsapp.controller';
 import { WhatsAppMessageDetail } from './entities/whatsapp-message-detail.entity';
 import { ReceiveWhatsAppMessageHandler } from './commands/handlers/receive-whatsapp-message.handler';
 import { MessageContentHandlers } from './commands/handlers/message-content.handlers';
+import { WhatsAppClient } from './clients/whatsapp.client';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { MessageContentHandlers } from './commands/handlers/message-content.hand
     WhatsAppService,
     WhatsAppConfigSubscriber,
     WhatsAppApiClient,
+    WhatsAppClient,
     WhatsAppMessageFactory,
     ReceiveWhatsAppMessageHandler,
     MessageContentHandlers,

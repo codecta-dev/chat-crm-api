@@ -6,7 +6,7 @@ import { ImageContent, MessageContent, TextContent } from '../../types/whatsapp.
 export class MessageContentHandlers {
   private readonly text: ContentHandlerPort<TextContent> = {
     handle: (content, _context, config) => {
-      console.log(content.text, ' Config: ', config);
+      console.log(content.text.body, ' Config: ', config);
     },
   };
 

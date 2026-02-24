@@ -18,3 +18,20 @@ export interface WhatsAppContactResponse {
 export interface WhatsAppMessageResponse {
   id: string;      // ID único del mensaje enviado
 }
+/**
+ * @link https://developers.facebook.com/documentation/business-messaging/whatsapp/support/error-codes#example
+ */
+
+export interface WhatsAppErrorBody {
+  message: string;
+  type: string;
+  code: number;
+  error_data?: {
+    messaging_product: string;
+    details: string;
+  };
+  fbtrace_id?: string;
+}
+export interface WhatsAppErrorResponse {
+  error?: WhatsAppErrorBody;
+}

@@ -45,6 +45,15 @@ export class WebhookController {
 
   @Post()
   receiveMessage(@Body() payload: WhatsappNotification, @Res() res: Response) {
+    // this.logger.debug('Recibe del webhook');
+    this.logger.debug(payload, 'Webhook object');
+    this.logger.debug(JSON.stringify(payload.entry[0].changes[0].value), 'Webhook change');
+
+
+    // IMPORTANT: Always respond with 200 OK first, 
+    // otherwise WhatsApp will keep retrying the webhook endlessly.
+    res.sendStatus(HttpStatus.OK)
+
     const change = payload.entry[0].changes[0].value;
     if (!change.messages?.length) return;
 
@@ -53,8 +62,6 @@ export class WebhookController {
     for (const msg of messages) {
       void this.commandBus.execute(new ReceiveWhatsAppMessageCommand(msg))
     }
-
-    res.sendStatus(HttpStatus.OK)
   }
 }
 

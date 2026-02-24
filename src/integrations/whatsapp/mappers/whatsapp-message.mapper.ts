@@ -20,11 +20,11 @@ type Handler<T extends Message = Message> = (
 const handlers: Partial<Record<MessageType, Handler>> = {
   text: (msg: TextMessage) => ({
     type: 'text',
-    text: msg.text?.body ?? '',
+    text: msg.text ?? { body: '' },
   }),
   image: (msg: ImageMessage) => ({
     type: 'image',
-    image: msg.image
+    image: msg.image,
   })
   // image: (msg: WhatsappNotificationImageMessage | ImageMessage) => ({ type: 'image', url: ... }),
 };

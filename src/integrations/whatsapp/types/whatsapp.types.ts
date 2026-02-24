@@ -7,7 +7,10 @@ export interface MessageContext {
 
 export interface TextContent {
   type: 'text';
-  text: string;
+  text: {
+    body: string,
+    preview_url?: boolean,
+  };
 }
 
 export interface ImageContent {

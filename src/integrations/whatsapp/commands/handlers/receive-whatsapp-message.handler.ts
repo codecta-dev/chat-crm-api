@@ -17,11 +17,14 @@ export class ReceiveWhatsAppMessageHandler implements ICommandHandler<ReceiveWha
 
     const config = await this.service.getConfigByPhoneNumberId(context.phoneNumberId);
 
+    if (!config) {
+      this.logger.debug('No found config')
+      return
+    }
+
+    this.logger.debug(config, 'Load whatsapp config')
     await this.contentHandlers
       .getHandler(content.type)
       ?.handle(content, context, config);
-
-    if (config)
-      this.logger.debug(config, `Load config with: ${config.businessId}`);
   }
 }

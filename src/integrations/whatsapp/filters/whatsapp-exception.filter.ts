@@ -4,48 +4,96 @@ import {
   ArgumentsHost,
   HttpException,
   HttpStatus,
-} from "@nestjs/common";
-import { Response } from "express";
-import { PinoLogger } from "nestjs-pino";
-import { WhatsAppHttpException } from "../exceptions/whatsapp.exceptions";
+  Logger,
+} from '@nestjs/common';
+import { Response } from 'express';
+import { AxiosError } from 'axios';
+import { WA_CODE_TO_STATUS } from '../whatsapp.constants';
+import { WhatsAppErrorBody, WhatsAppErrorResponse } from '../interfaces/whatsapp.interface';
 
-export interface ErrorResponse {
-  sucess: boolean;
-  message: string;
-  type: string;
-  timestamp: string;
-  stack?: string;
+function extractWhatsAppError(exception: unknown): WhatsAppErrorBody | null {
+  if ((exception as AxiosError).isAxiosError) {
+    return ((exception as AxiosError).response?.data as WhatsAppErrorResponse)?.error ?? null;
+  }
+  if (exception instanceof HttpException) {
+    return (exception.getResponse() as WhatsAppErrorResponse)?.error ?? null;
+  }
+  return null;
 }
 
-@Catch(HttpException)
-export class WhatsAppExceptionFilter implements ExceptionFilter {
-  constructor(private readonly logger: PinoLogger) { }
+function resolveStatus(code: number | undefined, fallback: HttpStatus): HttpStatus {
+  return code ? WA_CODE_TO_STATUS[code] ?? fallback : fallback;
+}
 
-  catch(exception: HttpException, host: ArgumentsHost) {
+function mapWhatsAppErrorToResponse(waError: WhatsAppErrorBody, status: HttpStatus) {
+  return {
+    statusCode: status,
+    whatsapp_error: {
+      code: waError.code,
+      type: waError.type,
+      message: waError.message,
+    },
+  };
+}
+
+function mapGenericError(type: string, message: string, status: HttpStatus, details?: string) {
+  return {
+    statusCode: status,
+    error: {
+      type,
+      message,
+      ...(details ? { details } : {})
+    },
+  };
+}
+
+@Catch(HttpException, AxiosError)
+export class WhatsAppExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(WhatsAppExceptionFilter.name);
+
+  catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    // const request = ctx.getRequest<Request>();
 
-    const status =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+    const waError = extractWhatsAppError(exception);
 
-    const context = exception instanceof WhatsAppHttpException
-      ? exception.type
-      : exception.name;
+    if ((exception as AxiosError).isAxiosError) {
+      const axiosError = exception as AxiosError;
+      const status = waError
+        ? resolveStatus(waError.code, HttpStatus.BAD_REQUEST)
+        : axiosError.response?.status ?? HttpStatus.BAD_GATEWAY;
 
-    const errorResponse: ErrorResponse = {
-      sucess: false,
-      message: exception.message ?? "Error en WhatsApp",
-      type: context,
-      timestamp: new Date().toISOString(),
-    };
+      if (waError) {
+        response.status(status).json(mapWhatsAppErrorToResponse(waError, status));
+        return;
+      }
 
-    this.logger.setContext(context);
-    this.logger.error(exception.message);
-    this.logger.trace(exception.stack);
+      response.status(status).json(
+        mapGenericError('UPSTREAM_ERROR', 'Error al comunicarse con la API de WhatsApp', status, axiosError.message)
+      );
+      return;
+    }
 
-    response.status(status).json(errorResponse);
+    if (exception instanceof HttpException) {
+      const status = exception.getStatus();
+      if (waError) {
+        const mappedStatus = resolveStatus(waError.code, status);
+        response.status(mappedStatus).json(mapWhatsAppErrorToResponse(waError, mappedStatus));
+        return;
+      }
+
+      const exceptionResponse = exception.getResponse();
+      const message =
+        typeof exceptionResponse === 'string'
+          ? exceptionResponse
+          : (exceptionResponse as Error)?.message ?? 'Error desconocido';
+
+      response.status(status).json(mapGenericError('HTTP_ERROR', message, status));
+      return;
+    }
+
+    response
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .json(mapGenericError('INTERNAL_ERROR', 'Error interno del servidor', HttpStatus.INTERNAL_SERVER_ERROR));
   }
 }
