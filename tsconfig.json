@@ -44,6 +44,9 @@
       "@factories": [
         "./test/factories/index"
       ],
+      "@integrations/*": [
+        "./src/integrations/*"
+      ],
       "@core/*": [
         "./src/core/*"
       ]
