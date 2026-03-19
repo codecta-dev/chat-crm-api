@@ -13,13 +13,15 @@ export class AnalyseMessageHandler implements ICommandHandler<AnalyzeMessageComm
 
   async execute(command: AnalyzeMessageCommand): Promise<{ jobId?: string }> {
 
-    const job = await this.queue.add('sentiment', {
-      messageId: command.messageId,
-      text: command.text,
-      chatId: command.chatId,
-    });
+    if (command.text) {
+      const job = await this.queue.add('sentiment', {
+        messageId: command.messageId,
+        text: command.text,
+        chatId: command.chatId,
+      });
+      return { jobId: job.id }
+    }
 
-    return { jobId: job.id }
+    return { jobId: undefined };
   }
-
 }
