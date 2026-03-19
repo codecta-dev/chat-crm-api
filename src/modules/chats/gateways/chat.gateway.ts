@@ -11,8 +11,9 @@ import { Server, Socket } from 'socket.io';
 import { ChatGatewayEvent as Event } from "../chat.enum";
 import { PinoLogger } from "nestjs-pino";
 import { CommandBus } from "@nestjs/cqrs";
-import { MessageSenderType, MessageType } from "@modules/message/message.enum";
-import { CreateMessageCommand } from "../commands/create-message.command";
+import { ForbiddenException } from "@nestjs/common";
+import { SendChatMessageDto } from "../dto/send-chat-message.dto";
+import { SendChatMessageCommand } from "@modules/chats/commands/send-chat-message.command";
 
 @WebSocketGateway({
   namespace: 'chat',
@@ -29,7 +30,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage(Event.Join)
   handleJoin(@ConnectedSocket() client: Socket, @MessageBody() { room }: { room: string }) {
+    const companyId = client.handshake.headers['x-company-id'];
+
+    if (!companyId) {
+      this.logger.error('Company context required')
+      throw new ForbiddenException('Company context required');
+    };
+
     void client.join(room);
+    this.logger.debug(client.handshake, 'Client handshake')
     client.emit(Event.Joined, { room })
   }
 
@@ -39,28 +48,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
    * @param data { room: chatid, sender: chatId, type: messageType, content: messageContent } 
    */
   @SubscribeMessage(Event.SendMessage)
-  async handleSendMessage(
+  handleSendMessage(
     @ConnectedSocket() _client: Socket,
-    @MessageBody() data: { room: string, sender: string, type: MessageType, content: string }
+    @MessageBody() data: SendChatMessageDto,
   ) {
-    const { messageId } = await this.commandBus.execute(
-      new CreateMessageCommand(
-        data.room,
-        {
-          id: data.sender,
-          type: MessageSenderType.AGENT
-        },
-        data.content,
-        data.type
-      )
-    );
-
-    this.server.to(data.room).emit(Event.ReceivedMessage, {
-      id: messageId,
-      content: data.content
-    });
-    this.logger.debug({ messageId }, 'Send message');
-
+    this.logger.debug('Execute Command: SentChatMessageCommand');
+    void this.commandBus.execute(
+      new SendChatMessageCommand(data)
+    )
   }
 
   handleConnection(client: Socket, ..._args: any[]) {

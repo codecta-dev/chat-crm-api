@@ -1,23 +1,51 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PinoLogger } from 'nestjs-pino';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { ChatDto, UpdateChatDto } from './dto/chat.dto';
 import { Chat } from './entities';
-import { Message } from '@modules/message/message.entity';
 import { ChatStatus } from './chat.enum';
 import { ChatRepository } from './chat.repository';
 import { ClsService } from 'nestjs-cls';
+import { Message } from '@entities';
+import { MessageSenderType } from '@modules/message/message.enum';
+import { ChatMessageContent } from './chat.types';
+import { getMessageStrategy } from '@modules/message/strategies/strategy.registry';
+import { MessageType } from '@modules/message/domain/message.types';
 
 @Injectable()
 export class ChatsService {
   constructor(
     @InjectRepository(Chat) private readonly chatRepo: Repository<Chat>,
-    // @InjectRepository(Transfer) private readonly transferRepo: Repository<Transfer>,
+    private readonly dataSource: DataSource,
     private readonly repo: ChatRepository,
     private readonly logger: PinoLogger,
     private readonly cls: ClsService,
   ) { }
+
+  saveMsg(
+    chatId: string,
+    msg: {
+      type: MessageType,
+      content: ChatMessageContent,
+    },
+    sender: {
+      id: string,
+      type: MessageSenderType
+    }
+  ) {
+    const repo = this.dataSource.getRepository(Message);
+    const fields = getMessageStrategy(msg.type).toEntityFields(msg.content);
+
+    const message: Message = repo.create({
+      ...fields,
+      senderId: sender.id,
+      senderType: sender.type,
+      chat: { id: chatId },
+    });
+
+    return repo.save(message);
+  }
 
   /**
    * Retrieves the identifiers of agents assigned to a specific chat.
@@ -87,23 +115,5 @@ export class ChatsService {
 
   remove(id: number) {
     return `This action removes a #${id} chat`;
-  }
-
-  private async updateChatLastMessage(
-    chatId: string,
-    message: Message,
-  ): Promise<void> {
-    try {
-      const chat = await this.chatRepo.findOneOrFail({
-        where: { id: chatId },
-      });
-      chat.lastMessage = message;
-      await this.chatRepo.save(chat);
-    } catch (error) {
-      this.logger.warn(
-        `Failed to update last message for chat ${chatId}`,
-        error,
-      );
-    }
   }
 }
