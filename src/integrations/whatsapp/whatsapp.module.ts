@@ -14,9 +14,13 @@ import { WhatsAppMessageDetail } from './entities/whatsapp-message-detail.entity
 import { ReceiveWhatsAppMessageHandler } from './commands/handlers/receive-whatsapp-message.handler';
 import { MessageContentHandlers } from './commands/handlers/message-content.handlers';
 import { WhatsAppClient } from './clients/whatsapp.client';
+import { SendWhatsAppMessageHandler } from './commands/handlers/send-whatsapp-message.handler';
+import { CqrsModule } from '@nestjs/cqrs';
+import { ChatsModule } from '@modules';
 
 @Module({
   imports: [
+    CqrsModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
@@ -25,6 +29,7 @@ import { WhatsAppClient } from './clients/whatsapp.client';
       WhatsAppMessageDetail,
     ]),
     HttpModule,
+    ChatsModule
   ],
   controllers: [
     WebhookController,
@@ -38,6 +43,7 @@ import { WhatsAppClient } from './clients/whatsapp.client';
     WhatsAppMessageFactory,
     ReceiveWhatsAppMessageHandler,
     MessageContentHandlers,
+    SendWhatsAppMessageHandler,
   ],
   exports: [
     WhatsAppService,

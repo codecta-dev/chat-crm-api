@@ -17,7 +17,7 @@ export interface WhatsAppImageMessage extends WhatsAppPayloadBase {
 /**
  * @link https://developers.facebook.com/documentation/business-messaging/whatsapp/messages/document-messages/#request-syntax
  */
-interface WhatsAppDocumentMessage extends WhatsAppPayloadBase {
+export interface WhatsAppDocumentMessage extends WhatsAppPayloadBase {
   type: 'document';
   document?: WhatsAppDocumentContent;
 }
@@ -59,6 +59,10 @@ export interface WhatsAppPayloadBase {
   to: string;
   type: WhatsAppMessageType
 }
+
+export type WhatsAppMessageContent = WhatsAppTextContent
+  | WhatsAppDocumentContent
+  | WhatsAppMediaContent;
 
 export type WhatsAppPayload = WhatsAppTextMessage | WhatsAppImageMessage | WhatsAppDocumentMessage;
 export type WhatsAppMessageType = 'text' | 'image' | 'document';

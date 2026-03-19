@@ -1,8 +1,7 @@
 import { WhatsAppConfig } from "@entities";
 import { HttpService } from "@nestjs/axios";
 import { Injectable } from "@nestjs/common";
-import { WhatsAppMessageBuilder } from "../builders/whatsapp-message.builder";
-import { firstValueFrom, map, retry, timer } from "rxjs";
+import { firstValueFrom, map, retry, throwError, timer } from "rxjs";
 import { Response } from "express";
 import { WhatsAppPayload } from "../interfaces/whatsapp-message.interface";
 import { PinoLogger } from "nestjs-pino";
@@ -10,13 +9,13 @@ import { AxiosError } from 'axios';
 import { WhatsAppErrorResponse } from "../interfaces/whatsapp.interface";
 
 @Injectable()
-export class WhatsAppClient extends WhatsAppMessageBuilder {
+export class WhatsAppClient {
   private phoneNumberId?: string;
 
   constructor(
     private readonly http: HttpService,
     private readonly logger: PinoLogger,
-  ) { super(); this.logger.setContext(WhatsAppClient.name) }
+  ) { this.logger.setContext(WhatsAppClient.name) }
 
   setConfig(config: WhatsAppConfig) {
     this.phoneNumberId = config.phoneNumberId;
@@ -28,16 +27,23 @@ export class WhatsAppClient extends WhatsAppMessageBuilder {
   }
 
   private ensureConfigured() {
-    if (!this.phoneNumberId || !this.http.axiosRef.defaults.baseURL) {
-      this.logger.debug({
-        phone: this.phoneNumberId,
-        baseUrl: this.http.axiosRef.defaults.baseURL
-      }, `Config load, phone=${this.phoneNumberId} and baseUrl=${this.http.axiosRef.defaults.baseURL}`)
+    const baseUrl = this.http?.axiosRef?.defaults?.baseURL;
+
+    if (!this.phoneNumberId || !baseUrl) {
+      this.logger.error(
+        { phone: this.phoneNumberId, baseUrl },
+        'WhatsAppClient no configurado. Llama a setConfig() antes de usar.'
+      );
       throw new Error('WhatsAppClient not configured. Call setConfig() before using.');
     }
+
+    this.logger.debug(
+      { phone: this.phoneNumberId, baseUrl },
+      'WhatsAppClient configurado correctamente'
+    );
   }
 
-  send(payload: WhatsAppPayload) {
+  async send(payload: WhatsAppPayload) {
     this.ensureConfigured()
 
     const url = `${this.phoneNumberId}/messages`;
@@ -52,7 +58,7 @@ export class WhatsAppClient extends WhatsAppMessageBuilder {
 
           if (errorData.error?.type === 'OAuthException') {
             this.logger.error(`Fatal WhatsApp error (no retry): ${errorData?.error?.message ?? err.message}`);
-            throw err;
+            return throwError(() => err);
           }
 
           this.logger.warn(`Retry ${retryCount}: WhatsApp error -> ${errorData.error?.message ?? err.message}`);
@@ -62,6 +68,8 @@ export class WhatsAppClient extends WhatsAppMessageBuilder {
       map(({ data }) => data),
     )
 
-    return firstValueFrom(res$);
+    return firstValueFrom(res$).catch((err: AxiosError) => {
+      this.logger.error(`Send failed: ${err.message}`);
+    });
   }
 }

@@ -5,14 +5,23 @@ import {
   Controller, HttpStatus,
   Body, Get, Post, Query, Res
 } from '@nestjs/common';
-import type {
-  WhatsappNotification,
+import {
+  type WhatsappNotification,
 } from '@daweto/whatsapp-api-types'
 
 import { WebhookQuery } from '../dto/webhook.query.dto';
 import { WhatsAppService } from '../whatsapp.service';
 import { mapWebhookToMessages } from '../mappers/whatsapp-message.mapper';
 import { ReceiveWhatsAppMessageCommand } from '../commands/receive-whatsapp-message.command';
+import { FailWhatsAppMessageCommand } from '@modules/chats/commands/fail-whatsapp-message.command';
+
+export const enum WhatsappNotificationStatusStatus {
+  Sent = "sent",
+  Delivered = "delivered",
+  Read = "read",
+  Failed = 'failed',
+  Played = 'played',
+}
 
 @Controller('integration/webhook/whatsapp')
 export class WebhookController {
@@ -45,19 +54,37 @@ export class WebhookController {
 
   @Post()
   receiveMessage(@Body() payload: WhatsappNotification, @Res() res: Response) {
-    // this.logger.debug('Recibe del webhook');
     this.logger.debug(payload, 'Webhook object');
-    this.logger.debug(JSON.stringify(payload.entry[0].changes[0].value), 'Webhook change');
-
 
     // IMPORTANT: Always respond with 200 OK first, 
     // otherwise WhatsApp will keep retrying the webhook endlessly.
     res.sendStatus(HttpStatus.OK)
 
     const change = payload.entry[0].changes[0].value;
-    if (!change.messages?.length) return;
+    if (!change) return;
 
-    const messages = mapWebhookToMessages(payload);
+    const { messages, statuses } = mapWebhookToMessages(payload);
+
+    for (const status of statuses) {
+      switch (status.status as unknown as WhatsappNotificationStatusStatus) {
+        case WhatsappNotificationStatusStatus.Sent:
+          this.logger.debug(`Sent message with id ${status.id} | ${JSON.stringify(status.pricing)}`);
+          break;
+        case WhatsappNotificationStatusStatus.Delivered:
+          this.logger.debug(`Delivered message with id (${status.id}) to user`);
+          break;
+        case WhatsappNotificationStatusStatus.Failed:
+          status.errors?.map((err) => {
+            void this.commandBus.execute(new FailWhatsAppMessageCommand(err));
+
+            void this.logger.error(
+              err.error_data,
+              `Webhook Error in message(${status.id}) [${err.message}] (${err.code}) | ${err.href}`
+            )
+          });
+          break;
+      }
+    }
 
     for (const msg of messages) {
       void this.commandBus.execute(new ReceiveWhatsAppMessageCommand(msg))

@@ -25,9 +25,4 @@ export class WhatsappController {
   update(dto: UpdateWhatsAppConfigDto) {
     return this.service.updateConfig(dto);
   }
-
-  @Post('text/send')
-  async sendTest(@Body('to') to: string, @Body('body') body: string) {
-    return await this.service.sendText(to, body);
-  }
 }

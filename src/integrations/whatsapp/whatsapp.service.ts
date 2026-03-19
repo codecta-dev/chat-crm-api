@@ -6,17 +6,17 @@ import { Repository } from 'typeorm';
 import { WhatsAppConfig } from '@entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WhatsAppClient } from './clients/whatsapp.client';
-import { WhatsAppMessageBuilder } from './builders/whatsapp-message.builder';
+import { WhatsAppPayload } from './interfaces/whatsapp-message.interface';
 
 @Injectable()
-export class WhatsAppService extends WhatsAppMessageBuilder {
+export class WhatsAppService {
   constructor(
     @InjectRepository(WhatsAppConfig)
     private readonly configRepository: Repository<WhatsAppConfig>,
     private readonly client: WhatsAppClient,
     private readonly cls: ClsService,
     private readonly logger: PinoLogger,
-  ) { super(); this.logger.setContext(WhatsAppService.name) }
+  ) { this.logger.setContext(WhatsAppService.name) }
 
   async verifyToken(token: string) {
     return !!(await this.configRepository.findOne({
@@ -34,16 +34,15 @@ export class WhatsAppService extends WhatsAppMessageBuilder {
     })
   }
 
-  async sendText(to: string, body: string) {
-    const payload = this.text()
-      .to(to)
-      .body(body)
-      .build();
-
+  async sendMessage(payload: WhatsAppPayload) {
     const config = await this.getConfig();
-    this.logger.debug(config, 'Config in service')
 
-    if (!config) return;
+    if (!config) {
+      this.logger.error('Config no found in service');
+      return;
+    };
+
+    this.logger.debug(config, 'Config in service')
     this.client.setConfig(config);
 
     return this.client.send(payload);

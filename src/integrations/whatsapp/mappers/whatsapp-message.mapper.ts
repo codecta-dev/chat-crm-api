@@ -6,6 +6,8 @@ import {
   WhatsappNotificationMessageType as MessageType,
   WhatsappNotificationTextMessage as TextMessage,
   WhatsappNotificationImageMessage as ImageMessage,
+  WhatsappNotificationError,
+  WhatsappNotificationStatus,
 } from "@daweto/whatsapp-api-types";
 import { MessageContent, MessageContext, ParsedMessage } from "../types/whatsapp.types";
 
@@ -55,10 +57,29 @@ const toMessages = ({ value }: Change): ParsedMessage[] => {
   });
 };
 
-export const mapWebhookToMessages = (body: Notification): ParsedMessage[] => {
-  if (body?.object !== 'whatsapp_business_account') return [];
-  return body.entry
+export interface WebhookResult {
+  messages: ParsedMessage[];
+  statuses: WhatsappNotificationStatus[]
+  errors: WhatsappNotificationError[];
+}
+
+export const mapWebhookToMessages = (body: Notification): WebhookResult => {
+  if (body?.object !== 'whatsapp_business_account') return { messages: [], errors: [], statuses: [] };
+
+  const changes = body.entry
     .flatMap(({ changes }) => changes)
-    .filter(({ field }) => field === 'messages')
+    .filter(({ field }) => field === 'messages');
+
+  const messages = changes
+    .filter(({ value }) => value.messages?.length)
     .flatMap(toMessages);
+
+  const statuses = changes
+    .flatMap(({ value }) => value.statuses ?? []);
+
+  const errors = changes
+    .flatMap(({ value }) => value.statuses ?? [])
+    .flatMap((status) => status?.errors ?? []);
+
+  return { messages, statuses, errors };
 };

@@ -1,3 +1,5 @@
+import { MessageType } from "@modules/message/domain/message.types";
+
 export interface MessageContext {
   phoneNumberId: string;
   from: string;
@@ -32,6 +34,14 @@ interface DocumentContent {
     sha256: string;
     mime_type: string;
   };
+}
+
+export interface WhatsAppMessageOptions {
+  to: string;
+  type: MessageType;
+  text?: TextContent;
+  image?: ImageContent;
+  document?: DocumentContent;
 }
 
 export type MessageContent = TextContent | ImageContent | DocumentContent; // | AudioContent | VideoContent ...
