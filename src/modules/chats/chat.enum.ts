@@ -28,6 +28,8 @@ export enum ReasonAssignment {
 export enum ChatGatewayEvent {
   Join = 'chat:join',
   Joined = 'chat:joined',
+  BroadcastMessage = 'chat:message:broadcast',
+  ErrorMessage = 'chat:message:error',
   SendMessage = 'chat:message:send',
   ReceivedMessage = 'chat:message:received',
   UpdateSentimentIndicator = 'chat:sentiment:update'

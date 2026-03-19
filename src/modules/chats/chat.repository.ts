@@ -1,13 +1,57 @@
 import { Injectable } from "@nestjs/common";
-import { DataSource } from "typeorm";
-import { ChatAssignments } from "./entities";
+import { DataSource, Like } from "typeorm";
+import { Chat, ChatAssignments } from "./entities";
 import { ReasonAssignment } from "./chat.enum";
+import { MessageContext } from "@integrations/whatsapp/types/whatsapp.types";
+import { Contact } from "@entities";
 
 @Injectable()
 export class ChatRepository {
   constructor(
     private readonly dataSource: DataSource,
   ) { }
+
+  /**
+   * This is a method for whatsapp module
+   * @param context WhatsApp message context info
+   * @returns Chat Entity
+   */
+  async findOrCreateChatByPhone(context: MessageContext) {
+    const contactRepo = this.dataSource.getRepository(Contact);
+    const chatRepo = this.dataSource.getRepository(Chat);
+
+    let client = await contactRepo.findOne({
+      where: {
+        phoneNumber: Like(`%${context.from}%`)
+      },
+      cache: true
+    });
+
+    if (!client) {
+      client = contactRepo.create({
+        phoneNumber: `+${context.from}`,
+        username: context.senderName
+      });
+      client = await contactRepo.save(client);
+    }
+
+    let chat = await chatRepo.findOne({
+      where: {
+        client: { id: client.id }
+      },
+      relations: ['client'],
+      cache: true,
+    });
+
+    if (!chat) {
+      chat = chatRepo.create({
+        client,
+      });
+      await chatRepo.save(chat);
+    }
+
+    return chat;
+  }
 
   assign(chatId: string, agentId: string, reason?: ReasonAssignment) {
     return this.dataSource.getRepository(ChatAssignments).save({
