@@ -12,7 +12,10 @@ export class UpdateSentimentIndicatorHandler implements ICommandHandler<Command>
   ) { this.logger.setContext(UpdateSentimentIndicatorHandler.name) }
 
   execute(command: Command): Promise<{ chatId: string; }> {
-    if (command.chatId) this.ws.server.to(command.chatId).emit(ChatGatewayEvent.UpdateSentimentIndicator)
+    if (command.chatId) this.ws.server
+      .to(command.chatId)
+      .emit(ChatGatewayEvent.UpdateSentimentIndicator, command.probabilities);
+
     this.logger.debug(command.probabilities, 'Update sentiment');
 
     return new Promise(() => ({ chatId: command.chatId }))
