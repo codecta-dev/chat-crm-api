@@ -3,12 +3,30 @@ import { MessageRepository } from "./message.repository";
 import { CreateMessageDto } from "./entities/create-message.dto";
 import { Message } from "./message.entity";
 import { MessageSenderType, MessageStatus, MessageType } from "./message.enum";
+import { MessageContent } from "src/integrations/whatsapp/types/whatsapp.types";
+import { PinoLogger } from "nestjs-pino";
 
 @Injectable()
 export class MessageService {
   constructor(
     private readonly repo: MessageRepository,
+    private readonly logger: PinoLogger
   ) { }
+
+  saveMsg(chatId: string, msg: MessageContent, sender: { id: string, type: MessageSenderType }) {
+    if (msg.type === 'text') {
+      const message = this.repo.createFromChat(
+        chatId,
+        msg.text.body,
+        sender.id,
+        sender.type,
+        MessageType.TEXT
+      );
+      return message
+    } else {
+      this.logger.warn(msg, 'Only text support')
+    }
+  }
 
   async create(dto: CreateMessageDto, chatId: string) {
     return this.repo.create(dto, chatId);

@@ -32,7 +32,7 @@ export class Message {
   content: string;
 
   @Column({ type: 'simple-enum', enum: MessageType, default: MessageType.TEXT })
-  type: MessageType;
+  type?: MessageType;
 
   @Column({ nullable: true })
   mediaUrl?: string;

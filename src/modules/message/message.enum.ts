@@ -1,10 +1,10 @@
 export enum MessageType {
   TEXT = 'text',
   IMAGE = 'image',
-  FILE = 'file',
-  AUDIO = 'audio',
-  VIDEO = 'video',
-  DOCUMENT = 'document'
+  DOCUMENT = 'document',
+  // FILE = 'file',
+  // AUDIO = 'audio',
+  // VIDEO = 'video',
 }
 
 export enum MessageSenderType {
