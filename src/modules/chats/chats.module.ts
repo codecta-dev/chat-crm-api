@@ -8,26 +8,45 @@ import { User } from '../users/entities/user.entity';
 import { MessageModule } from '@modules/message/message.module';
 import { ChatGateway } from './gateways/chat.gateway';
 import { SentimentModule } from '@modules/analysis/sentiment/sentiment.module';
-import { CreateMessageHandler } from './commands/handlers/create-message.handler';
 import { ChatSaga } from './chat.saga';
-import { UpdateSentimentIndicatorHandler } from './commands/handlers/update-sentiment-indicator.handler';
 import { ChatRepository } from './chat.repository';
+import { BullModule } from '@nestjs/bullmq';
+import { ChatProcessor } from './chat.processor';
+import { CqrsModule } from '@nestjs/cqrs';
+import {
+  BroadcastChatMessageHandler,
+  SaveChatMessageHandler,
+  SendChatMessageHandler,
+  UpdateSentimentIndicatorHandler,
+  FailWhatsAppMessageHandler
+} from './commands/handlers';
 
 const TypeOrmFeatureModule = TypeOrmModule.forFeature([Chat, Contact, User, Transfer]);
+const handlers = [
+  BroadcastChatMessageHandler,
+  SaveChatMessageHandler,
+  SendChatMessageHandler,
+  UpdateSentimentIndicatorHandler,
+  FailWhatsAppMessageHandler,
+];
 
 @Module({
   imports: [
+    CqrsModule,
     TypeOrmFeatureModule,
     MessageModule,
-    SentimentModule
+    SentimentModule,
+    BullModule.registerQueue({
+      name: 'chat',
+    }),
   ],
   controllers: [ChatsController, MessagesController],
   providers: [
     ChatsService, ChatGateway,
     ChatSaga, ChatRepository,
-    CreateMessageHandler,
-    UpdateSentimentIndicatorHandler,
+    ChatProcessor,
+    ...handlers
   ],
-  exports: [TypeOrmFeatureModule, ChatsService]
+  exports: [ChatRepository, ChatsService]
 })
 export class ChatsModule { }
