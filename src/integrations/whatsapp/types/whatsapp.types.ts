@@ -1,7 +1,7 @@
 import { MessageType } from "@modules/message/domain/message.types";
 
 export interface MessageContext {
-  phoneNumberId: string;
+  phoneNumberId: string; // Company Phone ID
   from: string;
   messageId: string;
   senderName?: string;
