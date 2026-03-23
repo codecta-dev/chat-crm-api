@@ -16,7 +16,7 @@ export class BroadcastChatMessageHandler implements ICommandHandler<BroadcastCha
       this.gateway.server
         .to(command.chatId)
         .emit(ChatGatewayEvent.BroadcastMessage, command.payload)
-      this.logger.debug(command.payload, 'Broadcast message')
+      this.logger.debug(command, 'Broadcast message')
     } else {
       this.logger.error('ChatId NO defined in message')
     }
