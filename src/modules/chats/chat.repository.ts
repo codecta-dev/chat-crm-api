@@ -11,6 +11,18 @@ export class ChatRepository {
     private readonly dataSource: DataSource,
   ) { }
 
+  async findChatByPhone(phone: string) {
+    const repo = this.dataSource.getRepository(Chat);
+    return repo.findOne({
+      where: {
+        client: {
+          phoneNumber: Like(`%${phone}%`)
+        }
+      },
+      cache: true,
+    });
+  }
+
   /**
    * This is a method for whatsapp module
    * @param context WhatsApp message context info

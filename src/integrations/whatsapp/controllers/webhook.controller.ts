@@ -75,7 +75,7 @@ export class WebhookController {
           break;
         case WhatsappNotificationStatusStatus.Failed:
           status.errors?.map((err) => {
-            void this.commandBus.execute(new FailWhatsAppMessageCommand(err));
+            void this.commandBus.execute(new FailWhatsAppMessageCommand(status.recipient_id, err));
 
             void this.logger.error(
               err.error_data,

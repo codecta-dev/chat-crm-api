@@ -58,6 +58,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     )
   }
 
+  async hasSockets(roomName: string): Promise<boolean> {
+    const sockets = await this.server.in(roomName)?.fetchSockets();
+    this.logger.debug(sockets.flatMap(socket => socket.id), "Sockets connected");
+    return sockets !== undefined && sockets.length > 0;
+  }
+
   handleConnection(client: Socket, ..._args: any[]) {
     this.logger.debug(client.handshake, 'client connection')
   }
