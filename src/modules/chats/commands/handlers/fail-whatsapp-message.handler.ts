@@ -21,6 +21,5 @@ export class FailWhatsAppMessageHandler implements ICommandHandler<FailWhatsAppM
     } else {
       console.log("No socket connected")
     }
-
   }
 }
