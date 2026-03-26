@@ -1,12 +1,16 @@
 import { WhatsAppConfig } from "@entities";
 import { HttpService } from "@nestjs/axios";
 import { Injectable } from "@nestjs/common";
-import { firstValueFrom, map, retry, throwError, timer } from "rxjs";
+import { firstValueFrom, map, retry, switchMap, throwError, timer } from "rxjs";
 import { Response } from "express";
 import { WhatsAppPayload } from "../interfaces/whatsapp-message.interface";
 import { PinoLogger } from "nestjs-pino";
 import { AxiosError } from 'axios';
 import { WhatsAppErrorResponse } from "../interfaces/whatsapp.interface";
+import { join } from "path";
+import { writeFileSync } from "fs";
+import { CommandBus } from "@nestjs/cqrs";
+import { FailWhatsAppMessageCommand } from "@modules/chats/commands";
 
 @Injectable()
 export class WhatsAppClient {
@@ -15,6 +19,7 @@ export class WhatsAppClient {
   constructor(
     private readonly http: HttpService,
     private readonly logger: PinoLogger,
+    private readonly commandBus: CommandBus,
   ) { this.logger.setContext(WhatsAppClient.name) }
 
   setConfig(config: WhatsAppConfig) {
@@ -43,6 +48,38 @@ export class WhatsAppClient {
     );
   }
 
+  upload(mediaId: string) {
+    return this.http.get<{
+      id: string,
+      messaging_product: "whatsapp",
+      url: string,
+      mime_type: string,
+      sha256: string,
+      file_size: number
+
+    }>(`https://graph.facebook.com/v22.0/${mediaId}`)
+      .pipe(
+        switchMap((res) => {
+          const mediaUrl = res.data.url;
+
+          return this.http.get(mediaUrl, {
+            responseType: 'arraybuffer'
+          }).pipe(
+            map((imageRes) => {
+              const filename = `${mediaId}.jpg`;
+              const filePath = join(process.cwd(), 'uploads', filename);
+
+              writeFileSync(filePath, imageRes.data);
+
+              return {
+                imageUrl: `/uploads/${filename}`,
+              }
+            })
+          )
+        })
+      )
+  }
+
   async send(payload: WhatsAppPayload) {
     this.ensureConfigured()
 
@@ -58,6 +95,12 @@ export class WhatsAppClient {
 
           if (errorData.error?.type === 'OAuthException') {
             this.logger.error(`Fatal WhatsApp error (no retry): ${errorData?.error?.message ?? err.message}`);
+            void this.commandBus.execute(new FailWhatsAppMessageCommand(payload.to, {
+              code: errorData.error.code,
+              error_data: errorData.error.error_data ?? { details: 'Requeste whatsapp client error for ' + payload.type + ' message' },
+              message: errorData.error.message,
+              title: 'Whatsapp cliente error'
+            }));
             return throwError(() => err);
           }
 
