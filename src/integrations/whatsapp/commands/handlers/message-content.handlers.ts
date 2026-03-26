@@ -5,12 +5,17 @@ import { CommandBus } from '@nestjs/cqrs';
 import { SaveChatMessageCommand } from '@modules/chats/commands';
 import { MessageSenderType, MessageType } from '@modules/message/message.enum';
 import { ChatRepository } from '@modules/chats/chat.repository';
+import { WhatsAppClient } from '@integrations/whatsapp/clients/whatsapp.client';
+import { PinoLogger } from 'nestjs-pino';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class MessageContentHandlers {
   constructor(
     private readonly chatRepository: ChatRepository,
+    private readonly client: WhatsAppClient,
     private readonly commandBus: CommandBus,
+    private readonly logger: PinoLogger,
   ) { }
 
   private async saveMessage(
@@ -32,9 +37,7 @@ export class MessageContentHandlers {
   }
 
   private readonly text: ContentHandlerPort<TextContent> = {
-    handle: async (content, context, config) => {
-      console.log(content.text.body, ' Config: ', config);
-
+    handle: async (content, context, _config) => {
       await this.saveMessage(context, {
         type: MessageType.TEXT,
         content: {
@@ -46,8 +49,26 @@ export class MessageContentHandlers {
   };
 
   private readonly image: ContentHandlerPort<ImageContent> = {
-    handle: (content: ImageContent, _context, config) => {
-      console.log(content.image, ' Config: ', config);
+    handle: async (content: ImageContent, context, config) => {
+      if (!config || !content?.image?.id) return;
+
+      this.client.setConfig(config);
+
+      const upload$ = this.client.upload(content.image.id);
+
+      const { imageUrl } = await firstValueFrom(upload$);
+
+      this.logger.debug({ content, imageUrl }, 'Upload image');
+
+      await this.saveMessage(context, {
+        type: MessageType.IMAGE,
+        mediaUrl: imageUrl,
+        content: {
+          id: content.image.id,
+          link: imageUrl,
+          caption: content.image.caption,
+        }
+      })
     }
   };
 
