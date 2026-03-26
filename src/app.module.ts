@@ -21,7 +21,6 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 
 import { join } from 'path';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
