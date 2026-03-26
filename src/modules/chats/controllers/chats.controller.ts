@@ -1,10 +1,12 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, UseFilters, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, UploadedFile, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ChatsService } from '../chats.service';
 import { ChatDto, UpdateChatDto } from '../dto/chat.dto';
 import { MessageService } from '@modules/message/message.services';
 import { ChatAssignExceptionFilter } from '../filters/chat-assign.filter';
 import { ChatAssignDto } from '../dto/chat-assign.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { multerConfig } from 'src/config/multer.config';
 
 @Controller('chats')
 @UseGuards(AuthGuard('jwt'))
@@ -13,6 +15,18 @@ export class ChatsController {
     private readonly service: ChatsService,
     private readonly messages: MessageService,
   ) { }
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file', multerConfig))
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
+    console.log(file)
+    return {
+      message: 'Archivo recibido',
+      filename: file.filename,
+      size: file.size,
+      pathFile: `/uploads/${file.filename}`,
+    };
+  }
 
   @Post()
   create(@Body() dto: ChatDto) {
