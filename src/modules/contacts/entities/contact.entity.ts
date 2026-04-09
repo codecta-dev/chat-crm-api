@@ -1,6 +1,5 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Chat, Message } from "../../chats/entities";
-import { Company } from "../../companies/entities/company.entity";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Company } from "../../company/entities/company.entity";
 
 export type ContactStatus = 'new' | 'lead' | 'prospect' | 'client';
 export type ContactSource = 'whatsapp' | 'manual';
@@ -38,7 +37,7 @@ export class Contact {
   @Column({ default: 'manual' })
   source: ContactSource;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime', nullable: true })
   lastInteractionAt: Date;
 
   @Column('simple-array', { nullable: true })
@@ -55,10 +54,4 @@ export class Contact {
 
   @ManyToOne(() => Company, (company) => company.contacts, { nullable: true, onDelete: 'SET NULL' })
   company: Company;
-
-  @OneToMany(() => Chat, (chat) => chat.contact)
-  chats: Chat[]
-
-  @OneToMany(() => Message, message => message.contact)
-  messages: Message[];
 }

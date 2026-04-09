@@ -1,11 +1,9 @@
-import * as bcrypt from 'bcrypt';
-import { BeforeInsert, Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Chat } from '../../chats/entities/chat.entity.js';
-import { Company } from '../../companies/entities/company.entity.js';
-import { Notification } from '../../notifications/entities/notification.entity.js';
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Notification } from '../../notifications/entities/notification.entity';
+import { Exclude } from "class-transformer";
 
 export type UserRole = 'admin' | 'supervisor' | 'support' | 'agent' | 'system';
-export type UserStatue = 'online' | 'offline' | 'busy';
+export type UserStatus = 'online' | 'offline' | 'busy';
 
 @Entity('users')
 export class User {
@@ -13,10 +11,10 @@ export class User {
   id: string;
 
   @Column({ length: 255, nullable: true })
-  firstNames?: string;
+  firstName?: string;
 
   @Column({ length: 255, nullable: true })
-  lastNames?: string;
+  lastName?: string;
 
   @Index({ unique: true })
   @Column({ type: 'varchar', nullable: true })
@@ -32,19 +30,14 @@ export class User {
   avatar?: string;
 
   @Column()
+  @Exclude()
   password: string;
 
-  @Column({ default: 'agent' })
-  role: UserRole;
-
   @Column({ default: 'offline' })
-  status: UserStatue;
+  status: UserStatus;
 
   @Column({ type: 'varchar', length: 512, nullable: true })
   address?: string;
-
-  @Column({ type: 'timestamp', nullable: true })
-  lastLogin?: Date;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -55,19 +48,6 @@ export class User {
   @DeleteDateColumn()
   deletedAt?: Date;
 
-  @OneToMany(() => Chat, chat => chat.assignedAgent)
-  chats: Chat[];
-
-  @ManyToOne(() => Company, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'companyId' })
-  company: Company;
-
   @OneToMany(() => Notification, (notification) => notification.user)
   notifications: Notification[]
-
-  // Hash password before inserting into the database
-  @BeforeInsert()
-  async hashPassword() {
-    this.password = await bcrypt.hash(this.password, 10); // cost factor: 10
-  }
 }

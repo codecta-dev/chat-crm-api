@@ -7,7 +7,7 @@ import { UsersModule } from 'src/modules/users/users.module';
 import { JwtStrategy } from 'src/strategies/jwt.strategy';
 
 import { AuthService } from './auth.service';
-import { WhatsappModule } from '../modules/whatsapp/whatsapp.module';
+import { MembersModule } from '@modules/member/member.module';
 
 @Module({
   imports: [
@@ -18,7 +18,7 @@ import { WhatsappModule } from '../modules/whatsapp/whatsapp.module';
       secret: process.env.JWT_SECRET || 'your_jwt_secret',
       signOptions: { expiresIn: '1d' },
     }),
-    WhatsappModule
+    MembersModule,
   ],
   providers: [AuthService, JwtStrategy],
   controllers: [AuthController],

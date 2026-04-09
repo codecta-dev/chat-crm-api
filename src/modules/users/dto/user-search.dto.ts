@@ -1,8 +1,14 @@
-import { z } from "zod";
+import { IsNumber, IsOptional, IsString, Min } from "class-validator";
+import { Type } from 'class-transformer';
 
-export const userSearchSchema = z.object({
-  q: z.string().optional(),
-  limit: z.coerce.number().int().min(1).default(10),
-});
+export class UserSearchDto {
+  @IsString()
+  @IsOptional()
+  q?: string;
 
-export type UserSearchDto = z.infer<typeof userSearchSchema>;
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  limit: number = 10;
+}

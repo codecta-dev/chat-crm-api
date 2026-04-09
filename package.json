@@ -21,17 +21,20 @@
   },
   "dependencies": {
     "@keyv/redis": "^5.1.1",
+    "@nestjs-modules/ioredis": "^2.0.2",
     "@nestjs/axios": "^4.0.1",
     "@nestjs/bullmq": "^11.0.4",
     "@nestjs/cache-manager": "^3.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
+    "@nestjs/cqrs": "^11.0.3",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/mapped-types": "*",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/platform-socket.io": "^11.1.6",
+    "@nestjs/serve-static": "^5.0.4",
     "@nestjs/typeorm": "^11.0.0",
     "@nestjs/websockets": "^11.1.6",
     "bcrypt": "^6.0.0",
@@ -41,9 +44,11 @@
     "class-validator": "^0.14.2",
     "cookie-parser": "^1.4.7",
     "date-fns": "^4.1.0",
+    "ioredis": "^5.10.0",
     "keyv": "^5.5.0",
     "mysql2": "^3.14.3",
     "nest-csv-parser": "^2.0.4",
+    "nestjs-cls": "^6.2.0",
     "nestjs-i18n": "^10.5.1",
     "nestjs-pino": "^4.4.0",
     "nestjs-typeorm-paginate": "^4.1.0",
@@ -55,14 +60,16 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "typeorm": "^0.3.25",
+    "typeorm-naming-strategies": "^4.1.0",
     "zod": "^4.1.11"
   },
   "devDependencies": {
     "@daweto/whatsapp-api-types": "^1.2.1",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
-    "@nestjs/cli": "^11.0.0",
-    "@nestjs/schematics": "^11.0.0",
+    "@faker-js/faker": "^10.1.0",
+    "@nestjs/cli": "^11.0.16",
+    "@nestjs/schematics": "^11.0.9",
     "@nestjs/testing": "^11.0.1",
     "@types/bcrypt": "^6.0.0",
     "@types/cookie-parser": "^1.4.9",
@@ -72,10 +79,12 @@
     "@types/node": "^22.10.7",
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^6.0.2",
+    "better-sqlite3": "^12.6.2",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.2.2",
+    "fishery": "^2.4.0",
     "globals": "^16.0.0",
     "jest": "^30.0.0",
     "pino-pretty": "^13.1.1",
@@ -88,22 +97,5 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
   }
 }

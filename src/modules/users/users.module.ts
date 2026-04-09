@@ -6,6 +6,8 @@ import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { IsInDatabaseConstraint } from '../../utils/validators/IsInDatabase';
 import { Chat } from '../chats/entities';
+import { UserRepository } from './user.repository';
+import { UserSubscriber } from './user.subscriber';
 
 @Module({
   imports: [
@@ -13,7 +15,7 @@ import { Chat } from '../chats/entities';
     CsvModule,
   ],
   controllers: [UsersController],
-  providers: [UsersService, IsInDatabaseConstraint],
+  providers: [UsersService, IsInDatabaseConstraint, UserRepository, UserSubscriber],
   exports: [UsersService]
 })
 export class UsersModule { }

@@ -1,9 +1,9 @@
 import { Chat } from "./chat.entity";
-import { Message } from "./message.entity";
 import { Transfer } from "./transfer.entity";
+import { ChatAssignments } from './chat-assignments.entity';
 
 export {
   Chat,
-  Message,
+  ChatAssignments,
   Transfer
 }

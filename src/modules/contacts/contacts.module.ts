@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CsvModule } from 'nest-csv-parser';
 import { ContactsController } from './contacts.controller';
 import { ContactsService } from './contacts.service';
-import { Contact } from './entities/contact.entity.js';
+import { Contact } from './entities/contact.entity';
 import { User } from '../users/entities/user.entity';
 
 @Module({

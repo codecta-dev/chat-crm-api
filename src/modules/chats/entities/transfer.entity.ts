@@ -1,6 +1,6 @@
-import { Chat } from "src/modules/chats/entities/chat.entity";
-import { User } from "src/modules/users/entities/user.entity";
 import { CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Chat } from ".";
+import { User } from "../../users/entities/user.entity";
 
 @Entity('transfers')
 export class Transfer {

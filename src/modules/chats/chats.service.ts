@@ -1,120 +1,103 @@
-import { InjectQueue } from '@nestjs/bullmq';
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Queue } from 'bullmq';
 import { PinoLogger } from 'nestjs-pino';
-import { Repository } from 'typeorm';
-import { CreateChatDto, UpdateChatDto } from './dto/chat.dto';
-import { Chat, Message, Transfer } from './entities';
+import { DataSource, Repository } from 'typeorm';
+import { ChatDto, UpdateChatDto } from './dto/chat.dto';
+import { Chat } from './entities';
+import { ChatStatus } from './chat.enum';
+import { ChatRepository } from './chat.repository';
+import { ClsService } from 'nestjs-cls';
+import { Message } from '@entities';
+import { MessageSenderType } from '@modules/message/message.enum';
+import { ChatMessageContent } from './chat.types';
+import { getMessageStrategy } from '@modules/message/strategies/strategy.registry';
+import { MessageType } from '@modules/message/domain/message.types';
 
 @Injectable()
 export class ChatsService {
   constructor(
     @InjectRepository(Chat) private readonly chatRepo: Repository<Chat>,
-    @InjectRepository(Message) private readonly messageRepo: Repository<Message>,
-    @InjectRepository(Transfer) private readonly transferRepo: Repository<Transfer>,
-    @InjectQueue('sentiment') private readonly sentimentQueue: Queue,
+    private readonly dataSource: DataSource,
+    private readonly repo: ChatRepository,
     private readonly logger: PinoLogger,
+    private readonly cls: ClsService,
   ) { }
 
-  async assignedUser(id: string, userId: string) {
-    const chat = await this.chatRepo.findOne({ where: { id: id }, loadRelationIds: true });
-    if (!chat) return false;
-
-    void this.transferRepo.save({
-      chat: { id },
-      fromAgent: chat.assignedAgent,
-      toAgent: { id: userId }
-    })
-
-    const result = await this.chatRepo.update({ id }, { assignedAgent: { id: userId } })
-    return result.affected === 1;
-  }
-
-  async getChatMessages(chatId: string): Promise<Message[]> {
-    return this.messageRepo.find({
-      where: { chat: { id: chatId } },
-      order: { createdAt: 'DESC' },
-      loadRelationIds: true,
-    });
-  }
-
-  async addMessage(
+  saveMsg(
     chatId: string,
-    payload: Pick<Message, 'senderType' | 'body' | 'mediaUrl' | 'direction' | 'type'>,
-  ): Promise<Message> {
-    if (!payload.body?.trim()) {
-      throw new BadRequestException('Message body cannot be empty');
+    msg: {
+      type: MessageType,
+      content: ChatMessageContent,
+    },
+    sender: {
+      id: string,
+      type: MessageSenderType
     }
+  ) {
+    const repo = this.dataSource.getRepository(Message);
+    const fields = getMessageStrategy(msg.type).toEntityFields(msg.content);
 
-    const chat = await this.chatRepo.findOne({
-      where: { id: chatId },
-      relations: ['assignedAgent', 'contact'],
+    const message: Message = repo.create({
+      ...fields,
+      senderId: sender.id,
+      senderType: sender.type,
+      chat: { id: chatId },
     });
 
-    if (!chat) throw new NotFoundException('Chat not found');
+    return repo.save(message);
+  }
 
-    const message = this.createMessageEntity(chat, payload)
-    const savedMessage = await this.messageRepo.save(message)
+  /**
+   * Retrieves the identifiers of agents assigned to a specific chat.
+   * 
+   * @param chatId - Unique identifier of the chat (from the Chat entity).
+   * @returns Promise resolving to an array of agent IDs associated with the chat.
+   * 
+   * @example
+   * const agentIds = await getAssigments("chat-123");
+   * // agentIds => ["agent-1", "agent-2", "agent-3"]
+   * 
+   */
+  async getAssigments(chatId: string) {
+    const agents = await this.repo.findAssigments(chatId);
+    return agents.map(agent => agent.id);
+  }
 
-    this.logger.debug("Sentiment processor here")
-    // Consumer
-    await this.sentimentQueue.add('analyze', savedMessage);
-
-    this.updateChatLastMessage(chat.id, savedMessage).catch((error) =>
-      this.logger.error('Error updating chat last message', error),
-    );
-
-    return savedMessage
+  async assign(chatId: string, agentId: string) {
+    return this.repo.assign(chatId, agentId);
   }
 
   updateLastMessage(chatId: string, messageId: string) {
-    return this.chatRepo.update({ id: chatId }, { status: 'open', lastMessage: { id: messageId } });
+    return this.chatRepo.update({ id: chatId }, { status: ChatStatus.OPEN, lastMessage: { id: messageId } });
   }
 
-  async findOrCreateByContact(agentId: string, contactId: string, isSystem: boolean = false): Promise<Chat> {
-    let chat = await this.chatRepo.findOne({
-      where: { contact: { id: contactId } },
-      relations: ['assignedAgent', 'contact'],
-    });
+  async list(agentId?: string) {
 
-    if (chat) return chat;
+    const agent = agentId ?? this.cls.get('user.id');
+    if (!agent) return {};
 
-    chat = this.chatRepo.create({
-      assignedAgent: { id: agentId },
-      contact: { id: contactId },
-      status: isSystem ? 'pending' : 'open',
-    });
-
-    return await this.chatRepo.save(chat);
-  }
-
-  async getChats(userID?: string, role?: string) {
-    this.logger.debug(`Fetching chats for userID: ${userID} with role: ${role}`);
-    const chats = await this.chatRepo.find({
-      where: (userID && role !== 'admin') ? { assignedAgent: { id: userID } } : {},
-      relations: {
-        contact: true,
-        lastMessage: true,
+    const chats = await this.repo.listChatsAssignments(agent);
+    return chats.map((chat) => ({
+      id: chat.chatId,
+      message: {
+        id: chat.messageId,
+        content: chat.messageContent,
+        datetime: chat.messageCreated,
       },
-      order: {
-        createdAt: 'DESC',
-      },
-      take: 20,
-    })
-
-    return chats;
+      client: {
+        id: chat.clientId,
+        username: chat.clientUsername,
+        phone: chat.clientPhone,
+      }
+    }))
   }
 
-  async getMessagesByChatId(chatId: string): Promise<Message[]> {
-    return this.messageRepo.find({
-      where: { chat: { id: chatId } },
-      order: { createdAt: 'DESC' },
+  create(dto: ChatDto) {
+    const chat = this.chatRepo.save({
+      ...dto,
+      client: { id: dto.client_id }
     });
-  }
 
-  create(dto: CreateChatDto) {
-    const chat = this.chatRepo.save(dto);
     return chat;
   }
 
@@ -132,55 +115,5 @@ export class ChatsService {
 
   remove(id: number) {
     return `This action removes a #${id} chat`;
-  }
-
-  private async getChatOrFail(chatId: string): Promise<Chat> {
-    return this.chatRepo.findOneOrFail({
-      where: { id: chatId },
-      loadRelationIds: true,
-    });
-  }
-
-  private determineMessageType(mediaUrl?: string): 'image' | 'text' {
-    return mediaUrl ? 'image' : 'text';
-  }
-
-  private determineSenderType(direction: 'in' | 'out'): 'client' | 'user' {
-    return direction === 'in' ? 'client' : 'user';
-  }
-
-  private createMessageEntity(
-    chat: Chat,
-    payload: Pick<Message, 'senderType' | 'body' | 'mediaUrl' | 'direction' | 'type'>,
-  ): Message {
-    return this.messageRepo.create({
-      chat: { id: chat.id },
-      contact: { id: chat.contact?.id },
-      agent: { id: chat.assignedAgent?.id },
-      senderType: this.determineSenderType(payload.direction),
-      direction: payload.direction,
-      body: payload.body,
-      mediaUrl: payload.mediaUrl,
-      type: this.determineMessageType(payload.mediaUrl),
-    });
-  }
-
-  private async updateChatLastMessage(
-    chatId: string,
-    message: Message,
-  ): Promise<void> {
-    try {
-      const chat = await this.chatRepo.findOneOrFail({
-        where: { id: chatId },
-      });
-      chat.status = 'open';
-      chat.lastMessage = message;
-      await this.chatRepo.save(chat);
-    } catch (error) {
-      this.logger.warn(
-        `Failed to update last message for chat ${chatId}`,
-        error,
-      );
-    }
   }
 }

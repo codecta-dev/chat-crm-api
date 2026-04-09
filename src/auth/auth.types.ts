@@ -1,11 +1,12 @@
+import { User } from "@modules/users/entities/user.entity";
+
+type UserAuthOmittedKeys = 'createdAt' | 'updatedAt' | 'deletedAt' | 'chats' | 'notifications' | 'hashPassword';
+
+export type AuthUser = Omit<User, UserAuthOmittedKeys>
+
 export type JwtPayload = {
   sub: string;
-  username: string;
-  role: string;
-  avatar: string | undefined;
-  email: string;
-  companyId: string;
-  businessId: string;
+  company: string;
 };
 
 export type AuthResponse = {
