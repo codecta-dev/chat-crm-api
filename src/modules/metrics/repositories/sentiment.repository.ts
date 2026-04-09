@@ -26,7 +26,7 @@ export class SentimentRepository {
       FROM sentiment_analysis sa 
       INNER JOIN analysis a ON a.analysis_id = sa.analysis_id
       INNER JOIN messages m ON m.message_id = a.message_id 
-      LEFT JOIN users u ON u.id = m.agent_id
+      LEFT JOIN users u ON u.id = m.sender_id AND m.sender_type = 'agent'
       WHERE m.created_at BETWEEN ${start} AND ${end}
         AND u.id = COALESCE(${userId}, u.id)
       GROUP BY date
