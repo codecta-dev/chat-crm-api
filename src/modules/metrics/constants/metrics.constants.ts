@@ -8,7 +8,7 @@ export const SENTIMENT_LABELS_MAP = {
   negative: SentimentLabel.NEGATIVE,
 } as const;
 
-export const COMPARE_PERIOD_CONFIG: Record<CompareMetric, { target: Table, column: string }> = {
+export const COMPARE_PERIOD_CONFIG: Record<CompareMetric, { target: Table, column: string, where?: string }> = {
   chat: {
     column: 'id',
     target: 'chats'
@@ -23,7 +23,13 @@ export const COMPARE_PERIOD_CONFIG: Record<CompareMetric, { target: Table, colum
   },
   agent: {
     target: 'messages',
-    column: 'agent_id'
+    column: 'sender_id',
+    where: 'sender_type = "agent"'
+  },
+  client: {
+    target: 'messages',
+    column: 'sender_id',
+    where: 'sender_type = "client"'
   }
 } as const;
 

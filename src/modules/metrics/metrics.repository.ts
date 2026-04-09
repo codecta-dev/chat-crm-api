@@ -16,20 +16,17 @@ export class MetricsRepository {
     private readonly dataSource: DataSource,
   ) { }
 
-  async comparePeriod(filters: CompareParams) {
+  async comparePeriod(filters: CompareParams, whereClause?: string) {
     const curr = period(filters.period);
     const prev = period(filters.period, 1);
 
     const raw: { current: string, previous: string }[] = await this.dataSource.sql`
-      SELECT (
-        SELECT COUNT(DISTINCT(${() => filters.column})) FROM ${() => filters.target}
-        WHERE created_at BETWEEN ${curr.start} AND ${curr.end} 
-        AND ${() => filters.column} IS NOT NULL
-      ) as current, (
-        SELECT COUNT(DISTINCT(${() => filters.column})) FROM ${() => filters.target}
-        WHERE created_at BETWEEN ${prev.start} AND ${prev.end} 
-        AND ${() => filters.column} IS NOT NULL
-      ) as previous
+      SELECT 
+        COUNT(DISTINCT CASE WHEN created_at BETWEEN ${curr.start} AND ${curr.end} THEN ${() => filters.column} END) AS current,
+        COUNT(DISTINCT CASE WHEN created_at BETWEEN ${prev.start} AND ${prev.end} THEN ${() => filters.column} END) AS previous
+      FROM ${() => filters.target}
+      WHERE ${() => filters.column} IS NOT NULL
+        AND (${() => whereClause ?? "1=1"});
     `;
 
     return {

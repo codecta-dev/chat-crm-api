@@ -1,7 +1,7 @@
 export type Table = 'chats' | 'messages' | 'users' | 'contacts' | 'transfers';
 
 export type Metric = 'chats' | 'messages' | 'agents' | 'clients';
-export type CompareMetric = 'chat' | 'message' | 'agent' | 'transfer';
+export type CompareMetric = 'chat' | 'message' | 'agent' | 'transfer' | 'client';
 
 export type TopType = 'agents' | 'clients';
 

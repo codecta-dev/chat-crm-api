@@ -36,8 +36,8 @@ export class MetricsService {
   }
 
   async getComparePeriod(metric: CompareMetric, period: PeriodTime) {
-    const { target, column } = COMPARE_PERIOD_CONFIG[metric];
-    const { current, previous } = await this.repo.comparePeriod({ target, column, period })
+    const { target, column, where } = COMPARE_PERIOD_CONFIG[metric];
+    const { current, previous } = await this.repo.comparePeriod({ target, column, period }, where)
 
     return MetricMapper.compare(metric, [current, previous]);
   }
