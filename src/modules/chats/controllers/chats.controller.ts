@@ -1,4 +1,19 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, UploadedFile, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UploadedFile,
+  UseFilters,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ChatsService } from '../chats.service';
 import { ChatDto, UpdateChatDto } from '../dto/chat.dto';
@@ -6,7 +21,7 @@ import { MessageService } from '@modules/message/message.services';
 import { ChatAssignExceptionFilter } from '../filters/chat-assign.filter';
 import { ChatAssignDto } from '../dto/chat-assign.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { multerConfig } from 'src/config/multer.config';
+import { multerConfig } from '../../../config/multer.config';
 
 @Controller('chats')
 @UseGuards(AuthGuard('jwt'))
@@ -14,12 +29,12 @@ export class ChatsController {
   constructor(
     private readonly service: ChatsService,
     private readonly messages: MessageService,
-  ) { }
+  ) {}
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('file', multerConfig))
   uploadFile(@UploadedFile() file: Express.Multer.File) {
-    console.log(file)
+    console.log(file);
     return {
       message: 'Archivo recibido',
       filename: file.filename,
@@ -42,11 +57,11 @@ export class ChatsController {
   @Post('assign')
   @HttpCode(HttpStatus.ACCEPTED)
   async assign(@Body() { chatId, agentId }: ChatAssignDto) {
-    const res = await this.service.assign(chatId, agentId)
+    const res = await this.service.assign(chatId, agentId);
     return {
       message: 'agent assignated',
       agent: res.agent.id,
-      chat: res.chat.id
+      chat: res.chat.id,
     };
   }
 

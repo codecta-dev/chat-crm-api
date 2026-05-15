@@ -17,6 +17,7 @@ export class AuthService {
 
   async sign(credentials: { username: string, password: string }): Promise<string> {
     const user = await this.userService.find({ username: credentials.username });
+    console.log('User found:', user);
 
     if (!user || !(await this.valid(credentials.password, user.password))) throw new UnauthorizedException();
 

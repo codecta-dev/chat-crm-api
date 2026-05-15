@@ -1,30 +1,34 @@
-import { Injectable } from "@nestjs/common";
-import { MessageRepository } from "./message.repository";
-import { CreateMessageDto } from "./entities/create-message.dto";
-import { Message } from "./message.entity";
-import { MessageSenderType, MessageStatus, MessageType } from "./message.enum";
-import { MessageContent } from "src/integrations/whatsapp/types/whatsapp.types";
-import { PinoLogger } from "nestjs-pino";
+import { Injectable } from '@nestjs/common';
+import { MessageRepository } from './message.repository';
+import { CreateMessageDto } from './entities/create-message.dto';
+import { Message } from './message.entity';
+import { MessageSenderType, MessageStatus, MessageType } from './message.enum';
+import { MessageContent } from '@integrations/whatsapp/types/whatsapp.types';
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class MessageService {
   constructor(
     private readonly repo: MessageRepository,
-    private readonly logger: PinoLogger
-  ) { }
+    private readonly logger: PinoLogger,
+  ) {}
 
-  saveMsg(chatId: string, msg: MessageContent, sender: { id: string, type: MessageSenderType }) {
+  saveMsg(
+    chatId: string,
+    msg: MessageContent,
+    sender: { id: string; type: MessageSenderType },
+  ) {
     if (msg.type === 'text') {
       const message = this.repo.createFromChat(
         chatId,
         msg.text.body,
         sender.id,
         sender.type,
-        MessageType.TEXT
+        MessageType.TEXT,
       );
-      return message
+      return message;
     } else {
-      this.logger.warn(msg, 'Only text support')
+      this.logger.warn(msg, 'Only text support');
     }
   }
 
@@ -41,16 +45,18 @@ export class MessageService {
     contactId: string,
     chatId: string,
   ) {
-
-    return this.create({
-      senderType: this.inferSender(payload.direction),
-      direction: payload.direction,
-      body: payload.content,
-      mediaUrl: payload.mediaUrl,
-      status: MessageStatus.SENT,
-      type: this.inferType(payload.mediaUrl),
-      contactId,
-    }, chatId);
+    return this.create(
+      {
+        senderType: this.inferSender(payload.direction),
+        direction: payload.direction,
+        body: payload.content,
+        mediaUrl: payload.mediaUrl,
+        status: MessageStatus.SENT,
+        type: this.inferType(payload.mediaUrl),
+        contactId,
+      },
+      chatId,
+    );
   }
 
   private inferType(mediaUrl?: string) {
@@ -58,6 +64,8 @@ export class MessageService {
   }
 
   private inferSender(direction: 'in' | 'out') {
-    return direction === 'in' ? MessageSenderType.CLIENT : MessageSenderType.USER;
+    return direction === 'in'
+      ? MessageSenderType.CLIENT
+      : MessageSenderType.USER;
   }
 }

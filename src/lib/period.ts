@@ -13,14 +13,21 @@ import {
   subHours,
   subYears,
   startOfYear,
-  endOfYear
+  endOfYear,
 } from 'date-fns';
 
 export type PeriodTime = 'month' | 'week' | 'day' | 'hour' | 'year';
 
-export interface Period { start: Date; end: Date; }
+export interface Period {
+  start: Date;
+  end: Date;
+}
 
-export function period(unit: PeriodTime, offset = 0, baseDate = new Date()): Period {
+export function period(
+  unit: PeriodTime,
+  offset = 0,
+  baseDate = new Date(),
+): Period {
   let target: Date = baseDate;
 
   switch (unit) {
@@ -53,6 +60,6 @@ export function period(unit: PeriodTime, offset = 0, baseDate = new Date()): Per
       return {
         start: startOfYear(target),
         end: endOfYear(target),
-      }
+      };
   }
 }

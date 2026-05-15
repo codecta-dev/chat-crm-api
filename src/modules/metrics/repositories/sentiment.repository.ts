@@ -1,17 +1,17 @@
-import { DataSource } from "typeorm";
-import { SentimentType } from "../metrics.types";
-import { SentimentTopQuery, TrendPeriodQuery } from "../metrics.interface";
-import { Injectable } from "@nestjs/common";
-import { period, PeriodTime } from "src/lib/period";
-import { DATE_FORMAT_SQL } from "../constants/metrics.constants";
+import { DataSource } from 'typeorm';
+import { SentimentType } from '../metrics.types';
+import { SentimentTopQuery, TrendPeriodQuery } from '../metrics.interface';
+import { Injectable } from '@nestjs/common';
+import { period, PeriodTime } from '@lib/period';
+import { DATE_FORMAT_SQL } from '../constants/metrics.constants';
 
 @Injectable()
 export class SentimentRepository {
-  constructor(private readonly dataSource: DataSource) { }
+  constructor(private readonly dataSource: DataSource) {}
 
   async trendPeriod(
     periodTime: PeriodTime,
-    userId?: string
+    userId?: string,
   ): Promise<TrendPeriodQuery[]> {
     // === Period setup ===
     const { start, end } = period(periodTime);
@@ -36,7 +36,10 @@ export class SentimentRepository {
     return query;
   }
 
-  async topAgent(label?: SentimentType, limit: number = 5): Promise<SentimentTopQuery[]> {
+  async topAgent(
+    label?: SentimentType,
+    limit: number = 5,
+  ): Promise<SentimentTopQuery[]> {
     return this.dataSource.sql`
       SELECT 
         u.id AS id,
@@ -60,7 +63,10 @@ export class SentimentRepository {
     `;
   }
 
-  async topClient(label?: SentimentType, limit: number = 5): Promise<SentimentTopQuery[]> {
+  async topClient(
+    label?: SentimentType,
+    limit: number = 5,
+  ): Promise<SentimentTopQuery[]> {
     return this.dataSource.sql`
       SELECT 
         c.id AS id,

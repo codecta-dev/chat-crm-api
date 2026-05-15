@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { MetricsRepository } from './metrics.repository';
 import { MetricMapper } from './metrics.mapper';
-import { PeriodTime } from 'src/lib/period';
 import { CompareMetric, SentimentActor, SentimentType } from './metrics.types';
 import { SentimentRepository } from './repositories/sentiment.repository';
 import { SentimentTopQuery } from './metrics.interface';
 import { COMPARE_PERIOD_CONFIG } from './constants/metrics.constants';
+import { PeriodTime } from '@lib/period';
 
 export interface TopAgentMetrics {
   agentId: string;
@@ -20,15 +20,21 @@ export class MetricsService {
   constructor(
     private readonly repo: MetricsRepository,
     private readonly sentiment: SentimentRepository,
-  ) { }
+  ) {}
 
-  private sentimentTopMap: Record<SentimentActor,
-    (type: SentimentType, limit: number) => Promise<SentimentTopQuery[]>> = {
-      agent: (type, limit) => this.sentiment.topAgent(type, limit),
-      client: (type, limit) => this.sentiment.topClient(type, limit),
-    }
+  private sentimentTopMap: Record<
+    SentimentActor,
+    (type: SentimentType, limit: number) => Promise<SentimentTopQuery[]>
+  > = {
+    agent: (type, limit) => this.sentiment.topAgent(type, limit),
+    client: (type, limit) => this.sentiment.topClient(type, limit),
+  };
 
-  async getSentimentTop(actor: SentimentActor, type: SentimentType, limit: number = 5) {
+  async getSentimentTop(
+    actor: SentimentActor,
+    type: SentimentType,
+    limit: number = 5,
+  ) {
     const handler = this.sentimentTopMap[actor];
     const queries = await handler(type, limit);
 
@@ -37,17 +43,20 @@ export class MetricsService {
 
   async getComparePeriod(metric: CompareMetric, period: PeriodTime) {
     const { target, column, where } = COMPARE_PERIOD_CONFIG[metric];
-    const { current, previous } = await this.repo.comparePeriod({ target, column, period }, where)
+    const { current, previous } = await this.repo.comparePeriod(
+      { target, column, period },
+      where,
+    );
 
     return MetricMapper.compare(metric, [current, previous]);
   }
 
   async getTrendPeriod(period: PeriodTime) {
-    return this.sentiment.trendPeriod(period)
+    return this.sentiment.trendPeriod(period);
   }
 
   async getTopContacts() {
-    return this.repo.getTopContacts()
+    return this.repo.getTopContacts();
   }
 
   // private fillMissingData(

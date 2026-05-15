@@ -1,32 +1,35 @@
-import { Injectable } from "@nestjs/common";
-import { startOfMonth, subMonths } from "date-fns";
-import { DataSource } from "typeorm";
-import { AgentQuery, ClientQuery, ContactQuery } from "./metrics.interface";
-import { period, PeriodTime } from "src/lib/period";
+import { Injectable } from '@nestjs/common';
+import { startOfMonth, subMonths } from 'date-fns';
+import { DataSource } from 'typeorm';
+import { AgentQuery, ClientQuery, ContactQuery } from './metrics.interface';
+import { period, PeriodTime } from '@lib/period';
 
 export type Table = 'messages' | 'transfers' | 'chats' | 'contacts' | 'users';
 export type SentimentType = 'POS' | 'NEU' | 'NEG';
 
-type comparePeriodsParams = { targetTable: Table, column: string, timeUnit: PeriodTime };
-type CompareParams = { target: Table, column: string, period: PeriodTime };
+type comparePeriodsParams = {
+  targetTable: Table;
+  column: string;
+  timeUnit: PeriodTime;
+};
+type CompareParams = { target: Table; column: string; period: PeriodTime };
 
 @Injectable()
 export class MetricsRepository {
-  constructor(
-    private readonly dataSource: DataSource,
-  ) { }
+  constructor(private readonly dataSource: DataSource) {}
 
   async comparePeriod(filters: CompareParams, whereClause?: string) {
     const curr = period(filters.period);
     const prev = period(filters.period, 1);
 
-    const raw: { current: string, previous: string }[] = await this.dataSource.sql`
+    const raw: { current: string; previous: string }[] = await this.dataSource
+      .sql`
       SELECT 
         COUNT(DISTINCT CASE WHEN created_at BETWEEN ${curr.start} AND ${curr.end} THEN ${() => filters.column} END) AS current,
         COUNT(DISTINCT CASE WHEN created_at BETWEEN ${prev.start} AND ${prev.end} THEN ${() => filters.column} END) AS previous
       FROM ${() => filters.target}
       WHERE ${() => filters.column} IS NOT NULL
-        AND (${() => whereClause ?? "1=1"});
+        AND (${() => whereClause ?? '1=1'});
     `;
 
     return {
@@ -35,7 +38,11 @@ export class MetricsRepository {
     };
   }
 
-  async comparePeriods({ targetTable, column = 'id', timeUnit }: comparePeriodsParams) {
+  async comparePeriods({
+    targetTable,
+    column = 'id',
+    timeUnit,
+  }: comparePeriodsParams) {
     const currentPeriod = period(timeUnit);
     const previousPeriod = period(timeUnit, 1);
 
@@ -44,7 +51,8 @@ export class MetricsRepository {
     const previousStart = previousPeriod.start.toISOString();
     const previousEnd = previousPeriod.end.toISOString();
 
-    const raw: { current: string, previous: string }[] = await this.dataSource.sql`
+    const raw: { current: string; previous: string }[] = await this.dataSource
+      .sql`
       SELECT (
         SELECT COUNT(DISTINCT(${() => column})) FROM ${() => targetTable}
         WHERE created_at BETWEEN ${currentStart} AND ${currentEnd} 
@@ -88,7 +96,7 @@ export class MetricsRepository {
 
   async getAgentsFast(
     label: SentimentType,
-    limit: number = 5
+    limit: number = 5,
   ): Promise<AgentQuery[]> {
     const qb: AgentQuery[] = await this.dataSource.sql`
       SELECT 
@@ -112,7 +120,11 @@ export class MetricsRepository {
     return qb;
   }
 
-  async getBestClients(userId: string, label: SentimentType = 'POS', limit: number = 5): Promise<ClientQuery[]> {
+  async getBestClients(
+    userId: string,
+    label: SentimentType = 'POS',
+    limit: number = 5,
+  ): Promise<ClientQuery[]> {
     const qb: ClientQuery[] = await this.dataSource.sql`
       SELECT 
         c.id AS contactId,
