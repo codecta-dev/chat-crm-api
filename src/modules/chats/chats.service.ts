@@ -21,18 +21,18 @@ export class ChatsService {
     private readonly repo: ChatRepository,
     private readonly logger: PinoLogger,
     private readonly cls: ClsService,
-  ) { }
+  ) {}
 
   saveMsg(
     chatId: string,
     msg: {
-      type: MessageType,
-      content: ChatMessageContent,
+      type: MessageType;
+      content: ChatMessageContent;
     },
     sender: {
-      id: string,
-      type: MessageSenderType
-    }
+      id: string;
+      type: MessageSenderType;
+    },
   ) {
     const repo = this.dataSource.getRepository(Message);
     const fields = getMessageStrategy(msg.type).toEntityFields(msg.content);
@@ -49,18 +49,18 @@ export class ChatsService {
 
   /**
    * Retrieves the identifiers of agents assigned to a specific chat.
-   * 
+   *
    * @param chatId - Unique identifier of the chat (from the Chat entity).
    * @returns Promise resolving to an array of agent IDs associated with the chat.
-   * 
+   *
    * @example
    * const agentIds = await getAssigments("chat-123");
    * // agentIds => ["agent-1", "agent-2", "agent-3"]
-   * 
+   *
    */
   async getAssigments(chatId: string) {
     const agents = await this.repo.findAssigments(chatId);
-    return agents.map(agent => agent.id);
+    return agents.map((agent) => agent.id);
   }
 
   async assign(chatId: string, agentId: string) {
@@ -68,41 +68,45 @@ export class ChatsService {
   }
 
   updateLastMessage(chatId: string, messageId: string) {
-    return this.chatRepo.update({ id: chatId }, { status: ChatStatus.OPEN, lastMessage: { id: messageId } });
+    return this.chatRepo.update(
+      { id: chatId },
+      { status: ChatStatus.OPEN, lastMessage: { id: messageId } },
+    );
   }
 
   async list(agentId?: string) {
-
     const agent = agentId ?? this.cls.get('user.id');
     if (!agent) return {};
 
     const chats = await this.repo.listChatsAssignments(agent);
     return chats.map((chat) => ({
       id: chat.chatId,
-      message: {
-        id: chat.messageId,
+      preview: {
         content: chat.messageContent,
         datetime: chat.messageCreated,
       },
       client: {
         id: chat.clientId,
         username: chat.clientUsername,
+        profile: chat.clientProfile,
         phone: chat.clientPhone,
-      }
-    }))
+      },
+      status: chat.chatStatus,
+      createdAt: chat.messageCreated,
+    }));
   }
 
   create(dto: ChatDto) {
     const chat = this.chatRepo.save({
       ...dto,
-      client: { id: dto.client_id }
+      client: { id: dto.client_id },
     });
 
     return chat;
   }
 
   findAll() {
-    return this.chatRepo.find()
+    return this.chatRepo.find();
   }
 
   findOne(id: number) {

@@ -1,23 +1,21 @@
-import { Injectable } from "@nestjs/common";
-import { DataSource, Like } from "typeorm";
-import { Chat, ChatAssignments } from "./entities";
-import { ReasonAssignment } from "./chat.enum";
-import { MessageContext } from "@integrations/whatsapp/types/whatsapp.types";
-import { Contact } from "@entities";
+import { Injectable } from '@nestjs/common';
+import { DataSource, Like } from 'typeorm';
+import { Chat, ChatAssignments } from './entities';
+import { ReasonAssignment } from './chat.enum';
+import { MessageContext } from '@integrations/whatsapp/types/whatsapp.types';
+import { Contact } from '@entities';
 
 @Injectable()
 export class ChatRepository {
-  constructor(
-    private readonly dataSource: DataSource,
-  ) { }
+  constructor(private readonly dataSource: DataSource) {}
 
   async findChatByPhone(phone: string) {
     const repo = this.dataSource.getRepository(Chat);
     return repo.findOne({
       where: {
         client: {
-          phoneNumber: Like(`%${phone}%`)
-        }
+          phoneNumber: Like(`%${phone}%`),
+        },
       },
       cache: true,
     });
@@ -34,22 +32,22 @@ export class ChatRepository {
 
     let client = await contactRepo.findOne({
       where: {
-        phoneNumber: Like(`%${context.from}%`)
+        phoneNumber: Like(`%${context.from}%`),
       },
-      cache: true
+      cache: true,
     });
 
     if (!client) {
       client = contactRepo.create({
         phoneNumber: `+${context.from}`,
-        username: context.senderName
+        username: context.senderName,
       });
       client = await contactRepo.save(client);
     }
 
     let chat = await chatRepo.findOne({
       where: {
-        client: { id: client.id }
+        client: { id: client.id },
       },
       relations: ['client'],
       cache: true,
@@ -70,12 +68,12 @@ export class ChatRepository {
       chat: { id: chatId },
       agent: { id: agentId },
       reason,
-    })
+    });
   }
 
   /**
    * Finds all agent assignments linked to a given chat.
-   * 
+   *
    * @param chatId - Unique identifier of the chat (foreign key in ChatAssignments).
    * @returns Promise resolving to an array of raw objects containing agent IDs.
    */
@@ -86,27 +84,31 @@ export class ChatRepository {
       .leftJoin('assignment.agent', 'agent')
       .select('agent.id', 'id')
       .where('assignment.chat_id = :chatId', { chatId })
-      .getRawMany<{ id: string }>()
+      .getRawMany<{ id: string }>();
   }
 
   async listChatsAssignments(agentId: string) {
     const query: {
-      chatId: string,
-      messageId: string,
-      messageContent: string,
-      messageCreated: string,
-      clientId: string,
-      clientUsername: string,
-      clientPhone: string,
+      chatId: string;
+      chatStatus: string;
+      messageId: string;
+      messageContent: string;
+      messageCreated: string;
+      clientId: string;
+      clientUsername: string;
+      clientPhone: string;
+      clientProfile: string;
     }[] = await this.dataSource.sql`
       SELECT
           ch.id AS chatId,
+          ch.status AS chatStatus,
           ch.last_message_id AS messageId,
           me.content AS messageContent,
           ch.last_message_at AS messageCreated,
           co.id AS clientId,
           co.username AS clientUsername,
-          co.phone_number AS clientPhone
+          co.phone_number AS clientPhone,
+          co.profile AS clientProfile
       FROM
           chats ch
       LEFT JOIN chat_assignments ch_a ON
