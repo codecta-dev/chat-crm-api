@@ -55,7 +55,14 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard, IdentifyGuard)
-  getProfile(@CurrentUser() user: AuthUser) {
-    return user;
+  async getProfile(@CurrentUser() user: AuthUser) {
+    const companies = await this.member.getCompanies();
+
+    return {
+      user,
+      company: {
+        id: companies[0] ?? null,
+      },
+    };
   }
 }
