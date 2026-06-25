@@ -1,4 +1,4 @@
-import { MessageType } from "@modules/message/domain/message.types";
+import { MessageType } from '@modules/message/domain/message.types';
 
 export interface MessageContext {
   phoneNumberId: string; // Company Phone ID
@@ -10,8 +10,8 @@ export interface MessageContext {
 export interface TextContent {
   type: 'text';
   text: {
-    body: string,
-    preview_url?: boolean,
+    body: string;
+    preview_url?: boolean;
   };
 }
 
@@ -25,7 +25,7 @@ export interface ImageContent {
   };
 }
 
-interface DocumentContent {
+export interface DocumentContent {
   type: 'document';
   document?: {
     id: string;
