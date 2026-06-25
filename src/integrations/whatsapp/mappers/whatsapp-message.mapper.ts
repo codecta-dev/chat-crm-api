@@ -45,13 +45,13 @@ const toMessage = (
   let content: MessageContent | undefined;
 
   switch (msg.type) {
-    case MessageType.Text:
+    case 'text' as MessageType.Text:
       content = handlers.text?.(msg, ctx);
       break;
-    case MessageType.Image:
+    case 'image' as MessageType.Image:
       content = handlers.image?.(msg, ctx);
       break;
-    case MessageType.Document:
+    case 'document' as MessageType.Document:
       content = handlers.document?.(msg, ctx);
       break;
     default:
