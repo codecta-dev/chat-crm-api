@@ -37,6 +37,8 @@ export class ChatsService {
     const repo = this.dataSource.getRepository(Message);
     const fields = getMessageStrategy(msg.type).toEntityFields(msg.content);
 
+    this.logger.debug(fields, 'Save message with fields');
+
     const message: Message = repo.create({
       ...fields,
       senderId: sender.id,
