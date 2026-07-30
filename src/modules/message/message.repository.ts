@@ -1,9 +1,9 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Message } from "./message.entity";
-import { MessageSenderType, MessageType } from "./message.enum";
-import { DataSource, Repository } from "typeorm";
-import { CreateMessageDto } from "./entities/create-message.dto";
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Message } from './message.entity';
+import { MessageSenderType, MessageType } from './message.enum';
+import { DataSource, Repository } from 'typeorm';
+import { CreateMessageDto } from './entities/create-message.dto';
 
 @Injectable()
 export class MessageRepository {
@@ -11,7 +11,7 @@ export class MessageRepository {
     @InjectRepository(Message)
     private readonly repo: Repository<Message>,
     private readonly dataSource: DataSource,
-  ) { }
+  ) {}
 
   async create(dto: CreateMessageDto, chatId: string) {
     const message = this.repo.create({
@@ -23,8 +23,12 @@ export class MessageRepository {
   }
 
   async createFromChat(
-    chatId: string, content: string, senderId: string,
-    senderType: MessageSenderType, type: MessageType,
+    chatId: string,
+    content: string,
+    senderId: string,
+    senderType: MessageSenderType,
+    type: MessageType,
+    mediaUrl?: string,
   ) {
     return this.dataSource.transaction((manager) => {
       const message = this.repo.create({
@@ -32,11 +36,12 @@ export class MessageRepository {
         content,
         senderId,
         senderType,
-        type
+        type,
+        mediaUrl,
       });
 
       return manager.save(message);
-    })
+    });
   }
 
   async findChatMessages(chatId: string) {

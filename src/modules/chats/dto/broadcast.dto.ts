@@ -1,25 +1,30 @@
-import { MessageType } from "@modules/message/domain/message.types";
-import { IsNotEmptyObject } from "class-validator";
-import { ChatMessageContent } from "../chat.types";
-import { MessageSenderType, MessageStatus } from "@modules/message/message.enum";
+import { MessageType } from '@modules/message/domain/message.types';
+import { IsNotEmptyObject } from 'class-validator';
+import { ChatMessageContent } from '../chat.types';
+import {
+  MessageSenderType,
+  MessageStatus,
+} from '@modules/message/message.enum';
 
 export class BroadcastDto {
-  id: string;
+  id!: string;
 
-  status: MessageStatus;
+  chatId?: string;
 
-  timestamp: Date;
+  status!: MessageStatus;
 
-  @IsNotEmptyObject()
-  sender: {
-    id: string,
-    type: MessageSenderType,
-  }
+  timestamp!: Date;
 
   @IsNotEmptyObject()
-  msg: {
+  sender!: {
+    id: string;
+    type: MessageSenderType;
+  };
+
+  @IsNotEmptyObject()
+  msg!: {
     type: MessageType;
     mediaUrl?: string;
     content: ChatMessageContent;
-  }
+  };
 }

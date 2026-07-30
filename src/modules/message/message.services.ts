@@ -5,6 +5,8 @@ import { Message } from './message.entity';
 import { MessageSenderType, MessageStatus, MessageType } from './message.enum';
 import { MessageContent } from '@integrations/whatsapp/types/whatsapp.types';
 import { PinoLogger } from 'nestjs-pino';
+import { BroadcastDto } from '@modules/chats/dto/broadcast.dto';
+import { getMessageStrategy } from './strategies/strategy.registry';
 
 @Injectable()
 export class MessageService {
@@ -17,18 +19,36 @@ export class MessageService {
     chatId: string,
     msg: MessageContent,
     sender: { id: string; type: MessageSenderType },
+    mediaUrl?: string,
   ) {
-    if (msg.type === 'text') {
-      const message = this.repo.createFromChat(
-        chatId,
-        msg.text.body,
-        sender.id,
-        sender.type,
-        MessageType.TEXT,
-      );
-      return message;
-    } else {
-      this.logger.warn(msg, 'Only text support');
+    switch (msg.type) {
+      case 'text':
+        return this.repo.createFromChat(
+          chatId,
+          msg.text.body,
+          sender.id,
+          sender.type,
+          MessageType.TEXT,
+        );
+      case 'image':
+        return this.repo.createFromChat(
+          chatId,
+          msg.image?.caption ?? '',
+          sender.id,
+          sender.type,
+          MessageType.IMAGE,
+        );
+      case 'document':
+        return this.repo.createFromChat(
+          chatId,
+          msg.document?.caption ?? '',
+          sender.id,
+          sender.type,
+          MessageType.DOCUMENT,
+          mediaUrl,
+        );
+      default:
+        this.logger.warn(msg, 'Only text support');
     }
   }
 
@@ -36,8 +56,11 @@ export class MessageService {
     return this.repo.create(dto, chatId);
   }
 
-  async getChatMessages(chatId: string) {
-    return this.repo.findChatMessages(chatId);
+  async getChatMessages(chatId: string): Promise<BroadcastDto[]> {
+    const messages = await this.repo.findChatMessages(chatId);
+    return messages.map((msg) =>
+      getMessageStrategy(msg.type ?? MessageType.TEXT).toBroadcastFields(msg),
+    );
   }
 
   async createSimpleMessage(

@@ -13,7 +13,9 @@ export interface MessageStrategy {
   ): WhatsAppPayload;
 
   // Save in db with mapper
-  toEntityFields(content: WhatsAppMessageContent): Partial<Message>;
+  toEntityFields(
+    content: WhatsAppMessageContent & { medialUrl?: string },
+  ): Partial<Message>;
 
   toBroadcastFields(message: Message): BroadcastDto;
 }

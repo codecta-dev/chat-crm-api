@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ContentHandlerPort } from './content-handler.port';
-import { ImageContent, MessageContent, MessageContext, TextContent } from '../../types/whatsapp.types';
+import {
+  DocumentContent,
+  ImageContent,
+  MessageContent,
+  MessageContext,
+  TextContent,
+} from '../../types/whatsapp.types';
 import { CommandBus } from '@nestjs/cqrs';
 import { SaveChatMessageCommand } from '@modules/chats/commands';
 import { MessageSenderType, MessageType } from '@modules/message/message.enum';
@@ -16,7 +22,7 @@ export class MessageContentHandlers {
     private readonly client: WhatsAppClient,
     private readonly commandBus: CommandBus,
     private readonly logger: PinoLogger,
-  ) { }
+  ) {}
 
   private async saveMessage(
     context: MessageContext,
@@ -30,7 +36,7 @@ export class MessageContentHandlers {
         room: chat.id,
         sender: {
           id: chat.client.id,
-          type: MessageSenderType.CLIENT
+          type: MessageSenderType.CLIENT,
         },
       }),
     );
@@ -45,7 +51,33 @@ export class MessageContentHandlers {
           preview_url: content.text.preview_url,
         },
       });
-    }
+    },
+  };
+
+  private readonly document: ContentHandlerPort<DocumentContent> = {
+    handle: async (content, context, config) => {
+      if (!config || !content?.document?.id) return;
+
+      this.client.setConfig(config);
+
+      const ext = content.document.filename?.split('.').pop() || undefined;
+
+      const { fileUrl } = await firstValueFrom(
+        this.client.upload(content.document.id, config.accessToken, ext),
+      );
+
+      this.logger.debug({ content, imageUrl: fileUrl }, 'Upload document');
+
+      await this.saveMessage(context, {
+        type: MessageType.DOCUMENT,
+        mediaUrl: fileUrl,
+        content: {
+          ...content.document,
+          link: fileUrl,
+          preview_url: content.document.mime_type === 'application/pdf',
+        },
+      });
+    },
   };
 
   private readonly image: ContentHandlerPort<ImageContent> = {
@@ -54,31 +86,36 @@ export class MessageContentHandlers {
 
       this.client.setConfig(config);
 
-      const upload$ = this.client.upload(content.image.id);
+      const upload$ = this.client.upload(content.image.id, config.accessToken);
 
-      const { imageUrl } = await firstValueFrom(upload$);
+      const { fileUrl } = await firstValueFrom(upload$);
 
-      this.logger.debug({ content, imageUrl }, 'Upload image');
+      this.logger.debug({ content, imageUrl: fileUrl }, 'Upload image');
 
       await this.saveMessage(context, {
         type: MessageType.IMAGE,
-        mediaUrl: imageUrl,
+        mediaUrl: fileUrl,
         content: {
           id: content.image.id,
-          link: imageUrl,
+          link: fileUrl,
           caption: content.image.caption,
-        }
-      })
-    }
+        },
+      });
+    },
   };
 
   getHandler<K extends MessageContent['type']>(type: K) {
     const handlers: {
-      [K in MessageContent['type']]?: ContentHandlerPort<Extract<MessageContent, { type: K }>>;
+      [K in MessageContent['type']]?: ContentHandlerPort<
+        Extract<MessageContent, { type: K }>
+      >;
     } = {
       text: this.text,
       image: this.image,
+      document: this.document,
     };
-    return handlers[type] as ContentHandlerPort<Extract<MessageContent, { type: K }>> | undefined;
+    return handlers[type] as
+      | ContentHandlerPort<Extract<MessageContent, { type: K }>>
+      | undefined;
   }
 }
