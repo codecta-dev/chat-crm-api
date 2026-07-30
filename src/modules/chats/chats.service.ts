@@ -27,7 +27,7 @@ export class ChatsService {
     chatId: string,
     msg: {
       type: MessageType;
-      content: ChatMessageContent;
+      content: ChatMessageContent & { medialUrl?: string };
     },
     sender: {
       id: string;
@@ -35,11 +35,12 @@ export class ChatsService {
     },
   ) {
     const repo = this.dataSource.getRepository(Message);
+    this.logger.debug(msg, 'Save message with content');
     const fields = getMessageStrategy(msg.type).toEntityFields(msg.content);
 
     this.logger.debug(fields, 'Save message with fields');
 
-    const message: Message = repo.create({
+    const message = repo.create({
       ...fields,
       senderId: sender.id,
       senderType: sender.type,

@@ -28,6 +28,7 @@ export class MessageRepository {
     senderId: string,
     senderType: MessageSenderType,
     type: MessageType,
+    mediaUrl?: string,
   ) {
     return this.dataSource.transaction((manager) => {
       const message = this.repo.create({
@@ -36,6 +37,7 @@ export class MessageRepository {
         senderId,
         senderType,
         type,
+        mediaUrl,
       });
 
       return manager.save(message);

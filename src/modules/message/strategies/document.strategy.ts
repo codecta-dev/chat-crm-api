@@ -20,7 +20,9 @@ export class DocumentMessageStrategy implements MessageStrategy {
       .build();
   }
 
-  toEntityFields(content: WhatsAppDocumentContent): Partial<Message> {
+  toEntityFields(
+    content: WhatsAppDocumentContent & { mediaUrl?: string },
+  ): Partial<Message> {
     return {
       type: MessageType.DOCUMENT,
       mediaUrl: content.link,

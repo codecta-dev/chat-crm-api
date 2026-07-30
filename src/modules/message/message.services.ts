@@ -19,18 +19,36 @@ export class MessageService {
     chatId: string,
     msg: MessageContent,
     sender: { id: string; type: MessageSenderType },
+    mediaUrl?: string,
   ) {
-    if (msg.type === 'text') {
-      const message = this.repo.createFromChat(
-        chatId,
-        msg.text.body,
-        sender.id,
-        sender.type,
-        MessageType.TEXT,
-      );
-      return message;
-    } else {
-      this.logger.warn(msg, 'Only text support');
+    switch (msg.type) {
+      case 'text':
+        return this.repo.createFromChat(
+          chatId,
+          msg.text.body,
+          sender.id,
+          sender.type,
+          MessageType.TEXT,
+        );
+      case 'image':
+        return this.repo.createFromChat(
+          chatId,
+          msg.image?.caption ?? '',
+          sender.id,
+          sender.type,
+          MessageType.IMAGE,
+        );
+      case 'document':
+        return this.repo.createFromChat(
+          chatId,
+          msg.document?.caption ?? '',
+          sender.id,
+          sender.type,
+          MessageType.DOCUMENT,
+          mediaUrl,
+        );
+      default:
+        this.logger.warn(msg, 'Only text support');
     }
   }
 

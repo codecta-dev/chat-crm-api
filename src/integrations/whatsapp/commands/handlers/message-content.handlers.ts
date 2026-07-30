@@ -71,7 +71,11 @@ export class MessageContentHandlers {
       await this.saveMessage(context, {
         type: MessageType.DOCUMENT,
         mediaUrl: fileUrl,
-        content: content.document,
+        content: {
+          ...content.document,
+          link: fileUrl,
+          preview_url: content.document.mime_type === 'application/pdf',
+        },
       });
     },
   };
