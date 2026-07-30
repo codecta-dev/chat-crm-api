@@ -1,15 +1,25 @@
-import { Body, Controller, Get, Patch, Post, UseFilters, UseGuards } from "@nestjs/common";
-import { CreateWhatsAppConfigDto, UpdateWhatsAppConfigDto } from "../dto/whatsapp-config.dto";
-import { JwtAuthGuard } from "@auth/guards";
-import { CompanyGuard } from "@modules/company/company.guard";
-import { WhatsAppService } from "../whatsapp.service";
-import { WhatsAppExceptionFilter } from "../filters/whatsapp-exception.filter";
+import {
+  Controller,
+  Get,
+  Patch,
+  Post,
+  UseFilters,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  CreateWhatsAppConfigDto,
+  UpdateWhatsAppConfigDto,
+} from '../dto/whatsapp-config.dto';
+import { JwtAuthGuard } from '@auth/guards';
+import { CompanyGuard } from '@modules/company/company.guard';
+import { WhatsAppService } from '../whatsapp.service';
+import { WhatsAppExceptionFilter } from '../filters/whatsapp-exception.filter';
 
 @Controller('integration/whatsapp')
 @UseGuards(JwtAuthGuard, CompanyGuard)
 @UseFilters(new WhatsAppExceptionFilter())
 export class WhatsappController {
-  constructor(private readonly service: WhatsAppService) { }
+  constructor(private readonly service: WhatsAppService) {}
 
   @Get('config')
   getConfig() {
