@@ -26,6 +26,11 @@ export class WhatsappController {
     return this.service.getConfig();
   }
 
+  @Get('config/validate')
+  validateConfig() {
+    return this.service.getConfig();
+  }
+
   @Post()
   create(dto: CreateWhatsAppConfigDto) {
     return this.service.createConfig(dto);
