@@ -1,4 +1,4 @@
-import { Company } from "@entities";
+import { Company } from '@entities';
 import {
   Column,
   CreateDateColumn,
@@ -7,22 +7,26 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  UpdateDateColumn
-} from "typeorm";
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity('whatsapp_configs')
 export class WhatsAppConfig {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: "varchar", default: "v22.0" })
+  @Column({ type: 'varchar', default: 'v22.0' })
   apiVersion: string;
 
-  @Column({ type: "varchar", default: "https://graph.facebook.com" })
+  @Column({ type: 'varchar', default: 'https://graph.facebook.com' })
   apiBaseUrl: string;
 
-  @Column({ unique: true })
-  businessId: string;
+  @Column({
+    type: 'varchar',
+    nullable: true,
+    unique: true,
+  })
+  businessId: string | null;
 
   @Column({ type: 'varchar', length: 512 })
   accessToken: string;

@@ -82,11 +82,12 @@ export class MetricsRepository {
           c.last_names AS lastNames,
           c.phone_number AS phoneNumber,
           c.profile,
-          COUNT(m.id) AS count,
-          RANK() OVER (ORDER BY COUNT(m.id) DESC) AS \'rank\'
+          COUNT(m.message_id) AS count,
+          RANK() OVER (ORDER BY COUNT(m.message_id) DESC) AS \'rank\'
         FROM messages m
-        INNER JOIN contacts c ON m.contact_id = c.id
-        WHERE m.created_at >= ${start}
+        INNER JOIN contacts c ON m.sender_id = c.id
+        WHERE m.sender_type = 'client'
+        AND m.created_at >= ${start}
         GROUP BY c.id
         ORDER BY count DESC, c.username
         LIMIT ${limit}`;
@@ -109,9 +110,10 @@ export class MetricsRepository {
         AVG(sa.score_neu) AS avgNeu,
         AVG(sa.score_neg) AS avgNeg
       FROM messages m
-      INNER JOIN users u ON u.id = m.agent_id
+      INNER JOIN users u ON u.id = m.sender_id
       INNER JOIN analysis a ON a.message_id =m.message_id
       INNER JOIN sentiment_analysis sa ON sa.analysis_id = a.analysis_id
+      WHERE m.sender_type = 'agent'
       GROUP BY sa.sentiment_analysis_id
       ORDER BY total DESC
       LIMIT ${limit}
