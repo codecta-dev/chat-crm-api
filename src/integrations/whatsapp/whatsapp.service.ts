@@ -16,7 +16,9 @@ export class WhatsAppService {
     private readonly client: WhatsAppClient,
     private readonly cls: ClsService,
     private readonly logger: PinoLogger,
-  ) { this.logger.setContext(WhatsAppService.name) }
+  ) {
+    this.logger.setContext(WhatsAppService.name);
+  }
 
   async verifyToken(token: string) {
     return !!(await this.configRepository.findOne({
@@ -26,12 +28,15 @@ export class WhatsAppService {
   }
 
   async getConfig() {
-    this.logger.debug(`User ${this.cls.get('user.id')} get config with ${this.cls.get('company.id')}`)
+    this.logger.debug(
+      `User ${this.cls.get('user.id')} get config with ${this.cls.get('company.id')}`,
+    );
     return this.configRepository.findOne({
       where: {
-        company: { id: this.cls.get('company.id') }
-      }, cache: true
-    })
+        company: { id: this.cls.get('company.id') },
+      },
+      cache: true,
+    });
   }
 
   async sendMessage(payload: WhatsAppPayload) {
@@ -40,9 +45,9 @@ export class WhatsAppService {
     if (!config) {
       this.logger.error('Config no found in service');
       return;
-    };
+    }
 
-    this.logger.debug(config, 'Config in service')
+    this.logger.debug(config, 'Config in service');
     this.client.setConfig(config);
 
     return this.client.send(payload);
@@ -52,24 +57,30 @@ export class WhatsAppService {
     return this.configRepository.findOne({
       where: {
         phoneNumberId,
-        isActive: true
+        isActive: true,
       },
       cache: true,
-    })
+    });
   }
 
   createConfig(config: Partial<WhatsAppConfig>) {
-    const company = { id: this.cls.get('company.id') }
+    const company = { id: this.cls.get('company.id') };
     const waConfig = this.configRepository.create({
       ...config,
-      company
+      company,
     });
 
     return this.configRepository.save(waConfig);
   }
 
   updateConfig(config: Partial<WhatsAppConfig>) {
-    return this.configRepository.update(this.cls.get('company.id'), config);
+    console.log(config, 'Config in service');
+    return this.configRepository.update(
+      {
+        company: { id: this.cls.get('company.id') },
+      },
+      config,
+    );
   }
 
   // async sendTemplateMessage(to: string, templateName: string, languageCode: string, companyId?: string) {

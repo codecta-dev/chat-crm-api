@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   Patch,
@@ -36,8 +37,9 @@ export class WhatsappController {
     return this.service.createConfig(dto);
   }
 
-  @Patch()
-  update(dto: UpdateWhatsAppConfigDto) {
+  @Patch('config')
+  update(@Body() dto: UpdateWhatsAppConfigDto) {
+    console.log(dto, 'Config in controller');
     return this.service.updateConfig(dto);
   }
 }
