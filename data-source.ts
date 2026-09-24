@@ -7,7 +7,12 @@ export default new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  entities: ['/src/modules/**/*.entity.{ts,js}'],
-  migrations: ['/src/migrations/*.ts'],
+  entities: [
+    __dirname + '/src/modules/**/*.entity{.ts,.js}',
+    __dirname + '/src/integrations/**/*.entity{.ts,.js}',
+  ],
+  migrations: [__dirname + '/src/migrations/*{.ts,.js}'],
   migrationsTableName: "migrations",
+  synchronize: false,
+  migrationsRun: process.env.NODE_ENV === 'production',
 })

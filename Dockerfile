@@ -1,32 +1,25 @@
-# Usar Node.js 22 Alpine como imagen base
-FROM node:22-alpine
-
-# Instalar dependencias del sistema necesarias
-RUN apk add --no-cache \
-  git \
-  bash \
-  starship
-
-# Starship prompt
-RUN echo 'eval "$(starship init bash)"' >> ~/.bashrc
-
-# Establece directorio de trabajo
+# Base con dependencias del sistema mínimas (bash se mantiene por compatibilidad con compose dev)
+FROM node:22-alpine AS base
+RUN apk add --no-cache bash
 WORKDIR /app
 
-# Copiar archivos de configuración de dependencias
+# Build: instala todo (incl. devDependencies) y compila a dist/
+FROM base AS build
 COPY package*.json ./
-
-# Instalar dependecias
-RUN npm install
-
-# Limpiar cache de npm
-RUN npm cache clean --force
-
-# Copiar el resto de los archivos de la aplicación con permisos correctos
+RUN npm ci
 COPY . .
+RUN npm run build
 
-# Exponer el puerto de la aplicación
+# Producción: solo dependencias prod + dist compilado, usuario no-root
+FROM base AS production
+ENV NODE_ENV=production
+COPY package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+COPY --from=build /app/dist ./dist
+# uploads/ necesita existir si serve-static lo usa (montado como volumen en prod)
+RUN mkdir -p /app/uploads && chown -R node:node /app
+USER node
 EXPOSE 3000
-
-# Comando por defecto
-CMD ["npm", "run", "start:dev"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "fetch('http://localhost:'+(process.env.PORT||3000)+'/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+CMD ["node", "dist/main"]

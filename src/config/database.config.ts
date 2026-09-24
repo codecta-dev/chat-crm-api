@@ -12,8 +12,9 @@ export const databaseConfig: TypeOrmModuleOptions = {
     __dirname + '/../modules/**/*.entity{.ts,.js}',
     __dirname + '/../integrations/**/*.entity{.ts,.js}'
   ],
-  migrations: [__dirname + '/../migrations/*.ts'],
+  migrations: [__dirname + '/../migrations/*{.ts,.js}'],
   synchronize: process.env.NODE_ENV !== 'production',
+  migrationsRun: process.env.NODE_ENV === 'production',
   namingStrategy: new SnakeNamingStrategy(),
   // logging: ['query'],
   cache: {
@@ -22,7 +23,7 @@ export const databaseConfig: TypeOrmModuleOptions = {
     options: {
       host: process.env.REDIS_HOST || 'localhost',
       port: parseInt(process.env.REDIS_PORT || '6379', 10),
-      password: process.env.REDIS_PASSWORD,
+      password: process.env.REDIS_PASSWORD || undefined,
     },
   }
 };
