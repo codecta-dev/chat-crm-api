@@ -1,9 +1,6 @@
 import { isUnique } from '@utils/validators';
-import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID, Matches, MinLength } from "class-validator";
+import { IsEmail, IsOptional, IsString, Matches, MinLength } from "class-validator";
 import { i18nValidationMessage as t } from "nestjs-i18n";
-import type { UserRole } from "src/modules/users/entities/user.entity";
-import { IsInDatabase } from '../../../utils/validators/IsInDatabase';
-import { Company } from '../../companies/entities/company.entity';
 
 export class CreateUserDto {
   @IsString()
@@ -16,19 +13,23 @@ export class CreateUserDto {
 
   @IsString()
   @IsOptional()
-  firstName?: string;
+  firstNames?: string;
 
   @IsString()
   @IsOptional()
-  phone: string;
+  phoneNumber: string;
 
   @IsString()
   @IsOptional()
-  lastName?: string;
+  lastNames?: string;
 
   @IsString()
   @IsOptional()
   avatar?: string;
+
+  @IsString()
+  @IsOptional()
+  address?: string;
 
   @IsEmail()
   @IsOptional()
@@ -37,16 +38,4 @@ export class CreateUserDto {
   @IsString()
   @MinLength(8)
   password: string;
-
-  @IsString()
-  role: UserRole
-
-  @IsBoolean({ message: t('validations.invalid.boolean', { attr: 'isActive' }) })
-  @IsOptional()
-  isActive: boolean;
-
-  @IsUUID()
-  @IsNotEmpty()
-  @IsInDatabase(Company, 'id')
-  companyId: string;
 }

@@ -1,5 +1,3 @@
-import { Message } from "src/modules/chats/entities/message.entity";
-import { User } from "src/modules/users/entities/user.entity";
 import {
   Column,
   CreateDateColumn,
@@ -12,31 +10,44 @@ import {
   UpdateDateColumn
 } from "typeorm";
 import { Contact } from "../../contacts/entities/contact.entity";
-
-export type ChatStatus = 'open' | 'pending' | 'closed' | 'archived';
-export type ChatPriority = 'low' | 'medium' | 'high' | 'urgent';
-export type ChatChannel = 'whatsapp' | 'telegram' | 'messenger' | 'sms' | 'email';
+import { Message } from "@modules/message/message.entity";
+import { ChatStatus, ChatPriority, ChatChannel } from "../chat.enum";
 
 @Entity('chats')
 export class Chat {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ default: 'pending' })
+  @Column({
+    type: 'simple-enum',
+    enum: ChatStatus,
+    default: ChatStatus.OPEN
+  })
   status: ChatStatus;
 
   @ManyToOne(() => Message, { nullable: true, eager: true, onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'lastMessageId' })
+  @JoinColumn({ name: 'last_message_id' })
   lastMessage?: Message;
 
-  @Column({ default: 'low' })
+  @Column({ type: 'datetime', nullable: true })
+  lastMessageAt?: Date;
+
+  @Column({
+    type: 'simple-enum',
+    enum: ChatPriority,
+    default: ChatPriority.LOW
+  })
   priority: ChatPriority;
 
-  @Column({ default: 'whatsapp' })
-  channel: string;
+  @Column({
+    type: 'simple-enum',
+    enum: ChatChannel,
+    default: ChatChannel.WHATSAPP
+  })
+  channel: ChatChannel;
 
   @Column({ type: 'datetime', nullable: true })
-  endedAt: Date;
+  endedAt?: Date;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -47,12 +58,9 @@ export class Chat {
   @DeleteDateColumn({ nullable: true })
   deletedAt?: Date
 
-  @ManyToOne(() => Contact, (contact) => contact.chats, { nullable: true, onDelete: 'SET NULL' })
-  contact: Contact;
+  @ManyToOne(() => Contact, { nullable: true, onDelete: 'SET NULL' })
+  client: Contact;
 
-  @ManyToOne(() => User, { nullable: true })
-  assignedAgent: User;
-
-  @OneToMany(() => Message, (message) => message.chat)
+  @OneToMany(() => Message, (message) => message.chat, { nullable: true, onDelete: 'SET NULL' })
   messages: Message[];
 }

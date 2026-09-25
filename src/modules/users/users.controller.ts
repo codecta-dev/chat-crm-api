@@ -1,63 +1,83 @@
 import {
-  Body,
   Controller,
-  Delete,
+  HttpCode,
+  HttpStatus,
   Get,
-  Param,
-  Patch,
   Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
   Query,
   UseGuards,
+  UseInterceptors,
   UsePipes,
+  UploadedFile,
 } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
-import { UsersService } from './users.service';
+import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor } from '@nestjs/platform-express';
+
+import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
+
+import { type UserSearchDto } from './dto/user-search.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { type UserSearchDto, userSearchSchema } from './dto/user-search.dto';
-import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { userTableQuerySchema, type UserTableQueryDto } from '../../common/schemas/user-table-query.schema';
 
+import { UsersService } from './users.service';
+import { User } from './entities/user.entity';
+
 @Controller('users')
+@UseGuards(AuthGuard('jwt'))
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly service: UsersService) { }
+
+  @Get('me')
+  me() {
+    return this.service.identify();
+  }
+
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
+    return this.service.importCsv(file);
+  }
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+    return this.service.create(createUserDto);
   }
 
   @Post('table')
   @UsePipes(new ZodValidationPipe(userTableQuerySchema))
   getTable(@Body() query: UserTableQueryDto) {
-    return this.usersService.table(query);
+    return this.service.table(query);
   }
 
   @Get("search")
-  @UsePipes(new ZodValidationPipe(userSearchSchema))
   search(@Query() query: UserSearchDto) {
-    return this.usersService.searchUser(query);
+    return this.service.searchUser(query);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  async all(): Promise<User[]> {
+    return await this.service.all();
   }
 
   @Get(':username')
-  findOne(@Param('username') username: string) {
-    return this.usersService.findByUsername(username);
+  @HttpCode(HttpStatus.ACCEPTED)
+  find(@Param('username') username: string) {
+    return this.service.find({ username });
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto);
+    return this.service.update(id, updateUserDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+    return this.service.remove(id);
   }
 }

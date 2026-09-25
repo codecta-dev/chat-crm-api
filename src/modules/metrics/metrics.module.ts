@@ -2,18 +2,20 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MetricsController } from './metrics.controller';
 import { MetricsService } from './metrics.service';
-import { ChatsModule } from '../chats/chats.module';
-import { SentimentAnalysis } from '../whatsapp/entities/sentiment-analysis.entity';
-import { WhatsappModule } from '../whatsapp/whatsapp.module';
+import { Message } from '@modules/message/message.entity';
+import { MetricsRepository } from './metrics.repository';
+import { SentimentRepository } from './repositories/sentiment.repository';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([SentimentAnalysis]),
-    WhatsappModule,
-    ChatsModule,
+    TypeOrmModule.forFeature([Message]),
   ],
   controllers: [MetricsController],
-  providers: [MetricsService],
-  exports: [TypeOrmModule, MetricsService],
+  providers: [
+    MetricsService,
+    MetricsRepository,
+    SentimentRepository,
+  ],
+  exports: [MetricsService],
 })
 export class MetricsModule { }

@@ -1,8 +1,11 @@
+import { Readable } from 'stream';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
+import { CsvParser } from 'nest-csv-parser';
+import { PinoLogger } from 'nestjs-pino';
 import { paginate, Pagination } from 'nestjs-typeorm-paginate';
-import { User } from 'src/modules/users/entities/user.entity';
-import { FindManyOptions, Like, Repository } from 'typeorm';
+import { FindManyOptions, IsNull, Like, Repository } from 'typeorm';
 import { UpdateResult } from 'typeorm/browser';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -10,16 +13,57 @@ import { UserSearchDto } from './dto/user-search.dto';
 import { UserTableQueryDto } from '../../common/schemas/user-table-query.schema';
 import { buildQueryOptions } from '../../lib/helpers/build-query-options.helper';
 import { Chat } from '../chats/entities';
-import { Company } from '../companies/entities/company.entity';
+import { User } from './entities/user.entity';
+import { CoreService } from '@core/core.service';
+import { AuthUser } from '@auth';
+import { ClsService } from 'nestjs-cls';
+import { UserRepository } from './user.repository';
 
 @Injectable()
-export class UsersService {
+export class UsersService extends CoreService<User> {
   constructor(
     @InjectRepository(User)
+    // This will be removed in the future
     private readonly repo: Repository<User>,
+    private readonly UserRepo: UserRepository,
     @InjectRepository(Chat)
     private readonly chatRepo: Repository<Chat>,
-  ) { }
+    private readonly logger: PinoLogger,
+    private readonly csv: CsvParser,
+    private readonly cls: ClsService,
+  ) { super(repo) }
+
+  private get userId() {
+    return this.cls.get<string>('user-id');
+  }
+
+  async identify(): Promise<AuthUser | null> {
+    return this.UserRepo.findUserById(this.userId);
+  }
+
+  async importCsv(file: Express.Multer.File, companyId?: string): Promise<{ count: number }> {
+    const stream = Readable.from(file.buffer);
+    const parsed = await this.csv.parse(stream, CreateUserDto, undefined, undefined, {
+      strict: true,
+      separator: ',',
+    });
+
+    const users = await Promise.all(
+      parsed.list.map(async (row: Partial<User>) => ({
+        username: row.username,
+        firstNames: row.firstName,
+        lastNames: row.lastName,
+        phoneNumber: row.phoneNumber,
+        email: row.email,
+        password: await bcrypt.hash(row.password ?? 'password', 10),
+        company: { id: companyId },
+      }))
+    );
+
+    await this.repo.insert(users);
+
+    return { count: users.length };
+  }
 
   async online(id: string) {
     const result = await this.repo.update({ id }, { status: 'online' })
@@ -32,21 +76,31 @@ export class UsersService {
   }
 
   async table(query: UserTableQueryDto): Promise<Pagination<User>> {
-    const { findOptions, paginationOptions } = buildQueryOptions(query);
+    const { findOptions, paginationOptions } = buildQueryOptions<User>(query);
 
+    const defaultFindOptions: FindManyOptions<User> = {
+      where: { deletedAt: IsNull() },
+      order: { status: 'DESC', updatedAt: 'DESC' },
+    };
+
+    const mergedFindOptions: FindManyOptions<User> = {
+      ...defaultFindOptions,
+      ...findOptions,
+      where: { ...defaultFindOptions.where, ...findOptions.where },
+      order: { ...defaultFindOptions.order, ...findOptions.order },
+    };
 
     return paginate<User>(
       this.repo,
       paginationOptions,
-      findOptions
+      mergedFindOptions,
     );
   }
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    const user = this.repo.create({
-      ...createUserDto,
-      company: { id: createUserDto.companyId } as Company
-    })
+  // TODO: Using CoreService in this
+  override async create(dto: CreateUserDto): Promise<User> {
+    const user = this.repo.create(dto);
+
     return this.repo.save(user);
   }
 
@@ -55,8 +109,8 @@ export class UsersService {
     const findOptions: FindManyOptions<User> = {
       where: q ? [
         { username: Like(`%${q}%`) },
-        { firstNames: Like(`%${q}%`) },
-        { lastNames: Like(`%${q}%`) },
+        { firstName: Like(`%${q}%`) },
+        { lastName: Like(`%${q}%`) },
       ] : {},
       take: limit,
       order: { username: 'ASC' }
@@ -65,76 +119,70 @@ export class UsersService {
     return this.repo.find(findOptions);
   }
 
-  findAll(): Promise<User[]> {
-    return this.repo.find();
-  }
-
   findOne(id: string): Promise<User | null> {
     return this.repo.findOne({ where: { id } });
   }
 
-  async findOrCreateSystemUser(companyId: string): Promise<User> {
-    const existing = await this.repo.findOne({ where: { role: 'system', company: { id: companyId } } });
-
-    if (existing) return existing;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async findOrCreateSystemUser(companyId?: string): Promise<User> {
 
     const created = this.repo.create({
-      role: 'system',
       username: 'System',
       password: "password", // Will be hashed before insert
       status: 'online',
-      company: { id: companyId },
     });
 
     return this.repo.save(created);
   }
 
-  async findAvailableAgent(companyId: string): Promise<User> {
-    const agents = await this.repo.find({
-      where: {
-        company: { id: companyId },
-        role: 'agent',
-        status: 'online',
-      },
-      relations: ['company'],
-    });
+  // async findAvailableAgent(companyId: string): Promise<User> {
+  //   const agents = await this.repo.find({
+  //     where: {
+  //       status: 'online',
+  //     },
+  //     order: {
+  //       status: 'DESC',
+  //       username: 'ASC'
+  //     },
+  //     relations: ['company'],
+  //   });
 
-    if (agents.length === 0) {
-      return this.findOrCreateSystemUser(companyId);
-    }
+  //   if (agents.length === 0) {
+  //     return this.findOrCreateSystemUser(companyId);
+  //   }
 
-    const agentsWithLoad = await Promise.all(
-      agents.map(async (agent) => {
-        const activeChats = await this.chatRepo.count({
-          where: { assignedAgent: { id: agent.id }, status: 'open' },
-        });
-        return { agent, activeChats };
-      }),
-    );
+  //   const agentsWithLoad = await Promise.all(
+  //     agents.map(async (agent) => {
+  //       const activeChats = await this.chatRepo.count({
+  //         where: { assignedAgent: { id: agent.id }, status: ChatStatus.OPEN },
+  //       });
+  //       return { agent, activeChats };
+  //     }),
+  //   );
 
-    agentsWithLoad.sort((a, b) => a.activeChats - b.activeChats);
-    const bestAgent = agentsWithLoad[0].agent;
+  //   agentsWithLoad.sort((a, b) => a.activeChats - b.activeChats);
+  //   const bestAgent = agentsWithLoad[0].agent;
 
-    return bestAgent;
-  }
+  //   this.logger.debug(`Selected agent ${bestAgent.username}`);
+  //   return bestAgent;
+  // }
 
   async getAgent() {
     const agent = await this.repo.findOne({ where: { status: 'online' } });
     if (agent) return agent;
   }
 
-  findByUsername(username: string): Promise<User | null> {
-    return this.repo.findOne({
-      where: { username },
-      relations: ['company']
-    });
-  }
-
-  update(id: string, dto: UpdateUserDto): Promise<UpdateResult> {
-    return this.repo.update(id, { ...dto, company: { id: dto.companyId } })
+  // TODO: Using CoreService in this
+  override update(id: string, dto: UpdateUserDto): Promise<UpdateResult> {
+    return this.repo.update(id,
+      {
+        ...dto,
+        password: bcrypt.hashSync(dto.password ?? 'password', 10),
+      }
+    )
   }
 
   async remove(id: string): Promise<void> {
-    await this.repo.delete(id);
+    await this.repo.softDelete({ id });
   }
 }

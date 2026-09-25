@@ -1,13 +1,11 @@
-// src/modules/contacts/contact.types.ts
+import z from "zod";
+import { dataTableBaseSchema } from "../../common/schemas/data-table-base.schema";
 
-import { DataTableBaseQuery } from "../../common/types/data-table.types";
+const contactFiltersShape = {
+  username: z.string().optional(),
+  phoneNumber: z.string().optional(),
+};
 
-export interface ContactFilters {
-  name: string;
-  phone: string;
-  status: string | string[];
-  assignedTo: string | string[];
-  createdAt: string;
-}
+export const userTableQuerySchema = dataTableBaseSchema.extend(contactFiltersShape);
 
-export type ContactQueryDto = DataTableBaseQuery & Partial<ContactFilters>;
+export type ContactQueryDto = z.infer<typeof userTableQuerySchema>;
