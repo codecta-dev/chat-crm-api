@@ -2,7 +2,7 @@ import { z } from "zod";
 import { dataTableBaseSchema } from "./data-table-base.schema";
 
 const contactFiltersShape = {
-  name: z.string().optional(),
+  username: z.string().optional(),
   phoneNumber: z.string().optional(),
   status: z.array(z.string()).optional(),
   createdAt: z.string().optional(),

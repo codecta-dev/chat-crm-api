@@ -4,7 +4,6 @@ export const ChatSchema = z.object({
   id: z.number().optional(),
   title: z.string().optional(),
   contactId: z.uuid(),
-  status: z.enum(['open', 'pending', 'closed', 'archived']).default('open'),
   lastMessageId: z.number().optional(),
   createdAt: z.iso.datetime().optional(),
 });

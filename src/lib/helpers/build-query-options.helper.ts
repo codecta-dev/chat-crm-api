@@ -1,5 +1,5 @@
 import { IPaginationOptions } from 'nestjs-typeorm-paginate';
-import { FindManyOptions, In, Between, Like } from 'typeorm';
+import { FindManyOptions, In, Between, Like, FindOptionsOrder } from 'typeorm';
 import { TypeOrmQueryHelperInput } from '../../common/types/data-table.types';
 
 const RESERVED_FIELDS = ['page', 'perPage', 'sort'];
@@ -17,21 +17,17 @@ const mapSortToTypeOrmOrder = (sort: TypeOrmQueryHelperInput['sort']) => {
   }, {});
 };
 
-export function buildQueryOptions(
+export function buildQueryOptions<T extends { createdAt: Date }>(
   query: TypeOrmQueryHelperInput,
-): { findOptions: FindManyOptions<any>; paginationOptions: IPaginationOptions } {
+): { findOptions: FindManyOptions<T>; paginationOptions: IPaginationOptions } {
 
-  const findOptions: FindManyOptions<any> = { where: {}, order: undefined };
+  const findOptions: FindManyOptions<T> = { where: {}, order: {} };
 
   const mappedOrder = mapSortToTypeOrmOrder(query.sort);
 
-  if (Object.keys(mappedOrder).length > 0) {
-    findOptions.order = mappedOrder;
-  } else {
-    findOptions.order = {
-      createdAt: 'DESC',
-    };
-  }
+  findOptions.order = Object.keys(mappedOrder).length > 0
+    ? mappedOrder
+    : { createdAt: 'DESC' } as FindOptionsOrder<T>;
 
   for (const [key, value] of Object.entries(query)) {
     if (RESERVED_FIELDS.includes(key) || value === undefined || value === null) {

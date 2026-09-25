@@ -1,13 +1,16 @@
+import { Readable } from 'stream';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WhatsappNotificationContact } from '@daweto/whatsapp-api-types';
+import { CsvParser } from 'nest-csv-parser';
 import {
   paginate,
   Pagination,
 } from 'nestjs-typeorm-paginate';
-import { FindManyOptions, Like, Repository, UpdateResult } from 'typeorm';
+import { FindManyOptions, IsNull, Like, Repository, UpdateResult } from 'typeorm';
 import { CreateContactDto, UpdateContactDto } from './dto/contact.dto';
 import { Contact } from './entities/contact.entity';
+import { ContactQueryDto } from './contact.types';
 import { ContactTableQueryDto } from '../../common/schemas/contact-table-query.schema';
 import { buildQueryOptions } from '../../lib/helpers/build-query-options.helper';
 
@@ -16,7 +19,49 @@ export class ContactsService {
   constructor(
     @InjectRepository(Contact)
     private readonly contactRepo: Repository<Contact>,
+    private readonly csv: CsvParser,
   ) { }
+
+  async importCsv(file: Express.Multer.File, companyId?: string): Promise<{ count: number }> {
+    const stream = Readable.from(file.buffer);
+    const parsed = await this.csv.parse(stream, CreateContactDto, undefined, undefined, {
+      strict: true,
+      separator: ',',
+    });
+
+    const contacts = parsed.list.map((row: Partial<Contact>) => ({
+      username: row.username,
+      phoneNumber: row.phoneNumber,
+      waId: row.phoneNumber,
+      company: { id: companyId }
+    }));
+
+    await this.contactRepo.insert(contacts);
+
+    return { count: contacts.length };
+  }
+
+  async table(query: ContactQueryDto): Promise<Pagination<Contact>> {
+    const { findOptions, paginationOptions } = buildQueryOptions<Contact>(query);
+
+    const defaultFindOptions: FindManyOptions<Contact> = {
+      where: { deletedAt: IsNull() },
+      order: { status: 'DESC', updatedAt: 'DESC' },
+    };
+
+    const mergedFindOptions: FindManyOptions<Contact> = {
+      ...defaultFindOptions,
+      ...findOptions,
+      where: { ...defaultFindOptions.where, ...findOptions.where },
+      order: { ...defaultFindOptions.order, ...findOptions.order },
+    };
+
+    return paginate<Contact>(
+      this.contactRepo,
+      paginationOptions,
+      mergedFindOptions,
+    );
+  }
 
   async findPaginated(query: ContactTableQueryDto): Promise<Pagination<Contact>> {
     const { findOptions, paginationOptions } = buildQueryOptions(query);

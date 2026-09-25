@@ -2,6 +2,7 @@
   "compilerOptions": {
     "module": "nodenext",
     "moduleResolution": "nodenext",
+    "resolveJsonModule": true,
     "resolvePackageJsonExports": true,
     "esModuleInterop": true,
     "isolatedModules": true,
@@ -13,7 +14,6 @@
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
@@ -22,9 +22,36 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@utils/*": [
-        "src/utils/*"
+      "@lib/*": [
+        "./src/lib/*"
       ],
+      "@utils/*": [
+        "./src/utils/*"
+      ],
+      "@auth": [
+        "./src/auth/index"
+      ],
+      "@auth/*": [
+        "./src/auth/*"
+      ],
+      "@entities": [
+        "./src/entities/index"
+      ],
+      "@modules": [
+        "./src/modules/index"
+      ],
+      "@modules/*": [
+        "./src/modules/*"
+      ],
+      "@factories": [
+        "./test/factories/index"
+      ],
+      "@integrations/*": [
+        "./src/integrations/*"
+      ],
+      "@core/*": [
+        "./src/core/*"
+      ]
     }
   }
 }
