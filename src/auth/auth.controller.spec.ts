@@ -86,12 +86,31 @@ describe('AuthController', () => {
   });
 
   describe('getProfile', () => {
-    it('should return user from decorator', () => {
+    it('should return the user and the first company id', async () => {
       const mockUser = UserFactory.build() as AuthUser;
+      mocks.memberService.getCompanies.mockResolvedValue([
+        'company-1',
+        'company-2',
+      ]);
 
-      const result = controller.getProfile(mockUser);
+      const result = await controller.getProfile(mockUser);
 
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({
+        user: mockUser,
+        company: { id: 'company-1' },
+      });
+    });
+
+    it('should return null company when the user has none', async () => {
+      const mockUser = UserFactory.build() as AuthUser;
+      mocks.memberService.getCompanies.mockResolvedValue([]);
+
+      const result = await controller.getProfile(mockUser);
+
+      expect(result).toEqual({
+        user: mockUser,
+        company: { id: null },
+      });
     });
   });
 });
