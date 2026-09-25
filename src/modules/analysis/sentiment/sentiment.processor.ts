@@ -3,7 +3,7 @@ import { Job } from "bullmq";
 import { PinoLogger } from "nestjs-pino";
 import { SentimentService } from "./sentiment.service";
 import { EventBus } from "@nestjs/cqrs";
-import { SentimentAnalysis } from "../../../entities";
+import { SentimentAnalysis } from "../../../entities/index";
 import { MessageAnalyzedEvent } from "../../chats/events/message-analyzed.event";
 import { SentimentPayload } from "./sentiment.type";
 

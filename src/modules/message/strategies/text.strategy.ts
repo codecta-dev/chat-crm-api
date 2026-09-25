@@ -1,5 +1,5 @@
 import { MessageStrategy } from './message.strategy';
-import { Message } from '../../../entities';
+import { Message } from '../../../entities/index';
 import { WhatsAppTextBuilder } from '../../../integrations/whatsapp/builders/whatsapp-text.builder';
 import {
   WhatsAppPayload,

@@ -11,7 +11,7 @@ import {
   SaveChatMessageCommand,
   BroadcastChatMessageCommand,
   UpdateSentimentIndicatorCommand
-} from "./commands";
+} from "./commands/index";
 
 @Injectable()
 export class ChatSaga {

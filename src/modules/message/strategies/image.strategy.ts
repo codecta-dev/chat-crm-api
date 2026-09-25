@@ -3,7 +3,7 @@ import {
   WhatsAppPayload,
 } from '../../../integrations/whatsapp/interfaces/whatsapp-message.interface';
 import { MessageStrategy } from './message.strategy';
-import { Message } from '../../../entities';
+import { Message } from '../../../entities/index';
 import { WhatsAppImageBuilder } from '../../../integrations/whatsapp/builders/whatsapp-image.builder';
 import { WhatsAppImageContent } from '../../../integrations/whatsapp/interfaces/messages/image';
 import { BroadcastDto } from '../../chats/dto/broadcast.dto';

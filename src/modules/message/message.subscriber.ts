@@ -1,4 +1,4 @@
-import { Chat, Message } from "../../entities";
+import { Chat, Message } from "../../entities/index";
 import { DataSource, EntitySubscriberInterface, EventSubscriber, InsertEvent } from "typeorm";
 
 @EventSubscriber()

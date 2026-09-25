@@ -3,7 +3,7 @@ import { PinoLogger } from 'nestjs-pino';
 import { ClsService } from 'nestjs-cls';
 import { Repository } from 'typeorm';
 
-import { WhatsAppConfig } from '../../entities';
+import { WhatsAppConfig } from '../../entities/index';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WhatsAppClient } from './clients/whatsapp.client';
 import { WhatsAppPayload } from './interfaces/whatsapp-message.interface';

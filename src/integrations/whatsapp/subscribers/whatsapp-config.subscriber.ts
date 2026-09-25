@@ -1,6 +1,6 @@
 import { randomBytes } from "crypto";
 import { DataSource, EntitySubscriberInterface, EventSubscriber, InsertEvent } from "typeorm";
-import { WhatsAppConfig } from "../entities";
+import { WhatsAppConfig } from "../entities/index";
 
 @EventSubscriber()
 export class WhatsAppConfigSubscriber implements EntitySubscriberInterface<WhatsAppConfig> {

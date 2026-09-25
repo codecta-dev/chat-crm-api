@@ -5,7 +5,7 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { IsInDatabaseConstraint } from '../../utils/validators/IsInDatabase';
-import { Chat } from '../chats/entities';
+import { Chat } from '../chats/entities/index';
 import { UserRepository } from './user.repository';
 import { UserSubscriber } from './user.subscriber';
 

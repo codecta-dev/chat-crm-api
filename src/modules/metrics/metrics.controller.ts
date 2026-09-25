@@ -1,7 +1,7 @@
 import { Controller, Get, HttpCode, HttpStatus, Param, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { MetricsService } from './metrics.service';
-import { type AuthUser, CurrentUser } from '../../auth';
+import { type AuthUser, CurrentUser } from '../../auth/index';
 import { CompareQuery } from './dtos/queries/compare-query.dto';
 import { SentimentTopQuery } from './dtos/queries/sentiment-top.query.dto';
 import { CompareParams } from './dtos/params/compare.params.dto';

@@ -1,4 +1,4 @@
-import { WhatsAppConfig } from '../../../../entities';
+import { WhatsAppConfig } from '../../../../entities/index';
 import { MessageContext } from '../../types/whatsapp.types';
 
 export interface ContentHandlerPort<T> {

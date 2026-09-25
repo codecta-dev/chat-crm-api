@@ -14,7 +14,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { CurrentUser } from './decorators/current-user.decorator';
 import type { AuthUser } from './auth.types';
-import { IdentifyGuard, JwtAuthGuard } from './guards';
+import { IdentifyGuard, JwtAuthGuard } from './guards/index';
 import { MemberService } from '../modules/member/member.service';
 
 @Controller('auth')
