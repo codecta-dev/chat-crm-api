@@ -123,18 +123,6 @@ export class UsersService extends CoreService<User> {
     return this.repo.findOne({ where: { id } });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async findOrCreateSystemUser(companyId?: string): Promise<User> {
-
-    const created = this.repo.create({
-      username: 'System',
-      password: "password", // Will be hashed before insert
-      status: 'online',
-    });
-
-    return this.repo.save(created);
-  }
-
   // async findAvailableAgent(companyId: string): Promise<User> {
   //   const agents = await this.repo.find({
   //     where: {
@@ -174,12 +162,13 @@ export class UsersService extends CoreService<User> {
 
   // TODO: Using CoreService in this
   override update(id: string, dto: UpdateUserDto): Promise<UpdateResult> {
-    return this.repo.update(id,
-      {
-        ...dto,
-        password: bcrypt.hashSync(dto.password ?? 'password', 10),
-      }
-    )
+    const { password, ...rest } = dto;
+
+    return this.repo.update(id, {
+      ...rest,
+      // Solo se regenera el hash si el DTO trae password; si no, no se toca.
+      ...(password ? { password: bcrypt.hashSync(password, 10) } : {}),
+    });
   }
 
   async remove(id: string): Promise<void> {

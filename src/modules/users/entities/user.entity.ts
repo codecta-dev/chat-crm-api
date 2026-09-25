@@ -36,6 +36,9 @@ export class User {
   @Column({ default: 'offline' })
   status: UserStatus;
 
+  @Column({ type: 'varchar', default: 'agent' })
+  role: UserRole;
+
   @Column({ type: 'varchar', length: 512, nullable: true })
   address?: string;
 
