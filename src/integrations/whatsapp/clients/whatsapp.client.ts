@@ -1,4 +1,4 @@
-import { WhatsAppConfig } from '../../../entities';
+import { WhatsAppConfig } from '../../../entities/index';
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { firstValueFrom, map, retry, switchMap, throwError, timer } from 'rxjs';
@@ -10,7 +10,7 @@ import { WhatsAppErrorResponse } from '../interfaces/whatsapp.interface';
 import { join } from 'path';
 import { writeFileSync } from 'fs';
 import { CommandBus } from '@nestjs/cqrs';
-import { FailWhatsAppMessageCommand } from '../../../modules/chats/commands';
+import { FailWhatsAppMessageCommand } from '../../../modules/chats/commands/index';
 
 @Injectable()
 export class WhatsAppClient {

@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ChatsService } from './chats.service';
-import { ChatsController, MessagesController } from './controllers';
-import { Chat, Transfer } from './entities';
+import { ChatsController, MessagesController } from './controllers/index';
+import { Chat, Transfer } from './entities/index';
 import { Contact } from '../contacts/entities/contact.entity';
 import { User } from '../users/entities/user.entity';
 import { MessageModule } from '../message/message.module';
@@ -19,7 +19,7 @@ import {
   SendChatMessageHandler,
   UpdateSentimentIndicatorHandler,
   FailWhatsAppMessageHandler
-} from './commands/handlers';
+} from './commands/handlers/index';
 
 const TypeOrmFeatureModule = TypeOrmModule.forFeature([Chat, Contact, User, Transfer]);
 const handlers = [

@@ -1,6 +1,6 @@
 import * as bcrypt from 'bcrypt';
 
-import { User } from "../../entities";
+import { User } from "../../entities/index";
 import { DataSource, EntitySubscriberInterface, EventSubscriber, InsertEvent } from "typeorm";
 
 @EventSubscriber()

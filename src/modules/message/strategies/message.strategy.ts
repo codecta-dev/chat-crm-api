@@ -1,4 +1,4 @@
-import { Message } from '../../../entities';
+import { Message } from '../../../entities/index';
 import { BroadcastDto } from '../../chats/dto/broadcast.dto';
 import {
   WhatsAppMessageContent,

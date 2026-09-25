@@ -3,7 +3,7 @@ import {
   WhatsAppPayload,
 } from '../../../integrations/whatsapp/interfaces/whatsapp-message.interface';
 import { MessageStrategy } from './message.strategy';
-import { Message } from '../../../entities';
+import { Message } from '../../../entities/index';
 import { WhatsAppDocumentBuilder } from '../../../integrations/whatsapp/builders/whatsapp-document.builder';
 import { BroadcastDto } from '../../chats/dto/broadcast.dto';
 import { MessageType } from '../domain/message.types';

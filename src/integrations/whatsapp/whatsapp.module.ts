@@ -4,8 +4,8 @@ import { ConfigModule } from '@nestjs/config';
 
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WhatsAppService } from './whatsapp.service';
-import { WebhookController } from './controllers';
-import { WhatsAppConfig } from './entities';
+import { WebhookController } from './controllers/index';
+import { WhatsAppConfig } from './entities/index';
 import { WhatsAppMessageFactory } from './factories/whatsapp-message.factory';
 import { WhatsAppConfigSubscriber } from './subscribers/whatsapp-config.subscriber';
 import { WhatsAppApiClient } from './whatsapp-api.client';

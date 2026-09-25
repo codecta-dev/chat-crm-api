@@ -1,8 +1,8 @@
-export { Chat } from '../modules/chats/entities';
+export { Chat } from '../modules/chats/entities/index';
 export { Contact } from '../modules/contacts/entities/contact.entity';
 export { User } from '../modules/users/entities/user.entity';
 export { Company } from '../modules/company/entities/company.entity';
-export { WhatsAppConfig } from '../integrations/whatsapp/entities';
+export { WhatsAppConfig } from '../integrations/whatsapp/entities/index';
 export { Notification } from '../modules/notifications/entities/notification.entity';
 export { Analysis } from '../modules/analysis/analysis.entity';
 export { SentimentAnalysis } from '../modules/analysis/sentiment/sentiment.entity';

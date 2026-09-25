@@ -8,7 +8,7 @@ import {
   TextContent,
 } from '../../types/whatsapp.types';
 import { CommandBus } from '@nestjs/cqrs';
-import { SaveChatMessageCommand } from '../../../../modules/chats/commands';
+import { SaveChatMessageCommand } from '../../../../modules/chats/commands/index';
 import { MessageSenderType, MessageType } from '../../../../modules/message/message.enum';
 import { ChatRepository } from '../../../../modules/chats/chat.repository';
 import { WhatsAppClient } from '../../clients/whatsapp.client';
