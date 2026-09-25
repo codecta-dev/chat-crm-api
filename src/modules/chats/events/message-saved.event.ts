@@ -1,4 +1,4 @@
-import { Message } from "@entities";
+import { Message } from "../../../entities";
 
 export class MessageSavedEvent {
   constructor(

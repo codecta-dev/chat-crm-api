@@ -3,9 +3,9 @@ import { MessageRepository } from './message.repository';
 import { CreateMessageDto } from './entities/create-message.dto';
 import { Message } from './message.entity';
 import { MessageSenderType, MessageStatus, MessageType } from './message.enum';
-import { MessageContent } from '@integrations/whatsapp/types/whatsapp.types';
+import { MessageContent } from '../../integrations/whatsapp/types/whatsapp.types';
 import { PinoLogger } from 'nestjs-pino';
-import { BroadcastDto } from '@modules/chats/dto/broadcast.dto';
+import { BroadcastDto } from '../chats/dto/broadcast.dto';
 import { getMessageStrategy } from './strategies/strategy.registry';
 
 @Injectable()

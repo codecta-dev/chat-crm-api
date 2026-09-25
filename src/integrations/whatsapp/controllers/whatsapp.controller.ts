@@ -11,8 +11,8 @@ import {
   CreateWhatsAppConfigDto,
   UpdateWhatsAppConfigDto,
 } from '../dto/whatsapp-config.dto';
-import { JwtAuthGuard } from '@auth/guards';
-import { CompanyGuard } from '@modules/company/company.guard';
+import { JwtAuthGuard } from '../../../auth/guards';
+import { CompanyGuard } from '../../../modules/company/company.guard';
 import { WhatsAppService } from '../whatsapp.service';
 import { WhatsAppExceptionFilter } from '../filters/whatsapp-exception.filter';
 

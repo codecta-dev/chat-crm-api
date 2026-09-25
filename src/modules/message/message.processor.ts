@@ -1,6 +1,6 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
-import { ChatMessagePayload } from '@modules/chats/chat.interface';
+import { ChatMessagePayload } from '../chats/chat.interface';
 import { MessageService } from './message.services';
 
 interface UpdateStatusData {

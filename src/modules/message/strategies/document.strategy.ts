@@ -1,11 +1,11 @@
 import {
   WhatsAppDocumentContent,
   WhatsAppPayload,
-} from '@integrations/whatsapp/interfaces/whatsapp-message.interface';
+} from '../../../integrations/whatsapp/interfaces/whatsapp-message.interface';
 import { MessageStrategy } from './message.strategy';
-import { Message } from '@entities';
-import { WhatsAppDocumentBuilder } from '@integrations/whatsapp/builders/whatsapp-document.builder';
-import { BroadcastDto } from '@modules/chats/dto/broadcast.dto';
+import { Message } from '../../../entities';
+import { WhatsAppDocumentBuilder } from '../../../integrations/whatsapp/builders/whatsapp-document.builder';
+import { BroadcastDto } from '../../chats/dto/broadcast.dto';
 import { MessageType } from '../domain/message.types';
 
 export class DocumentMessageStrategy implements MessageStrategy {

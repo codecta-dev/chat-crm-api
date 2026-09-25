@@ -1,13 +1,13 @@
-import { SendWhatsAppMessageCommand } from "@integrations/whatsapp/commands/send-whatsapp-message.command";
+import { SendWhatsAppMessageCommand } from "../../integrations/whatsapp/commands/send-whatsapp-message.command";
 import { OnWorkerEvent, Processor, WorkerHost } from "@nestjs/bullmq";
 import { CommandBus, EventBus } from "@nestjs/cqrs";
 import { Job } from "bullmq";
-import { getMessageStrategy } from "@modules/message/strategies/strategy.registry";
+import { getMessageStrategy } from "../message/strategies/strategy.registry";
 import { SendChatMessageDto } from "./dto/send-chat-message.dto";
 import { ChatMessageSentEvent } from "./events/chat-message-sent.event";
 import { ChatsService } from "./chats.service";
 import { MessageSavedEvent } from "./events/message-saved.event";
-import { Message } from "@entities";
+import { Message } from "../../entities";
 import { PinoLogger } from "nestjs-pino";
 import { ChatMessageDto } from "./dto/chat-message.dto";
 

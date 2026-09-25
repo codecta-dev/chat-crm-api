@@ -5,7 +5,7 @@ import { CompareMetric, SentimentActor, SentimentType } from './metrics.types';
 import { SentimentRepository } from './repositories/sentiment.repository';
 import { SentimentTopQuery } from './metrics.interface';
 import { COMPARE_PERIOD_CONFIG } from './constants/metrics.constants';
-import { PeriodTime } from '@lib/period';
+import { PeriodTime } from '../../lib/period';
 
 export interface TopAgentMetrics {
   agentId: string;

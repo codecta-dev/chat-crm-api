@@ -1,4 +1,4 @@
-import { Company } from '@entities';
+import { Company } from '../../../entities';
 import {
   Column,
   CreateDateColumn,

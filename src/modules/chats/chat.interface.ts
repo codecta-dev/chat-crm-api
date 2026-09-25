@@ -1,6 +1,6 @@
-import { MessageSenderType } from '@modules/message/message.enum';
-import { MessageContent } from '@integrations/whatsapp/types/whatsapp.types';
-import { MessageType } from '@modules/message/domain/message.types';
+import { MessageSenderType } from '../message/message.enum';
+import { MessageContent } from '../../integrations/whatsapp/types/whatsapp.types';
+import { MessageType } from '../message/domain/message.types';
 
 export interface ChatMessagePayload {
   room: string;

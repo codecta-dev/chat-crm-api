@@ -1,4 +1,4 @@
-import { MessageContent } from '@integrations/whatsapp/types/whatsapp.types';
+import { MessageContent } from '../../../integrations/whatsapp/types/whatsapp.types';
 import { MessageType } from '../message.enum';
 
 export interface WhatsAppIncomingMessage {

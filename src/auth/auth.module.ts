@@ -4,7 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 
 import { AuthService } from './auth.service';
-import { MembersModule } from '@modules/member/member.module';
+import { MembersModule } from '../modules/member/member.module';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '@modules';
 import { JwtStrategy } from '../strategies/jwt.strategy';

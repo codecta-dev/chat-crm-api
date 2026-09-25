@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { DataSource, Like } from 'typeorm';
 import { Chat, ChatAssignments } from './entities';
 import { ReasonAssignment } from './chat.enum';
-import { MessageContext } from '@integrations/whatsapp/types/whatsapp.types';
-import { Contact } from '@entities';
+import { MessageContext } from '../../integrations/whatsapp/types/whatsapp.types';
+import { Contact } from '../../entities';
 
 @Injectable()
 export class ChatRepository {

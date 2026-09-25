@@ -17,7 +17,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { ChatsService } from '../chats.service';
 import { ChatDto, UpdateChatDto } from '../dto/chat.dto';
-import { MessageService } from '@modules/message/message.services';
+import { MessageService } from '../../message/message.services';
 import { ChatAssignExceptionFilter } from '../filters/chat-assign.filter';
 import { ChatAssignDto } from '../dto/chat-assign.dto';
 import { FileInterceptor } from '@nestjs/platform-express';

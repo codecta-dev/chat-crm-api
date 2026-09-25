@@ -2,7 +2,7 @@ import { DataSource } from 'typeorm';
 import { SentimentType } from '../metrics.types';
 import { SentimentTopQuery, TrendPeriodQuery } from '../metrics.interface';
 import { Injectable } from '@nestjs/common';
-import { period, PeriodTime } from '@lib/period';
+import { period, PeriodTime } from '../../../lib/period';
 import { DATE_FORMAT_SQL } from '../constants/metrics.constants';
 
 @Injectable()

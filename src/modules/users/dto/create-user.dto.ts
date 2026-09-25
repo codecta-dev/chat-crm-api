@@ -1,4 +1,4 @@
-import { isUnique } from '@utils/validators';
+import { isUnique } from '../../../utils/validators';
 import { IsEmail, IsOptional, IsString, Matches, MinLength } from "class-validator";
 import { i18nValidationMessage as t } from "nestjs-i18n";
 

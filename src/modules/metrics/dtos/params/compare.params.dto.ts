@@ -1,4 +1,4 @@
-import type { CompareMetric } from "@modules/metrics/metrics.types";
+import type { CompareMetric } from "../../metrics.types";
 import { IsIn } from "class-validator";
 
 export class CompareParams {

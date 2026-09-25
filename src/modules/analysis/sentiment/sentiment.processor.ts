@@ -3,8 +3,8 @@ import { Job } from "bullmq";
 import { PinoLogger } from "nestjs-pino";
 import { SentimentService } from "./sentiment.service";
 import { EventBus } from "@nestjs/cqrs";
-import { SentimentAnalysis } from "@entities";
-import { MessageAnalyzedEvent } from "@modules/chats/events/message-analyzed.event";
+import { SentimentAnalysis } from "../../../entities";
+import { MessageAnalyzedEvent } from "../../chats/events/message-analyzed.event";
 import { SentimentPayload } from "./sentiment.type";
 
 type SentimentJob = Job<SentimentPayload & { chatId?: string }>

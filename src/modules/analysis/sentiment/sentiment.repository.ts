@@ -1,4 +1,4 @@
-import { SentimentAnalysis } from "@entities";
+import { SentimentAnalysis } from "../../../entities";
 import { InjectRepository } from "@nestjs/typeorm";
 import { DataSource, Repository } from "typeorm";
 import { SentimentResponse } from "./sentiment.interface";

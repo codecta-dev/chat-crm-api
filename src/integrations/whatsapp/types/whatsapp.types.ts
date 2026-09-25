@@ -1,4 +1,4 @@
-import { MessageType } from '@modules/message/domain/message.types';
+import { MessageType } from '../../../modules/message/domain/message.types';
 
 export interface MessageContext {
   phoneNumberId: string; // Company Phone ID

@@ -7,7 +7,7 @@ import {
   DeleteDateColumn,
 } from 'typeorm';
 import { AnalysisType } from './analysis.enum';
-import { Message } from '@modules/message/message.entity';
+import { Message } from '../message/message.entity';
 
 @Entity('analysis')
 export class Analysis {

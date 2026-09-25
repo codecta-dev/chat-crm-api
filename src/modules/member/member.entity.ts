@@ -1,5 +1,5 @@
-import { Company } from "@modules/company/entities/company.entity";
-import { User } from "@modules/users/entities/user.entity";
+import { Company } from "../company/entities/company.entity";
+import { User } from "../users/entities/user.entity";
 import { Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { MemberRole, MemberStatus } from "./member.types";
 

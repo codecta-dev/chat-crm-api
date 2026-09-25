@@ -8,10 +8,10 @@ import {
   TextContent,
 } from '../../types/whatsapp.types';
 import { CommandBus } from '@nestjs/cqrs';
-import { SaveChatMessageCommand } from '@modules/chats/commands';
-import { MessageSenderType, MessageType } from '@modules/message/message.enum';
-import { ChatRepository } from '@modules/chats/chat.repository';
-import { WhatsAppClient } from '@integrations/whatsapp/clients/whatsapp.client';
+import { SaveChatMessageCommand } from '../../../../modules/chats/commands';
+import { MessageSenderType, MessageType } from '../../../../modules/message/message.enum';
+import { ChatRepository } from '../../../../modules/chats/chat.repository';
+import { WhatsAppClient } from '../../clients/whatsapp.client';
 import { PinoLogger } from 'nestjs-pino';
 import { firstValueFrom } from 'rxjs';
 

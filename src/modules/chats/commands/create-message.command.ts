@@ -1,6 +1,6 @@
-import { MessageSenderType } from '@modules/message/message.enum';
+import { MessageSenderType } from '../../message/message.enum';
 import { Command } from '@nestjs/cqrs';
-import { WhatsAppMessageContent as MessageContent } from '@integrations/whatsapp/interfaces/whatsapp-message.interface';
+import { WhatsAppMessageContent as MessageContent } from '../../../integrations/whatsapp/interfaces/whatsapp-message.interface';
 
 export class CreateMessageCommand extends Command<{
   messageId: string;

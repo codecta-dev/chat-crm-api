@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { startOfMonth, subMonths } from 'date-fns';
 import { DataSource } from 'typeorm';
 import { AgentQuery, ClientQuery, ContactQuery } from './metrics.interface';
-import { period, PeriodTime } from '@lib/period';
+import { period, PeriodTime } from '../../lib/period';
 
 export type Table = 'messages' | 'transfers' | 'chats' | 'contacts' | 'users';
 export type SentimentType = 'POS' | 'NEU' | 'NEG';

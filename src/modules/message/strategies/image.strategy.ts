@@ -1,12 +1,12 @@
 import {
   WhatsAppMediaContent,
   WhatsAppPayload,
-} from '@integrations/whatsapp/interfaces/whatsapp-message.interface';
+} from '../../../integrations/whatsapp/interfaces/whatsapp-message.interface';
 import { MessageStrategy } from './message.strategy';
-import { Message } from '@entities';
-import { WhatsAppImageBuilder } from '@integrations/whatsapp/builders/whatsapp-image.builder';
-import { WhatsAppImageContent } from '@integrations/whatsapp/interfaces/messages/image';
-import { BroadcastDto } from '@modules/chats/dto/broadcast.dto';
+import { Message } from '../../../entities';
+import { WhatsAppImageBuilder } from '../../../integrations/whatsapp/builders/whatsapp-image.builder';
+import { WhatsAppImageContent } from '../../../integrations/whatsapp/interfaces/messages/image';
+import { BroadcastDto } from '../../chats/dto/broadcast.dto';
 import { MessageType } from '../domain/message.types';
 
 export class ImageMessageStrategy implements MessageStrategy {

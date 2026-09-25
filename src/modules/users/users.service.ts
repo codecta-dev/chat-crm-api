@@ -15,7 +15,7 @@ import { buildQueryOptions } from '../../lib/helpers/build-query-options.helper'
 import { Chat } from '../chats/entities';
 import { User } from './entities/user.entity';
 import { CoreService } from '@core/core.service';
-import { AuthUser } from '@auth';
+import { AuthUser } from '../../auth';
 import { ClsService } from 'nestjs-cls';
 import { UserRepository } from './user.repository';
 

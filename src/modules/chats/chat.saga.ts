@@ -4,9 +4,9 @@ import { map, mergeMap, Observable } from "rxjs";
 import { MessageSavedEvent } from "./events/message-saved.event";
 import { MessageAnalyzedEvent } from "./events/message-analyzed.event";
 import { ChatMessageSentEvent } from "./events/chat-message-sent.event";
-import { getMessageStrategy } from "@modules/message/strategies/strategy.registry";
-import { MessageType } from "@modules/message/message.enum";
-import { AnalyzeMessageCommand } from "@modules/analysis/sentiment/commands/analyze-message.command";
+import { getMessageStrategy } from "../message/strategies/strategy.registry";
+import { MessageType } from "../message/message.enum";
+import { AnalyzeMessageCommand } from "../analysis/sentiment/commands/analyze-message.command";
 import {
   SaveChatMessageCommand,
   BroadcastChatMessageCommand,

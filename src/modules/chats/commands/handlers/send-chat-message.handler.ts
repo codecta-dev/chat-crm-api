@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
-import { SendChatMessageDto } from "@modules/chats/dto/send-chat-message.dto";
+import { SendChatMessageDto } from "../../dto/send-chat-message.dto";
 import { SendChatMessageCommand } from "../send-chat-message.command";
 import { PinoLogger } from "nestjs-pino";
 

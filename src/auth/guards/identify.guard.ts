@@ -1,4 +1,4 @@
-import { UsersService } from '@modules/users/users.service';
+import { UsersService } from '../../modules/users/users.service';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Request } from 'express';
 import { Observable } from 'rxjs';

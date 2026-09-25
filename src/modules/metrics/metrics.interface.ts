@@ -1,5 +1,5 @@
-import { Contact } from "@modules/contacts/entities/contact.entity"
-import { User } from "@modules/users/entities/user.entity"
+import { Contact } from "../contacts/entities/contact.entity"
+import { User } from "../users/entities/user.entity"
 
 export interface TrendPeriodQuery {
   date: string,

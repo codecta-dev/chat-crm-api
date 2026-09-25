@@ -1,8 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BroadcastChatMessageCommand } from '../broadcast-chat-message.command';
-import { ChatGateway } from '@modules/chats/gateways/chat.gateway';
+import { ChatGateway } from '../../gateways/chat.gateway';
 import { PinoLogger } from 'nestjs-pino';
-import { ChatGatewayEvent } from '@modules/chats/chat.enum';
+import { ChatGatewayEvent } from '../../chat.enum';
 
 @CommandHandler(BroadcastChatMessageCommand)
 export class BroadcastChatMessageHandler

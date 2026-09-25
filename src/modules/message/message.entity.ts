@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn
 } from "typeorm";
-import { Chat } from "@modules/chats/entities";
+import { Chat } from "../chats/entities";
 import { MessageSenderType, MessageType, MessageStatus, MessageDirection } from "./message.enum";
 
 @Entity('messages')

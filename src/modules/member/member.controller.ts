@@ -1,5 +1,5 @@
-import { JwtAuthGuard } from '@auth/guards';
-import { CompanyGuard } from '@modules/company/company.guard';
+import { JwtAuthGuard } from '../../../auth/guards';
+import { CompanyGuard } from '../company/company.guard';
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { MemberService } from './member.service';
 

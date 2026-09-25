@@ -1,4 +1,4 @@
-import { MessageSenderType, MessageType } from "@modules/message/message.enum";
+import { MessageSenderType, MessageType } from "../../message/message.enum";
 import { ChatMessageContent } from "../chat.types";
 
 export class ChatMessageDto {

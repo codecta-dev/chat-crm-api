@@ -1,4 +1,4 @@
-import { SentimentAnalysis } from "@entities";
+import { SentimentAnalysis } from "../../../../entities";
 
 export class SentimentAnalyzedEvent {
   constructor(

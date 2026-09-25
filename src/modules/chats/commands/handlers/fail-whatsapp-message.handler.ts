@@ -1,8 +1,8 @@
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { FailWhatsAppMessageCommand } from "../fail-whatsapp-message.command";
-import { ChatGateway } from "@modules/chats/gateways/chat.gateway";
-import { ChatGatewayEvent } from "@modules/chats/chat.enum";
-import { ChatRepository } from "@modules/chats/chat.repository";
+import { ChatGateway } from "../../gateways/chat.gateway";
+import { ChatGatewayEvent } from "../../chat.enum";
+import { ChatRepository } from "../../chat.repository";
 
 @CommandHandler(FailWhatsAppMessageCommand)
 export class FailWhatsAppMessageHandler implements ICommandHandler<FailWhatsAppMessageCommand> {

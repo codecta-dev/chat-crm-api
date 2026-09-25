@@ -10,7 +10,7 @@ import {
   UpdateDateColumn
 } from "typeorm";
 import { Contact } from "../../contacts/entities/contact.entity";
-import { Message } from "@modules/message/message.entity";
+import { Message } from "../../message/message.entity";
 import { ChatStatus, ChatPriority, ChatChannel } from "../chat.enum";
 
 @Entity('chats')

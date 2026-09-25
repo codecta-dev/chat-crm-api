@@ -1,4 +1,4 @@
-import { Chat, User } from "@entities";
+import { Chat, User } from "../../../entities";
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, Unique } from "typeorm";
 import { ReasonAssignment } from "../chat.enum";
 

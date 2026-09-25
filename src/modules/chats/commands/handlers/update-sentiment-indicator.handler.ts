@@ -1,8 +1,8 @@
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { UpdateSentimentIndicatorCommand as Command } from "../update-sentiment-indicator.command";
 import { PinoLogger } from "nestjs-pino";
-import { ChatGateway } from "@modules/chats/gateways/chat.gateway";
-import { ChatGatewayEvent } from "@modules/chats/chat.enum";
+import { ChatGateway } from "../../gateways/chat.gateway";
+import { ChatGatewayEvent } from "../../chat.enum";
 
 @CommandHandler(Command)
 export class UpdateSentimentIndicatorHandler implements ICommandHandler<Command> {

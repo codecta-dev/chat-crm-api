@@ -1,6 +1,6 @@
-import { PeriodTime } from '@lib/period';
+import { PeriodTime } from '../../../lib/period';
 import { CompareMetric, Table } from '../metrics.types';
-import { SentimentLabel } from '@modules/analysis/sentiment/sentiment.enum';
+import { SentimentLabel } from '../../analysis/sentiment/sentiment.enum';
 
 export const SENTIMENT_LABELS_MAP = {
   positive: SentimentLabel.POSITIVE,

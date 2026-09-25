@@ -13,7 +13,7 @@ import { PinoLogger } from 'nestjs-pino';
 import { CommandBus } from '@nestjs/cqrs';
 import { ForbiddenException } from '@nestjs/common';
 import { SendChatMessageDto } from '../dto/send-chat-message.dto';
-import { SendChatMessageCommand } from '@modules/chats/commands/send-chat-message.command';
+import { SendChatMessageCommand } from '../commands/send-chat-message.command';
 
 interface AuthHandshake {
   companyId?: string;

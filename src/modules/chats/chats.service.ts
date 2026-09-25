@@ -7,11 +7,11 @@ import { Chat } from './entities';
 import { ChatStatus } from './chat.enum';
 import { ChatRepository } from './chat.repository';
 import { ClsService } from 'nestjs-cls';
-import { Message } from '@entities';
-import { MessageSenderType } from '@modules/message/message.enum';
+import { Message } from '../../entities';
+import { MessageSenderType } from '../message/message.enum';
 import { ChatMessageContent } from './chat.types';
-import { getMessageStrategy } from '@modules/message/strategies/strategy.registry';
-import { MessageType } from '@modules/message/domain/message.types';
+import { getMessageStrategy } from '../message/strategies/strategy.registry';
+import { MessageType } from '../message/domain/message.types';
 
 @Injectable()
 export class ChatsService {

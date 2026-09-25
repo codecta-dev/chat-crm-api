@@ -13,7 +13,7 @@ import { WebhookQuery } from '../dto/webhook.query.dto';
 import { WhatsAppService } from '../whatsapp.service';
 import { mapWebhookToMessages } from '../mappers/whatsapp-message.mapper';
 import { ReceiveWhatsAppMessageCommand } from '../commands/receive-whatsapp-message.command';
-import { FailWhatsAppMessageCommand } from '@modules/chats/commands/fail-whatsapp-message.command';
+import { FailWhatsAppMessageCommand } from '../../../modules/chats/commands/fail-whatsapp-message.command';
 
 export const enum WhatsappNotificationStatusStatus {
   Sent = "sent",

@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { ReceiveChatMessageCommand } from "../receive-chat-message.command";
-import { ChatGateway } from "@modules/chats/gateways/chat.gateway";
-import { ChatGatewayEvent } from "@modules/chats/chat.enum";
+import { ChatGateway } from "../../gateways/chat.gateway";
+import { ChatGatewayEvent } from "../../chat.enum";
 
 @CommandHandler(ReceiveChatMessageCommand)
 export class ReceiveChatMessageHandler implements ICommandHandler<ReceiveChatMessageCommand> {

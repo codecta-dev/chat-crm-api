@@ -1,4 +1,4 @@
-import { Message, WhatsAppConfig } from "@entities";
+import { Message, WhatsAppConfig } from "../../../entities";
 import {
   Column, Entity, JoinColumn,
   ManyToOne, OneToOne, PrimaryGeneratedColumn

@@ -1,10 +1,10 @@
-import { MessageType } from '@modules/message/domain/message.types';
+import { MessageType } from '../../message/domain/message.types';
 import { IsNotEmptyObject } from 'class-validator';
 import { ChatMessageContent } from '../chat.types';
 import {
   MessageSenderType,
   MessageStatus,
-} from '@modules/message/message.enum';
+} from '../../message/message.enum';
 
 export class BroadcastDto {
   id!: string;

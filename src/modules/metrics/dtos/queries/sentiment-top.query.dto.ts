@@ -1,5 +1,5 @@
-import { SentimentLabel } from "@modules/analysis/sentiment/sentiment.enum";
-import type { SentimentActor, SentimentType } from "@modules/metrics/metrics.types";
+import { SentimentLabel } from "../../../analysis/sentiment/sentiment.enum";
+import type { SentimentActor, SentimentType } from "../../metrics.types";
 import { Transform, Type } from "class-transformer";
 import { IsEnum, IsIn, IsNotEmpty, IsNumber, IsOptional } from "class-validator";
 

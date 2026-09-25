@@ -1,6 +1,6 @@
-import { MessageType } from "@modules/message/domain/message.types";
+import { MessageType } from "../../message/domain/message.types";
 import { ChatMessageContent } from "../chat.types";
-import { MessageSenderType } from "@modules/message/message.enum";
+import { MessageSenderType } from "../../message/message.enum";
 import { IsNotEmpty, IsNotEmptyObject, IsPhoneNumber } from "class-validator";
 
 /**
