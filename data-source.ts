@@ -1,4 +1,5 @@
 import { DataSource } from "typeorm"
+import { SnakeNamingStrategy } from "typeorm-naming-strategies";
 
 export default new DataSource({
   type: 'mysql',
@@ -7,6 +8,7 @@ export default new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
+  namingStrategy: new SnakeNamingStrategy(),
   entities: [
     __dirname + '/src/modules/**/*.entity{.ts,.js}',
     __dirname + '/src/integrations/**/*.entity{.ts,.js}',
