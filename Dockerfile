@@ -16,6 +16,8 @@ ENV NODE_ENV=production
 COPY package*.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/dist ./dist
+# locales/ para nestjs-i18n (la config apunta a <root>/locales, fuera de dist/)
+COPY --from=build /app/src/locales ./locales
 # uploads/ necesita existir si serve-static lo usa (montado como volumen en prod)
 RUN mkdir -p /app/uploads && chown -R node:node /app
 USER node
