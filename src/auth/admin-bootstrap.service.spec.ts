@@ -10,6 +10,7 @@ describe('AdminBootstrapService', () => {
   const mockUsersService = {
     find: jest.fn(),
     create: jest.fn(),
+    update: jest.fn(),
   };
 
   const mockLogger = {
@@ -62,6 +63,7 @@ describe('AdminBootstrapService', () => {
 
   it('creates the admin when the table is empty and env is set', async () => {
     mockUsersService.find.mockResolvedValue(null);
+    mockUsersService.create.mockResolvedValue({ id: 'new-admin-id' });
     process.env.BOOTSTRAP_ADMIN_USERNAME = 'admin';
     process.env.BOOTSTRAP_ADMIN_PASSWORD = 'secreta-123';
 
@@ -70,6 +72,9 @@ describe('AdminBootstrapService', () => {
     expect(mockUsersService.create).toHaveBeenCalledWith({
       username: 'admin',
       password: 'secreta-123',
+    });
+    expect(mockUsersService.update).toHaveBeenCalledWith('new-admin-id', {
+      role: 'admin',
     });
   });
 
